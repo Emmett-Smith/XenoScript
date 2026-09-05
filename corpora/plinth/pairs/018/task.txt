@@ -1,0 +1,4 @@
+Write a PLINTH scenario called sat_pass that runs for 30 seconds with a
+5 second step. Add one space platform (sat_x) at 0 degrees latitude, 0
+degrees longitude, 25000 meters altitude. Spawn it at 5 seconds, then
+trace the message "pass complete" at 25 seconds.

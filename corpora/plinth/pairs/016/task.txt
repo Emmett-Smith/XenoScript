@@ -1,0 +1,3 @@
+Write a PLINTH scenario called quiet_start that runs for 8 seconds with
+a 1 second step, no platforms. Trace the message "system ready" at 3
+seconds.

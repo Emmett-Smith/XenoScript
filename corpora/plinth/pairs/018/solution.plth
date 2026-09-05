@@ -1,0 +1,14 @@
+define scenario sat_pass
+  set duration = 30s
+  set step = 5s
+end_scenario
+
+define platform sat_x type space
+  position at 0.00deg 0.00deg
+  set altitude = 25000m
+end_platform
+
+execute
+  at 5s spawn sat_x
+  at 25s trace "pass complete"
+end_execute

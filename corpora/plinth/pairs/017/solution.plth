@@ -1,0 +1,13 @@
+define scenario ground_only
+  set duration = 15s
+  set step = 1s
+end_scenario
+
+define platform truck_a type ground
+  position at 25.00deg 55.00deg
+  set altitude = 0m
+end_platform
+
+execute
+  at 1s spawn truck_a
+end_execute

@@ -1,0 +1,3 @@
+Write a COBOL program named TRIPLER with a WORKING-STORAGE field WS-N
+(PIC 9(3), value 8). Compute WS-N multiplied by 3, store it in WS-RESULT
+(PIC 9(5)), then display "RESULT: " immediately followed by WS-RESULT.

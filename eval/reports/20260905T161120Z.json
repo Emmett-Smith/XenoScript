@@ -1,0 +1,485 @@
+{
+  "git_sha": "12446c563b01d8373526fbe42356cbedeedc7414",
+  "timestamp": "2026-09-05T16:11:20Z",
+  "corpus": "mumps",
+  "repeat": 1,
+  "model_endpoints": {
+    "A": "http://localhost:11434/v1 (qwen2.5-coder:3b)",
+    "B": "http://localhost:11434/v1 (qwen2.5-coder:3b)",
+    "C": "http://localhost:11434/v1 (qwen2.5-coder:3b)",
+    "D": "http://localhost:11434/v1 (qwen2.5-coder:3b)"
+  },
+  "arms": {
+    "A": {
+      "arm": "A",
+      "n_runs": 6,
+      "verified_correct_rate": 0.0,
+      "first_attempt_pass_rate": 0.0,
+      "wall_clock_p50_s": 2.13,
+      "wall_clock_p95_s": 5.13,
+      "tool_calls_mean": 0,
+      "error_code_histogram": {},
+      "unresolved_count": 6
+    },
+    "B": {
+      "arm": "B",
+      "n_runs": 6,
+      "verified_correct_rate": 0.0,
+      "first_attempt_pass_rate": 0.0,
+      "wall_clock_p50_s": 9.28,
+      "wall_clock_p95_s": 19.17,
+      "tool_calls_mean": 0,
+      "error_code_histogram": {},
+      "unresolved_count": 6
+    },
+    "C": {
+      "arm": "C",
+      "n_runs": 6,
+      "verified_correct_rate": 0.0,
+      "first_attempt_pass_rate": 0.0,
+      "wall_clock_p50_s": 3.23,
+      "wall_clock_p95_s": 4.02,
+      "tool_calls_mean": 8,
+      "error_code_histogram": {},
+      "unresolved_count": 6
+    },
+    "D": {
+      "arm": "D",
+      "n_runs": 6,
+      "verified_correct_rate": 0.0,
+      "first_attempt_pass_rate": 0.0,
+      "wall_clock_p50_s": 10.44,
+      "wall_clock_p95_s": 14.63,
+      "tool_calls_mean": 15,
+      "error_code_histogram": {},
+      "unresolved_count": 6,
+      "mean_iterations_to_verified": null
+    }
+  },
+  "cases_examples_only": {
+    "arm": "D_examples_only",
+    "n_runs": 1,
+    "verified_correct_rate": 0.0,
+    "first_attempt_pass_rate": 0.0,
+    "wall_clock_p50_s": 1.26,
+    "wall_clock_p95_s": 1.26,
+    "tool_calls_mean": 15,
+    "error_code_histogram": {},
+    "unresolved_count": 1
+  },
+  "raw": {
+    "A": [
+      {
+        "case_id": "001",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 5.13,
+        "error_codes": [
+          null
+        ],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 2.13,
+        "error_codes": [
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "arithmetic"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 1.51,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "gotcha"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 2.79,
+        "error_codes": [
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "gotcha"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 1.01,
+        "error_codes": [
+          null
+        ],
+        "tags": [
+          "loop"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "trace_mismatch:0%_similar",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 2.06,
+        "error_codes": [],
+        "tags": [
+          "examples_only"
+        ]
+      }
+    ],
+    "B": [
+      {
+        "case_id": "001",
+        "ok": false,
+        "reason": "trace_mismatch:0%_similar",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 8.34,
+        "error_codes": [],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": false,
+        "reason": "trace_mismatch:0%_similar",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 9.28,
+        "error_codes": [],
+        "tags": [
+          "arithmetic"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 8.94,
+        "error_codes": [
+          null,
+          null
+        ],
+        "tags": [
+          "gotcha"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "trace_mismatch:0%_similar",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 8.87,
+        "error_codes": [],
+        "tags": [
+          "gotcha"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 17.18,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "loop"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 19.17,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "examples_only"
+        ]
+      }
+    ],
+    "C": [
+      {
+        "case_id": "001",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 2.29,
+        "error_codes": [
+          null
+        ],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": false,
+        "reason": "trace_mismatch:0%_similar",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 2.8,
+        "error_codes": [],
+        "tags": [
+          "arithmetic"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 3.23,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "gotcha"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 4.02,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "gotcha"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 3.27,
+        "error_codes": [
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "loop"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "trace_mismatch:0%_similar",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 2.38,
+        "error_codes": [],
+        "tags": [
+          "examples_only"
+        ]
+      }
+    ],
+    "D": [
+      {
+        "case_id": "001",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 3.84,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": false,
+        "reason": "trace_mismatch:0%_similar",
+        "iterations": 1,
+        "tool_calls": 15,
+        "wall_clock_s": 2.6,
+        "error_codes": [],
+        "tags": [
+          "arithmetic"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 12.21,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "gotcha"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 14.63,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "gotcha"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 10.44,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "loop"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "trace_mismatch:0%_similar",
+        "iterations": 1,
+        "tool_calls": 15,
+        "wall_clock_s": 1.26,
+        "error_codes": [],
+        "tags": [
+          "examples_only"
+        ]
+      }
+    ]
+  }
+}

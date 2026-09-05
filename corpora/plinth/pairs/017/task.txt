@@ -1,0 +1,4 @@
+Write a PLINTH scenario called ground_only that runs for 15 seconds
+with a 1 second step. Add one ground platform (truck_a) at 25 degrees
+latitude, 55 degrees longitude, 0 meters altitude, and spawn it at 1
+second.

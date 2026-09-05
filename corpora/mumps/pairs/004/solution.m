@@ -1,0 +1,1 @@
+FOR I=1:1:3 WRITE I,!

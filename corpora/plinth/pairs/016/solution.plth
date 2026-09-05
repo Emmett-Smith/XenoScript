@@ -1,0 +1,8 @@
+define scenario quiet_start
+  set duration = 8s
+  set step = 1s
+end_scenario
+
+execute
+  at 3s trace "system ready"
+end_execute

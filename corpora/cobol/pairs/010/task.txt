@@ -1,0 +1,3 @@
+Write a COBOL program named TEMPCHECK with a WORKING-STORAGE numeric
+field WS-TEMP (PIC 9(3), value 95). If WS-TEMP is greater than or equal
+to 90, display "HOT", otherwise display "MILD".

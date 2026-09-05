@@ -1,0 +1,4 @@
+[t=0.000] scenario sat_pass start step=5.000 duration=30.000
+[t=5.000] spawn sat_x pos=0.0000,0.0000 alt=25000.000
+[t=25.000] trace "pass complete"
+[t=30.000] scenario end status=ok

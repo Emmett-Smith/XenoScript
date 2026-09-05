@@ -1,0 +1,2292 @@
+# M Language Reference (from Reference Standard M's own documentation)
+
+Real excerpt from RSM's `doc/adoc/language.adoc` (Commands, Intrinsic
+Functions, Intrinsic Special Variables, and Operators sections),
+converted from AsciiDoc to Markdown headings for this corpus's chunker.
+Not paraphrased or summarized -- the actual language reference text.
+
+Source: https://github.com/Reference-Standard-M/rsm (also mirrored at
+https://gitlab.com/Reference-Standard-M/rsm), `doc/adoc/language.adoc`.
+Copyright © 2020-2026 Fourth Watch Software LC, David Wicksell
+<dlw@linux.com>. Licensed under the GNU Free Documentation License,
+Version 1.3 or later, with no Invariant Sections, no Front-Cover Texts,
+no Back-Cover Texts (GFDL-1.3-no-invariants-or-later). Full license:
+https://www.gnu.org/licenses/fdl-1.3.html
+
+## Commands
+
+IMPORTANT: Commands without an argument must be followed by two or more spaces.
+
+NOTE: Commands are case-insensitive, and have a long and short form.
+
+### `*;*` Comment
+
+Add comments to source code.
+
+#### Condition
+
+Not applicable.
+
+#### Arguments
+
+Not applicable.
+
+#### Usage
+
+Everything from the `;` to the end of the current line, inclusive, is ignored.
+When the `;` is in the first column, the entire line is ignored and does not
+affect the line level (number of dots), nor is it included in the bytecode.
+
+#### Standard
+
+Mostly complies, but the standard does not permit a `;` in the first column.
+
+#### Examples
+
+```m
+; This is a comment
+```
+
+### BREAK|B
+
+Stops execution of current process for debugging until signaled.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+Break specifier (see below).
+
+NOTE: Argument indirection is not permitted.
+
+#### Usage
+
+Suspends execution until receipt of a signal. The signal is `QUIT` as `BREAK`
+effectively runs as an `XECUTE` or `DO` command (adding a level to the stack).
+
+The break specifier may be one of the following:
+
+[%autowidth]
+.BREAK Usage
+|===
+|Specifier                    |Description
+
+|`BREAK "_breakref_:"`        |Set simple breakpoint
+|`BREAK "_breakref_:__code__"`|Set breakpoint with handler
+|`BREAK ":__code__"`          |Set `QUIT` handler
+|`BREAK "_breakref_"`         |Clear breakpoint
+|`BREAK ":"`                  |Clear `QUIT` handler
+|`BREAK ""`                   |Clear all breakpoints/handlers - stop debugger
+|`BREAK`                      |Break here (in routine code or direct mode)
+|`BREAK 0`                    |Disable `BREAK` within current job
+|`BREAK 1`                    |Re-enable `BREAK` within current job
+|===
+
+Where _breakref_ is `_label_[+_offset_]^_routine_` or `[+_linenum_]^_routine_`
+and _code_ is valid M code that will be executed when the _breakref_ is hit, or
+every time a `QUIT __n__` is entered.
+
+While stepping through code in the debugger, an argumentless `QUIT` will stop
+the stepping, and execute the rest of the code until another breakpoint is
+encountered. To turn off debugging completely, clear all the breakpoints in the
+current routine. A `QUIT` may be followed by a positive integer to execute that
+many commands (not lines) before breaking again.
+
+NOTE: When using `QUIT` with a step command number, `BREAK` in routines, as
+well as any breakpoints encountered during stepping, will be ignored.
+
+The `$ZBP` array (case-sensitive), stores all the currently active breakpoints.
+Its format is `$ZBP(_routine_,_linenum_)`. You can `$ORDER` or `$QUERY` through
+it to list current breakpoints, or you can use `WRITE` to dump the contents of
+breakpoints or `QUIT` handler code, if set. There is also an included vendor API
+called `BP^%DEBUG`, found in `utils.rsm`, which will list all current
+breakpoints and handlers.
+
+WARNING: Code entered in the debugger must be 255 characters or less.
+
+#### Standard
+
+Complies, as the standard does not specify arguments or signals.
+
+#### Examples
+
+```m
+break "+7^routine:do ^%debug" ; Break at line 7 of ^routine, and call ^%debug
+break "+3^routine:"           ; Set simple breakpoint at line 3 of ^routine
+break "+1^routine"            ; Clear breakpoint on line 1 of ^routine
+break ":do ^%debug"           ; Set up quit handler that fires after each step
+break ""                      ; Turn off debugging, and clear all breakpoints
+break                         ; Break here and make debugging active
+
+; Loop through and display all the current breakpoints
+set bp=$name($ZBP("")) for  set bp=$query(@bp) quit:bp=""  write bp,!
+
+; Loop through and display all the current breakpoints in debug format
+write "Breakpoints:",!
+set (routine,line)=""
+for  set routine=$order($ZBP(routine)) quit:routine=""  do
+. for  set line=$order($ZBP(routine,line)) quit:line=""  do
+. . write ?4,"+"_line_"^"_routine,!
+```
+
+### CLOSE|C
+
+Releases ownership of an I/O device.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+List of channel numbers.
+
+#### Usage
+
+Relinquishes ownership of the specified channel. If the channel is not currently
+open, the command is ignored. If the channel is current (i.e., `$IO` is equal to
+_channel_) then `$IO` is set to 0.
+
+NOTE: Closing channel 0 is always ignored.
+
+#### Standard
+
+Complies exactly, as device parameters are implementation-specific in the standard.
+
+#### Examples
+
+```m
+close 1,2 ; Close channels 1 and 2
+```
+
+See xref:seqio.adoc[Sequential I/O Interface] for details on how to use `CLOSE`.
+
+### DO|D
+
+Executes a subroutine (named or anonymous via a dotted-do block), then returns
+control to the next command after the `DO`; for multiple arguments, each
+subroutine is executed in turn.
+
+#### Condition
+
+Valid truth-value expression -- also valid on each argument.
+
+#### Arguments
+
+Zero or more `_entryref_[(_argumentlist_)][:__postcondition__]` where _entryref_
+is of the form `_label_[^_routine_]` or `^_routine_`.
+
+#### Usage
+
+An argumentless `DO` initiates execution of an inner block of lines, denoted by
+leading dots that are one level deeper than the line the `DO` is on. `DO` with
+arguments is a generalized call to a subroutine specified by _entryref_. The
+line specified by _entryref_ must have a level of one (i.e., doesn't begin with
+a dot). If the line specified by _entryref_ doesn't have a level of one, an
+`M14` error is thrown. The argumentless form of `DO` also does a `new $test`
+implicitly, while the form with arguments does not.
+
+#### Standard
+
+Complies exactly. The standard allows for an _entryref_ of the form
+`_label_+_offset_[^_routine_]`, which is enabled by default. As this is a
+potential security risk, it may not be desirable to leave it on. This feature
+may be turned off with `set ^$system("offok")=0` as a privileged user.
+
+#### Examples
+
+```m
+do  ; Do the following block of code
+. write "First line in the block",!
+. write "Second line in the block",!
+
+do label,ext^routine,label2(arg1) ; Various subroutine calls
+```
+
+### ELSE|E
+
+Execute the following commands if `$TEST` evaluates to false.
+
+#### Condition
+
+Not applicable.
+
+#### Arguments
+
+Not applicable.
+
+#### Usage
+
+Execute the remainder of the line, or the following dotted-do block, if `$TEST`
+is equal to `0`. Otherwise, if the value of `$TEST` is equal to `1`, the
+remainder of the line, or the following dotted-do block, is not executed.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+if 0 write "True!",!   ; This write command will not execute - $test=0
+else  write "False!",! ; This write command will execute - $test=0
+```
+
+### FOR|F
+
+Execute commands repeatedly, until certain conditions are met; argumented form
+sets the value of a variable, argumentless form does not.
+
+#### Condition
+
+Not applicable.
+
+#### Arguments
+
+A _<space>_ or `_localvariable_=_forparam(s)_`. A _forparam_ is either an
+expression, or a range of the form `_start_[:__increment__[:__end__]]`, where
+each of _start_, _increment_, and _end_ are integers. Argument indirection is
+not permitted.
+
+#### Usage
+
+The scope of the `FOR` command begins with the next command on the current line
+and extends to the end of the current line. In the case of a dotted-do block,
+the scope of the `FOR` command is the dotted-do block. Any `FOR` loop may be
+terminated by a `QUIT` or `GOTO` within the scope of the `FOR`. A `QUIT`
+terminates the innermost `FOR` whose scope contains the `QUIT`. A `GOTO`
+terminates all `FOR` commands in the line containing the `GOTO`. The `FOR`
+conditional test is made before the scope is executed.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+for i=10:1:9 do something ; This will do nothing
+
+; Execute following block until ok is true
+set ok=0 for  do  quit:ok
+. if ^global("okNode") set ok=1 quit
+. do processReport^auditMan
+
+for i=1:1:3,5,7:1:9 write i             ; Write out 1235789
+for i=1:1 for j=1:1 do sub goto done:ok ; Process all i and j until ok true
+```
+
+### GOTO|G
+
+Transfer control to another line of code without use of the stack.
+
+#### Condition
+
+Valid truth-value expression -- also valid on each argument.
+
+#### Arguments
+
+One or more `_entryref_[:__postcondition__]` where _entryref_ is of the form
+`_label_[^_routine_]` or `^_routine_`.
+
+#### Usage
+
+The `GOTO` command is a generalized transfer of control. The line specified by
+_entryref_ must have a level of one (i.e., doesn't begin with a dot), except
+where the line specified has the same level as the line containing the `GOTO`
+and both lines are in the same routine and there are no lines between the two
+lines of a lower (numerically less) level, otherwise error `M45` occurs.
+
+#### Standard
+
+Complies exactly. The standard allows for an _entryref_ of the form
+`_label_+_offset_[^_routine_]`, which is enabled by default. As this is a
+potential security risk, it may not be desirable to leave it on. This feature
+may be turned off with `set ^$system("offok")=0` as a privileged user.
+
+#### Examples
+
+```m
+goto done:ok,fail ; Dispatch to done or fail on ok flag
+```
+
+### HALT|H
+
+Stop the currently executing process (M job).
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+Not applicable.
+
+#### Usage
+
+Execution of the process (M job) is terminated.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+halt ; Terminate the job
+```
+
+### HANG|H
+
+Pause execution of the currently running process (M job) for a specified number
+of seconds.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+Numeric expression -- interpreted as a positive integer and using its floor.
+
+#### Usage
+
+If the numeric expression is greater than zero, execution is suspended for that
+number of seconds, otherwise the current time slice is surrendered.
+
+#### Standard
+
+Mostly complies, however a timeout less than `1` gives up the current time slice
+to the OS process scheduler, when the job is using a real-time scheduling
+policy, otherwise, it does nothing, which is standard.
+
+#### Examples
+
+```m
+hang 30   ; Wait for 30 seconds
+hang 30.9 ; Behaves the same as hang 30
+hang 0    ; Give up the time slice to the OS process scheduler (real-time only)
+hang -5   ; Behaves the same as hang 0
+```
+
+### IF|I
+
+Execute the following commands if the argument expression evaluates to true;
+sets `$TEST` to whether the `IF` succeeded.
+
+#### Condition
+
+Not applicable.
+
+#### Arguments
+
+Zero or more valid truth-value expressions.
+
+#### Usage
+
+Each _tve_ is evaluated in order. If true, `$TEST` is set to 1 and execution
+continues. If false, `$TEST` is set to 0 and execution of the current line
+terminates. The argumentless form is equivalent to `if $test`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+if a=b,c=d goto label ; Dispatch to label when a=b and c=d
+```
+
+### JOB|J
+
+Starts a new process (M job) that begins execution at the specified line of
+code.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+List of `_entryref_[(_argumentlist_)][::__timeout__]` where _entryref_ is of the
+form `_label_^[_routine_]` or `^_routine_`.
+
+#### Usage
+
+The `JOB` command attempts to start another M job. If the _argumentlist_ is
+present, it may not contain arguments called '`by-reference`', (doing so results
+in an `M40` error), and must not contain more arguments than are defined in the
+_entryref_. If _timeout_ is present, the condition reported by `$TEST` is the
+success of initiating the process, as the `JOB` command always succeeds. If no
+_timeout_ is present, `$TEST` is unchanged and the current process is suspended
+until the other process has been successfully initiated.
+
+NOTE: If a _timeout_ is present, `$TEST` is always set to `1`.
+
+#### Standard
+
+Complies exactly, as process parameters are implementation-specific in the standard.
+
+#### Examples
+
+```m
+job int^routine("param1") ; Start background job
+```
+
+### KILL|K
+
+Deletes specified variables, and all their array descendants.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+A _<space>_ or _variablelist_ or `(_local-variablelist_)`.
+
+#### Usage
+
+With no arguments, make all current local variables undefined. With variable
+list, make all listed variables and their descendants undefined. With bracketed
+local variable list, make all local variables (unsubscripted) except those
+listed and their descendants undefined.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+kill (a,b)        ; Remove all local variables except a and b
+kill ^database(1) ; Remove ^database(1) and its descendants
+```
+
+### LOCK|L
+
+Create, or remove, an advisory lock (normal or incremental) on a name.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+Zero or more _nrefs_, optionally prefixed with a plus (`+`) or minus (`-`).
+With no arguments, `LOCK` releases all currently active locks. An _nref_ is a
+valid M local or global variable name. `LOCK` followed by one or more _nrefs_
+may be optionally followed by a `:__timeout__`, which is a positive integer or
+zero.
+
+#### Usage
+
+`LOCK` provides a generalized interlock facility. Execution of a `LOCK` is not
+affected by, nor does it directly affect, the state or value of any local or
+global variable, or the state of the naked indicator. Its use is not required to
+access globals, nor does its use inhibit other processes from accessing globals.
+It is an interlocking mechanism whose use depends on programmers establishing
+and following conventions, and is therefore advisory in nature.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+lock +^database(1) ; Acquire an incremental lock
+lock +^database(1) ; Increment the lock
+lock +^journal(0)  ; Acquire another lock (does not release any locks)
+lock -^database(1) ; Decrement the lock
+lock -^database(1) ; Release the lock
+lock ^patient      ; Acquire a lock
+lock ^user         ; Acquire another lock (releases previous lock)
+lock               ; Releases all locks
+```
+
+### MERGE|M
+
+Copies the value and all array descendants from one variable to another
+variable.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+List of `_variable1_=_variable2_`.
+
+#### Usage
+
+Copy _variable2_ and its descendants into _variable1_. If _variable1_ is a
+descendant of _variable2_ or _variable2_ is a descendant of _variable1_, then
+error (`M19`) occurs.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+merge ^database(1)=local ; Save our data in the database
+```
+
+### NEW|N
+
+Saves and temporarily removes locals and their array descendants, and restores
+them when the block of code ends.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+A _<space>_ or _local-variablelist_ or `(_local-variablelist_)`.
+
+#### Usage
+
+With no arguments, make all current local variables undefined. With a variable
+list, make all listed variables and their descendants undefined. With bracketed
+local variable list, make all local variables and their descendants undefined,
+except those listed. Variables may not be subscripted variables (i.e., only the
+top level may be specified), however, `new A` also ``NEW``s all descendants of
+`A`. At the next `QUIT` at this level, all variables referenced by this command
+are restored to their previous state.
+
+Additionally, the following intrinsic special variables may be ``NEW``ed:
+
+[%autowidth]
+.NEW ISVs
+|===
+|ISV      |Action when ``NEW``ed
+
+|`$ESTACK`|Value set to zero
+|`$ETRAP` |Value is unchanged
+|===
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+new       ; Save all local variables
+new (a,b) ; Save all local variables except a and b
+new a,b   ; Save a and b
+```
+
+### OPEN|O
+
+Acquires ownership of an I/O device.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+List of `_channel_:(_device_:__mode__)[:__timeout__[:__namespace__]]`.
+
+#### Usage
+
+Obtain ownership of a device or file. The _channel_ is from 1 to 63 inclusive
+(channel 0 is the principal device, and is always open). The _device_ is the
+device or file that is being opened. The _mode_ describes how to open the device
+or file in that channel. One and only one second parameter must be supplied. It
+may be supplied in full or abbreviated form, and is case-insensitive.
+
+[%autowidth]
+.OPEN Parameters
+|===
+|First Parameter   |Second Parameter
+
+|_/directory/file_ |`"R[EAD]\|W[RITE]\|A[PPEND]\|I[O]"`
+|_host.domain port_|`"T[CPIP][6]\|U[DPIP][6]"`
+|_port_            |`"S[ERVER][6][=_int_]\|TCPSERVER[6][=_int_]"`
+|_port_            |`"US[6]\|UDPSERVER[6]"`
+|_/directory/pipe_ |`"P[IPE]\|N[EWPIPE]"`
+|_/dev/device_     |`"R[EAD]\|W[RITE]\|I[O]"`
+|===
+
+IMPORTANT: If you open a file in `IO` mode (read-write), it will set the file
+pointer to the beginning of the file.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+open 1:("/home/user/data.txt":"write") close 1 ; Delete the file
+open 2:("80":"server=4") use 2 read job        ; Setup a TCP server (4 jobs)
+```
+
+See xref:seqio.adoc[Sequential I/O Interface] for details on how to use `OPEN`.
+
+### QUIT|Q
+
+Ends the current process level and returns a value; argumentless quit ends the
+current process level without returning a value
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+A _<space>_ or _value_.
+
+#### Usage
+
+Terminate the scope of a `FOR` -- no arguments permitted. Terminate a subroutine
+invoked with `DO` -- no arguments permitted. Terminate an extrinisic function
+and return a value.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+quit:ok     ; Quit when done
+quit result ; Return the result
+```
+
+### READ|R
+
+Gets input from the current I/O device and puts the response in the specified
+variables.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+List of `_readargument_`, which is one of the following:
+
+* string literal
+* format command
+* `_variable_[#_count_][:__timeout__]`
+* `*_variable_[:__timeout__]`
+
+#### Usage
+
+When `_readargument_` is either '`string literal`' or '`format command,`' the
+`READ` command first cancels any pending read-ahead buffered by the device, then
+functions as a `WRITE` command.
+
+When `pass:[#]_count_` is present, that is the maximum number of characters that
+will be read into the specified _variable_ before the read is terminated. Note
+that the `pass:[#]_count_` form does not restrict the number of characters that
+may be read into the `$KEY` intrinsic variable.
+
+If `:__timeout__` is specified, `$TEST` is set to `0` and `$KEY` is set to `""`
+(null) if the read terminated because of expiration of specified time, or `1`
+otherwise. In any case, the _variable_ contains all characters received prior to
+the _timeout_.
+
+`$X` and `$Y` are changed by all characters read that are echoed as though they
+had been written using `WRITE`.
+
+When the `*_variable_` form is used, the ASCII value of the first character read
+is returned in _variable_ and `$KEY` is set to `""` (null) unless escape
+processing is on and an _<escape>_ [`$CHAR(27)`] key is received, then
+_variable_ is given a value of `0` and `$KEY` contains the escape sequence. If a
+timeout expired then _variable_ is equal to `-1`. `$X` and `$Y` are unchanged by
+this form and any key pressed does not echo on a terminal device.
+
+#### Standard
+
+Mostly complies, with the exception of the vague areas in the standard and the
+use of character transforms which aren't implemented.
+
+#### Examples
+
+```m
+read !,"Answer: ",ans:10 ; Give them 10 seconds to answer and store it in ans
+```
+
+See xref:seqio.adoc[Sequential I/O Interface] for details on how to use `READ`.
+
+### SET|S
+
+Puts values into variables.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+List of `_destination_=_source_` or
+`[(_destination1_[,_destination2_...)]]=_source_`, where _source_ is an
+expression, and _destination_ (or `_destination1_,_destination2_...`) is one of:
+
+* _variable_
+* `$ECODE`
+* `$ETRAP`
+* `$EXTRACT(_variable_[,_begin_[,_end_]])`
+* `$KEY`
+* `$PIECE(_variable_,_delim_[,_begin_[,_end_]])`
+* `$X`
+* `$Y`
+
+#### Usage
+
+Assign a value to a variable or substitute new value into piece(s) or character
+position(s) of variable.
+
+#### Standard
+
+Does not fully comply with the standard. It evaluates the expression on the
+right-hand side of the '`=`' before it evaluates the subscripts on the left-hand
+side of the '`=`'. It supports expression indirection, which is a non-standard
+extension.
+
+#### Examples
+
+```m
+set $etrap="do ^%error"     ; Setup the error trap
+set $piece(list,",",5)=date ; Update date in list piece 5
+```
+
+### USE|U
+
+Changes the current device from the list of I/O devices owned by the current
+process.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+List of `_channel_[:(_param1_[:__param2__...])[:__namespace__]]`.
+
+#### Usage
+
+Make an owned device current for input and/or output.
+
+Valid parameters (passed as strings) by file/socket/pipe/character class type
+are:
+
+[%autowidth]
+.USE Parameters
+|===
+|Parameter                          |Valid Class Types|Description
+
+|`"DELETE=NONE\|BACK\|DELETE\|BOTH"`|Character Device |Setup keys for DELETE
+|`"DISCONNECT"`                     |TCP Socket Server|Disconnect the client
+|`"[NO]CONTROLC"`                   |Principal Device |Control-C processing
+|`"[NO]CONTROLT"`                   |Principal Device |Control-T processing
+|`"[NO]ECHO"`                       |Character Device |Echo processing
+|`"[NO]ESCAPE"`                     |Character Device |Escape processing
+|`"[NO]TYPEAHEAD"`                  |Character Device |Type-ahead processing
+|`"OUTPUT="_$CHAR(_n_[,...])`       |All              |Output `!` sequence (6)
+|`"TERMINATOR="_$CHAR(_n_[,...])`   |All              |Input/read terminators
+|===
+
+IMPORTANT: `TERMINATOR` arguments must be ASCII characters [0-127].
+
+NOTE: `"TERMINATOR="_$CHAR(13,10)` means that the following is placed in `$KEY`
+not returned in the data.
+
+#### Standard
+
+Complies with the exception of the vague areas in the standard, and the name of
+the `"%X364"` mnemonic space is non-standard.
+
+#### Examples
+
+```m
+use term read *chk:0 use file                      ; See if user has hit a key
+use 0:("terminator="_$char(1,5,7,13):"nocontrolc") ; Set terminators, disable ^C
+```
+
+See xref:seqio.adoc[Sequential I/O Interface] for details on how to use `USE`.
+
+### VIEW|V
+
+Adds, or removes, disk blocks to, or from, the view buffer.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+A `_channel_:__offset__`.
+
+Where _channel_ is minus (`-`) volume number (i.e., `-1` only currently),
+_offset_ is the block number to read, `0` to free the view buffer, or minus
+(`-`) block number to write previously read block.
+
+#### Usage
+
+Read and write disk data in an open view channel buffer.
+
+NOTE: The volume should be write locked before using `VIEW`.
+
+#### Standard
+
+As the standard is so vague, nearly anything complies exactly.
+
+#### Examples
+
+```m
+view -1:1 ; Get the global directory for the manager UCI
+```
+
+### WRITE|W
+
+Formats and outputs values to the current I/O device.
+
+#### Condition
+
+Valid truth-value expression.
+
+#### Arguments
+
+List of _writeargument_.
+
+Where _writeargument_ is one of the following:
+
+* Format character string
+** `#` -> Carrige return, page feed combination
+** `!` -> Carrige return, linefeed combination, or specified output sequence
+** `?_n_` -> Tab to character position _n_ (left most position is `0`)
+** `/_cmd_[(_params_)]` -> Provide device specific control [X3.64]
+* `_expr_` -> Any valid M expression
+* `*_intexpr_` -> Output the ASCII character (`_intexpr_#256`)
+
+#### Usage
+
+Output characters to the current output device.
+
+`$X` and `$Y` are altered as follows:
+
+[%autowidth]
+.WRITE Usage
+|===
+|Character Type        |Description
+
+|Graphic (ASCII 32-126)|Increment `$X`
+|Backspace             |Decrement `$X` to a minimum of `0`
+|Line feed             |Increment `$Y`
+|Carriage return       |`$X` -> `0`
+|Form feed             |`$X` -> `0`, `$Y` -> `0`
+|===
+
+NOTE: `write *_intexpr_` does not alter `$X` or `$Y`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write "Heading",! ; Output Heading to display
+```
+
+See xref:seqio.adoc[Sequential I/O Interface] for details on how to use `WRITE`.
+
+### XECUTE|X
+
+Interprets and executes a string as M code.
+
+#### Condition
+
+Valid truth-value expression -- also valid on each argument.
+
+#### Arguments
+
+List of expressions.
+
+#### Usage
+
+Executing M code which arises from the process of expression evaluation. Each
+argument is treated as a `DO` label where label defines a virtual line in the
+current routine that looks like label argument-content and is followed by a line
+consisting simply of space `QUIT`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+xecute "write ""x is 1""":x=1,"write ""x is not 1""":x-1 ; Run string as M code
+```
+
+## Intrinsic Functions
+
+NOTE: Intrinsic functions are case-insensitive, and have a long and short form.
+
+### $ASCII|$A
+
+ASCII code corresponding to one character in a string.
+
+#### Format
+
+`$ASCII(_expr_[,_int_])`
+
+#### Returns
+
+The ASCII code of the _int_ character in the string. The default for _int_ is
+`1`, and if the character doesn't exist, it returns `-1`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $ascii("ABC",2) ; -> 66
+```
+
+### $CHAR|$C
+
+Characters corresponding to a list of ASCII codes.
+
+#### Format
+
+`$CHAR(_int1_[,_int2_[,_int3_...]])`
+
+#### Returns
+
+A string made up of characters whose ASCII codes are `_int1_,_int2_,_int3_...`
+If the value of any _int_ is less than `0` or greater than `255` then that _int_
+is represented in the output string by nothing (e.g., `$CHAR(-1,256) -> ""`).
+
+#### Standard
+
+Complies exactly using the ASCII character set.
+
+#### Examples
+
+```m
+write $char(65,66,-1,67) ; -> "ABC"
+```
+
+### $DATA|$D
+
+Number indicating whether a variable is defined or has nodes.
+
+#### Format
+
+`$DATA(_var_)`
+
+#### Returns
+
+[%autowidth]
+.$DATA Returns
+|===
+|Value|Description
+
+|0    |_var_ is undefined
+|1    |_var_ is defined but has no descendants
+|10   |_var_ is undefined but has descendants
+|11   |_var_ is defined and has descendants
+|===
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+set A(1)=42 write $data(A)               ; -> 10
+set A="forty-two",A(1)=42 write $data(A) ; -> 11
+```
+
+### $EXTRACT|$E
+
+Returns one or more characters from a string.
+
+#### Format
+
+`$EXTRACT(_expr_[,_start_[,_stop_]])` +
+Where the default for _start_ is `1` and the default for _stop_ is _start_.
+
+#### Returns
+
+Characters from positions _start_ through _stop_ of expression.
+
+NOTE: May also be used as the destination for the `SET` command.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $extract("ABCD",-1,2) ; -> "AB"
+```
+
+### $FIND|$F
+
+Position of character following left-most occurrence of substring in a string.
+
+#### Format
+
+`$FIND(_expr1_,_expr2_[,_int_])`
+
+#### Returns
+
+Commencing at character position _int_ (default `1`) returns the character
+position immediately to the right of the first occurrence of _expr2_ in _expr1_.
+Specifically, `$FIND("anything","")` returns `1`. If _expr2_ is not found in
+_expr1_, it returns `0`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $find("ABCDEF","CD") ; -> 5
+```
+
+### $FNUMBER|$FN
+
+Number formatted according to codes.
+
+#### Format
+
+`$FNUMBER(_numexp_,_code_[,_int_])` +
+Where code is zero or more of the following:
+
+[%autowidth]
+.$FNUMBER Format
+|===
+|Code       |Description
+
+|`P` or `p` |Surround negative numbers with parentheses, positive with spaces
+|`T` or `t` |Format with trailing sign or, if suppressed, space
+|`,` (comma)|Insert a comma every three significant digits
+|`.` (point)|Insert a point every three significant digits (comma decimal point)
+|`+` (plus) |Force a plus sign on positive values
+|`-` (minus)|Suppress the minus sign on negative values
+|===
+
+NOTE: `P` may not be used with `T`, `+` (plus), or `-` (minus) [`$ECODE="M2"`].
+
+#### Returns
+
+Returns _numexp_ edited as per code rounded to _int_ decimal places if _int_ is
+specified.
+
+#### Standard
+
+Complies exactly, except for inclusion of the non-standard point (`.`) code.
+
+#### Examples
+
+```m
+write $fnumber(1234.567,"T+,",2) ; -> 1,234.57+
+```
+
+### $GET|$G
+
+Returns the value of a variable, or a default value if variable is not defined.
+
+#### Format
+
+`$GET(_var_[,_expr_])`
+
+#### Returns
+
+The value of _var_ if defined, else _expr_ (default null). Note _expr_ (if
+specified) is always evaluated.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $get(^DATABASE(1),"Undefined") ; -> "Undefined" if $data(^DATABASE(1))#2=0
+```
+
+### $INCREMENT|$I
+
+Atomically increments or decrements the value of a variable, by a specified
+number (default 1).
+
+#### Format
+
+`$INCREMENT(_var_[,_numexpr_])`
+
+#### Returns
+
+The value of _var_ after being incremented or decremented.
+
+#### Standard
+
+This is not in the current standard, but is implemented by most other M
+implementations, and will likely be added to the next standard.
+
+#### Examples
+
+```m
+set value=500
+write $increment(value)     ; -> 501
+write value                 ; -> 501
+set value="Not a number"
+write $increment(value,-35) ; -> -35
+write value                 ; -> -35
+```
+
+### $JUSTIFY|$J
+
+Right justify a string in a field of spaces.
+
+#### Format
+
+`$JUSTIFY(_expr_,_int1_[,_int2_])`
+
+#### Returns
+
+The _expr_ space padded on the left to a length of _int1_ characters. If _int2_
+is specified, _expr_ is first rounded to _int2_ decimal places.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $justify("ABC",5)  ; -> "  ABC"
+write $justify(.456,6,2) ; -> "  0.46"
+```
+
+### $LENGTH|$L
+
+Returns the length of a string, measured in characters or pieces.
+
+#### Format
+
+`$LENGTH(_expr1_[,_expr2_])`
+
+#### Returns
+
+If _expr2_ is specified, returns the number plus one of the non-overlapping
+occurrences of _expr2_ in _expr1_ or if _expr2_ is the empty string returns
+zero. If _expr2_ is not specified, returns a count of characters in _expr1_.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $length("ABC")             ; -> 3
+write $length("ABC,DEF,GHI",",") ; -> 3
+```
+
+### $NAME|$NA
+
+Evaluated name of a variable with some, all, or no subscripts; such a string is
+called a name value.
+
+#### Format
+
+`$NAME(_var_[,_int_])`
+
+#### Returns
+
+If _int_ is unspecified or greater than the number of subscripts in _var_,
+return full name of _var_. If _int_ is less than zero, throw error `M39`. If
+_int_ is one return name of unsubscripted _var_; otherwise, return _var_ name
+and _int_ subscripts up to total number.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $name(A(1,2,3),0)                  ; -> "A"
+set %=$data(^A(1,2,3)) write $name(^(6)) ; -> ^A(1,2,6)
+```
+
+### $NEXT|$N
+
+Next subscript in a specified array.
+
+#### Format
+
+`$NEXT(_subscriptedvar_)`
+
+#### Returns
+
+The next element at the specified level. The empty string may be specified as a
+seed. The collating sequence used is the M collating sequence. Unlike `$ORDER`,
+when `$NEXT` has no element to return, it will return a `-1`, which conflicts
+with the actual element of `-1`.
+
+#### Standard
+
+This is not in the current standard, as it was removed from a previous standard.
+However, it is still used in some M code, so it can be enabled and used in RSM.
+This feature may be turned on with `set ^$system("$nextok")=1` as a privileged
+user.
+
+#### Examples
+
+```m
+kill A set A(1,2)="",A(1,4)="" ; Create A array
+write $next(A(1,""))           ; -> 2
+write $next(A(1,2))            ; -> 4
+write $next(A(1,4))            ; -> -1
+```
+
+### $ORDER|$O
+
+Next or previous subscript in a specified array.
+
+#### Format
+
+`$ORDER(_subscriptedvar_[,_int_])` +
+Where _int_ must be `1` or `-1`.
+
+#### Returns
+
+The next (_int_ = `1` or not specified) or previous (_int_ = `-1`) element at
+the specified level. The empty string may be specified as a seed. The collating
+sequence used is the M collating sequence. When `$ORDER` has no element to
+return, it will return the empty string (`""`).
+
+#### Standard
+
+Complies exactly using the M collating sequence.
+
+#### Examples
+
+```m
+kill A set A(1,2)="",A(1,4)="" ; Create A array
+write $order(A(1,""))          ; -> 2
+write $order(A(1,""),1)        ; -> 2
+write $order(A(1,2))           ; -> 4
+write $order(A(1,4),-1)        ; -> 2
+write $order(A(1,4))           ; -> ""
+```
+
+### $PIECE|$P
+
+Partitions a string into pieces based on a delimiter, and returns some of those
+pieces.
+
+#### Format
+
+`$PIECE(_expr1_,_expr2_[,_int1_[,_int2_]])` +
+Where _int1_ defaults to `1` and _int2_ defaults to _int1_.
+
+#### Returns
+
+Returns the substring of _expr1_ bounded by but not including the _int1_ to
+_int2_ occurrence of _expr2_ in _expr1_.
+
+NOTE: May also be used as the destination for the `SET` command.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $piece("ABC,DE,FG,H,I",",",2,4) ; -> "DE,FG,H"
+```
+
+### $QLENGTH|$QL
+
+Number of subscripts in a variable name, passed as a name value.
+
+#### Format
+
+`$QLENGTH(_nameexpr_)` +
+Where _nameexpr_ evaluates to the name of a variable.
+
+#### Returns
+
+Returns the number of subscripts in the name.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $qlength("A(3)")           ; -> 1
+write $qlength($name(^A(1,2,3))) ; -> 3
+```
+
+### $QSUBSCRIPT|$QS
+
+Specified part (name, environment, or a subscript) of a variable name, passed as
+a name value.
+
+#### Format
+
+`$QSUBSCRIPT(_nameexpr_,_int_)` +
+Where _nameexpr_ evaluates to the name of a variable.
+
+#### Returns
+
+If _int_ is equal to `-1`, then it returns the environment if provided. If _int_
+is equal to `0`, then it returns the unsubscripted variable name. Otherwise, it
+returns the _int_ subscript if it exists.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $qsubscript("^ABC(1,6,2)",2) ; -> 6
+```
+
+### $QUERY|$Q
+
+Next subscripted variable name in array, returned as a name value.
+
+#### Format
+
+`$QUERY(_var_[,_int_])` +
+Where _int_ must be `1` or `-1`.
+
+#### Returns
+
+The next (_int_ = `1` or not specified) or previous (_int_ = `-1`) record in the
+database or local variable table. The use of this function causes the naked
+indicator to point at _var_. The returned value will include an environment
+value only if the original specification did. When `$QUERY` has no record to
+return, it will return the empty string (`""`).
+
+#### Standard
+
+Mostly complies with two exceptions. First, the standard does not allow the
+second argument. Second, the standard states, "`The use of this function causes
+the naked indicator and `$REFERENCE` to become empty.`" This has not been done,
+instead, RSM follows the behavior of `$ORDER` on this point.
+
+#### Examples
+
+```m
+kill A set A(4,3)="" ; Create A array
+write $query(A)      ; -> "A(4,3)"
+write $query(A(4,3)) ; -> ""
+```
+
+### $RANDOM|$R
+
+Random integer uniformly distributed over an interval between 0 and
+`_intargument_-1`, inclusive.
+
+#### Format
+
+`$RANDOM(_intargument_)` +
+Where _int_ is not less than one (`$ECODE` = `M3` if _int_ < `1`).
+
+#### Returns
+
+Returns a random number in the range `0` to `_intargument_-1`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $random(1) ; -> 0
+```
+
+### $REVERSE|$RE
+
+Returns the characters of a string in reverse order.
+
+#### Format
+
+`$REVERSE(_expr_)`
+
+#### Returns
+
+The _expr_ in the reverse order.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $reverse("ABC") ; -> "CBA"
+```
+
+### $SELECT|$S
+
+Returns the value corresponding to first true condition of list, evaluated left
+to right.
+
+#### Format
+
+`$SELECT(_tve1_:__expr1__[,_tve2_:__expr2__...])` +
+Where _tve1_ and _tve2_ are truth value expressions.
+
+#### Returns
+
+The _expr_ where _tve_ is the first true _tve_, otherwise error `M4`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+kill A write $select($data(A):1,1:4) ; -> 4
+```
+
+### $STACK|$ST
+
+Information about how a level of the process stack was created, what code is
+executing at that level, and what errors have accumulated there.
+
+#### Format
+
+`$STACK(_int_[,_code_])` +
+Where _int_ is `-1`, `0`, `1` to `$STACK(-1)` and _code_ is `"PLACE"`,
+`"MCODE"`, or `"ECODE"` (case-insensitive).
+
+#### Returns
+
+* `$STACK(-1)` -> Largest `$STACK(_int_)` value which returns a non-empty string
+* `$STACK(0)` -> Implementation specific value indicating how process was
+started (`RUN` or `JOB`)
+
+* `$STACK(_int_)` -> How process stack level was created (`DO`, `XECUTE`, `$$`
+or error code like `,M6,`) +
+Where _int_ is `1` to `$STACK(-1)`
+
+While _int_ is zero or greater, the following codes may be used:
+
+* `"ECODE"` -> List of error codes added at this level, delimited by commas
+* `"MCODE"` -> Source line of code identified by `"PLACE"` below
+* `"PLACE"` -> Location of a command at this stack level as follows:
+
+** If _int_ is not equal to `$STACK` and `$STACK(_int_,"ECODE")` is empty, the
+last command executed
+
+** If _int_ is equal to `$STACK` and `$STACK(_int_,"ECODE")` is empty, the
+currently executing command
+
+** If `$STACK(_int_,"ECODE")` is not empty, the last command to start execution
+while `$STACK(_int_,"ECODE")` was empty
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $stack(1) ; -> "DO"
+```
+
+### $TEXT|$T
+
+Returns a line of code from a routine.
+
+#### Format
+
+`$TEXT(_entryref_)` +
+Where _entryref_ is `_label_[+_offset_][^_routine_]`, `+_linenum_[^_routine_]`,
+or `^_routine_` and `_routine_` defaults to the current routine.
+
+#### Returns
+
+The content of the specified line of the source routine. Specifically
+`$TEXT(+_offset_^_routine_)` is equivalent to `^$ROUTINE(_routine_,_offset_)`.
+The exception to this is `+0` returns the routine name.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $text(+0^ROUTINE) ; -> "ROUTINE"
+write $text(+0)         ; -> Current routine name
+```
+
+### $TRANSLATE|$TR
+
+A translation of a string, in which certain characters are removed or replaced.
+
+#### Format
+
+`$TRANSLATE(_expr1_,_expr2_[,_expr3_])`
+
+#### Returns
+
+A string resulting from _expr1_ with each character contained in _expr2_ removed
+and replaced with the character in the same position in _expr3_ if provided.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $translate("ABCDEF","FED","*$") ; -> "ABC$*"
+```
+
+### $VIEW|$V
+
+Returns, or changes, disk blocks from, or in, the view buffer.
+
+#### Format
+
+`$VIEW(_channel_,_offset_[,_size_[,_data_]])`
+
+#### Returns
+
+Block data for a '`read`' or `""` (null) for a '`write`'. A '`write`' is done
+when _data_ is provided. If size is `1` (default), `2`, or `4` the data is an
+integer, otherwise it's a string.
+
+#### Standard
+
+As the standard is so vague, anything complies exactly.
+
+#### Examples
+
+```m
+write $view(-1,44,2) ; -> Index for first key in block
+```
+
+## Intrinsic Special Variables
+
+NOTE: Intrinsic special variables are case-insensitive, and have a long and
+short form.
+
+### $DEVICE|$D
+
+The status of the current device.
+
+#### Returns
+
+`0,_devicetype_,_deviceinfo_` or `1,_errorcode_,_errortext_`
+
+If piece one is `0`, returns a description of the channel device in piece three
+(i.e., file/device name or IP address and port), and the type in piece two where
+the type number indicates:
+
+1. Disk file
+2. Socket device (TCP or UDP)
+3. Named pipe (FIFO)
+4. Character device (terminal, printer, etc.)
+
+If piece one is `1`, returns an error code in piece two, and a string
+representing the device error in piece three.
+
+#### Standard
+
+Mostly complies, except it may not be `SET`.
+
+#### Examples
+
+```m
+write $device ; -> "0,2,127.0.0.1 80"
+write $device ; -> "0,2,::1 8080"
+```
+
+### $ECODE|$EC
+
+The error status.
+
+#### Returns
+
+Null or all current M errors surrounded (and delimited) with commas.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $ecode ; -> ""
+```
+
+### $ESTACK|$ES
+
+User-controlled stack level indicator.
+
+#### Returns
+
+Additional job stack levels since last `new $estack`. May be ``NEW``ed.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $estack ; -> 0
+```
+
+### $ETRAP|$ET
+
+The error trap.
+
+#### Returns
+
+The M code to execute in the event of an error. It may be ``NEW``ed and `SET`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $etrap ; -> "do ^%error"
+```
+
+### $HOROLOG|$H
+
+The current datetime.
+
+#### Returns
+
+The number of days since 31 Dec 1840, a comma, the number of seconds since
+midnight.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $horolog ; -> "57623,29373" (Wednesday 07 Oct 1998 08:09:33)
+```
+
+### $IO|$I
+
+The current I/O channel.
+
+#### Returns
+
+The current I/O channel number.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $io ; -> 0
+```
+
+### $JOB|$J
+
+The current job number.
+
+#### Returns
+
+Process/Job Identification Number (Note, this is not the OS PID).
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $job ; -> 1
+```
+
+### $KEY|$K
+
+The read terminator sequence.
+
+#### Returns
+
+Control sequence which terminated the last read from the current device. May be
+`SET`. End-of-file (EOF) is indicated by a `$KEY` value of `$CHAR(255)`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $key ; -> $char(27,91,65) (the <up-arrow> key)
+write $key ; -> $char(255) (EOF)
+```
+
+### $PRINCIPAL|$P
+
+The principal device.
+
+#### Returns
+
+The principal I/O device (if any).
+
+#### Standard
+
+Complies exactly (always returns `0`).
+
+#### Examples
+
+```m
+write $principal ; -> 0
+```
+
+### $QUIT|$Q
+
+The type of the last `QUIT`.
+
+#### Returns
+
+Returns `1` if the current level was invoked as an extrinsic function, otherwise
+returns `0`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $quit ; -> 0
+```
+
+### $REFERENCE|$R
+
+The last global reference.
+
+#### Returns
+
+The name of the global variable that defined the current value of the "`naked
+indicator,`" or is empty when the "`naked indicator`" is currently undefined.
+
+#### Standard
+
+This is not defined in the standard, though it is referenced there.
+
+#### Examples
+
+```m
+write $reference ; -> ""
+```
+
+### $STACK|$ST
+
+The current stack level.
+
+#### Returns
+
+Returns the current level of the process stack.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $stack ; -> 0
+```
+
+### $STORAGE|$S
+
+The free space in the symbol table.
+
+#### Returns
+
+Number of free slots left for unique variable names in the symbol table,
+regardless of how many characters each variable uses.
+
+#### Standard
+
+Does not comply exactly, as the standard specifies that it returns the number of
+characters of free space remaining.
+
+#### Examples
+
+```m
+write $storage ; -> 3072
+```
+
+### $SYSTEM|$SY
+
+#### Returns
+
+A string of the form `_v_,_s_` where _v_ is an integer value allocated by the
+MDC to an implementer (RSM is 50) and _s_ is defined by that implementer in such
+a way as to be able to be unique for all the implementer's systems.
+
+#### Standard
+
+Complies exactly, assuming that it really is unique.
+
+#### Examples
+
+```m
+write $system ; -> "50,Reference Standard M V<major>.<minor>.<patch> for ..."
+```
+
+### $TEST|$T
+
+The status of the last conditional or timeout.
+
+#### Returns
+
+Returns `1` if the last `IF`, `OPEN`, `LOCK`, `JOB`, or `READ` with timeout was
+successful, otherwise returns `0`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $test ; -> 0
+```
+
+### $X
+
+The horizontal cursor position.
+
+#### Returns
+
+Approximate horizontal position of the cursor on the current device. It may be
+`SET`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $x ; -> 0
+```
+
+### $Y
+
+The vertical cursor position.
+
+#### Returns
+
+Approximate vertical position of the cursor on the current device. It may be
+`SET`.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write $y ; -> 0
+```
+
+
+## Operators
+
+NOTE: All operations are parsed in a strict left-to-right order; parentheses may
+be used to alter this order.
+
+```m
+write 1+2*3   ; -> 9
+write 1+(2*3) ; -> 7
+```
+
+### `*-*` Underscore
+
+#### Usage
+
+String concatenation.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write "A"_"B" ; -> "AB"
+```
+
+### `*+*` Plus
+
+#### Usage
+
+Addition.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 1+1 ; -> 2
+```
+
+### `*-*` Minus
+
+#### Usage
+
+Subtraction.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 4-3 ; -> 1
+```
+
+### `***` Asterisk
+
+#### Usage
+
+Multiplication.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 2*2 ; -> 4
+```
+
+### `*/*` Slash
+
+#### Usage
+
+Division.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 8/2 ; -> 4
+```
+
+### `*\*` Backslash
+
+#### Usage
+
+Integer division.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 5\2 ; -> 2
+```
+
+### `*#*` Hash
+
+#### Usage
+
+Modulo.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 5#2 ; -> 1
+```
+
+### `****` Asterisk (2)
+
+#### Usage
+
+Exponentiation.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 3**2 ; -> 9
+```
+
+### `*=*` Equals
+
+#### Usage
+
+Equality test.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 2=2 ; -> 1
+```
+
+### `*<*` Less Than
+
+#### Usage
+
+Compare for less than.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 1<2 ; -> 1
+```
+
+### `*>*` Greater Than
+
+#### Usage
+
+Compare for greater than.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 1>2 ; -> 0
+```
+
+### `*]*` Right Square Bracket
+
+#### Usage
+
+Compare for follows.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write "B"]"A" ; -> 1
+```
+
+### `*[*` Left Square Bracket
+
+#### Usage
+
+Contains.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write "ABC"["A" ; -> 1
+```
+
+### `*]]*` Right Square Bracket (2)
+
+#### Usage
+
+Sorts after.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write " "]]2 ; -> 1
+```
+
+### `*'*` Single Quote
+
+#### Usage
+
+Logical not -- may be used with any relational operator.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write '4 ; -> 0
+```
+
+### `*&*` Ampersand
+
+#### Usage
+
+Logical and.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 4&0 ; -> 0
+```
+
+### `*!*` Exclamation Mark
+
+#### Usage
+
+Logical or.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write 4!0 ; -> 1
+```
+
+### `*?*` Question Mark
+
+#### Usage
+
+Pattern match -- see the <<_pattern_match>> section for more details.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+write "ABC"?1.UNP ; -> 1
+```
+
+### `*@*` Commercial At
+
+#### Usage
+
+Indirection -- see the <<_indirection>> section for more details.
+
+#### Standard
+
+Complies exactly.
+
+#### Examples
+
+```m
+set A="B",@A=1 ; sets B to 1
+```
+
+## Pattern Match
+
+[%autowidth]
+.Pattern Match
+|===
+|Code|Class      |Valid Characters
+
+|`E` |Everything |ASCII codes 0-255
+|`A` |Alphabetic |A-Z, a-z
+|`U` |Uppercase  |A-Z
+|`L` |Lowercase  |a-z
+|`N` |Numeric    |0-9
+|`P` |Punctuation|ASCII codes 32-47, 58-64, 91-96, 123-126
+|`C` |Control    |ASCII codes 0-31, 127-255
+|    |Literal    |As specified
+|===
+
+A pattern is specified as a list of one or more _patternatoms_. A _patternatom_
+consists of a minimum, dot, maximum (e.g., 1.3) and one or more codes, where at
+least one of minimum, dot, maximum must be specified, and the default minimum is
+zero and the default maximum is infinite. If the dot is not used then an exact
+number of that _patternatom_ is required.
+
+Alternation where a number of _patternatoms_ may be enclosed in parathenses
+separated by commas indicates logical or of each specified _patternatom_ (e.g.,
+2(1U,1N,1P) -> 2UNP).
+
+## Indirection
+
+There are two forms of indirection, name indirection and argument indirection.
+
+Name indirection is where the name of a variable (or part of the name of a
+variable) is replaced by _@indirect_ (or _@indirect@_).
+
+```m
+set A="ABC" write @A        ; Will write the contents of ABC
+write @A@(1)                ; Will write the contents of ABC(1)
+set A="ABC(2)" write @A@(1) ; Will write the contents of ABC(2,1)
+```
+
+Argument indirection is where one or more arguments are replaced by _@indirect_.
+
+```m
+set A="B=1,C=2" set @A ; Will assign 1 to B and 2 to C
+```
+
+NOTE: Argument indirection may not be used with the `BREAK`, `FOR`, and `VIEW`
+commands.
+

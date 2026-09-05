@@ -1,0 +1,2 @@
+Write a program that stores the string "apple,banana,cherry" and prints
+only the second item.

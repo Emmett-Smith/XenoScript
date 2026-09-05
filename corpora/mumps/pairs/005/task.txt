@@ -1,0 +1,1 @@
+Write a program that computes 6 times 7 and prints just the result.

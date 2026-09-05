@@ -1,0 +1,2 @@
+Write a program that sets TEMP to 95, then prints "HOT" if TEMP is
+greater than or equal to 90, and otherwise prints "MILD".
