@@ -389,3 +389,89 @@ commits (flagged by the agent itself). Not going to unpick that
 retroactively — the code is what matters and it's real, tested work.
 
 ---
+
+### Phase 5 — the critical correction: arm C had a retrieval-drift bug
+
+After fixing 3 real retrieval bugs found via live-model diagnosis
+(contraction-quote parsing, docs-before-examples ordering, one shared
+grep limit letting a generic keyword crowd out a specific one — see the
+`Phase 5 Pass B` commits), a before/after eval comparison showed a
+striking **30-point D-minus-C gap** (D=35%, C=5%) — exactly the headline
+number `05_EVAL.md` #1 wants ("D minus C is the verifier's
+contribution... your headline claim"). **It was wrong.** `eval/runner.py`
+'s arm C had its own separate copy of the deterministic pre-fetch logic.
+When the retrieval fixes landed in `ashlar/harness/loop.py` (used by
+`run_task`, i.e. arm D), arm C's copy silently did not get them — the two
+arms were no longer measuring the same retrieval quality, so part of
+that "gap" was a code-drift bug, not the verifier loop's effect.
+
+Caught by noticing arm C's number hadn't moved in a before/after
+comparison when arm D's had. Fixed by extracting one shared
+`deterministic_prefetch()` (+ `PrefetchResult`, `_NullEmitter`) in
+`ashlar/harness/loop.py`; both `run_task` and eval's arm C now call it.
+
+**Corrected, apples-to-apples numbers** (same commit `c4dbb6c`, same
+corpus, `--repeat 1`, run within about an hour of each other):
+
+| Arm | Verified-correct |
+|---|---|
+| A (cold) | 0% (0/20) |
+| B (docs pasted) | 0% (0/20) — an *earlier* run of the same, unchanged B logic scored 5% (1/20); pure run-to-run model variance |
+| C (tools, no loop) | 20% (4/20) |
+| D (full system) | 25% (5/20) |
+
+**D minus C = 5 percentage points**, not 30. That's the honest number.
+Given B's 5%→0% swing on literally unchanged logic, n=20/repeat=1 is not
+solid ground for a pitch claim either way — `--repeat 3` is genuinely
+needed before quoting this publicly, not just a spec formality. Full
+writeup, including the corrected top-of-document framing, in
+`eval/FAILURE_ANALYSIS.md`.
+
+**This is the single most important process lesson from tonight's
+build:** the impressive number was wrong, and catching that before it
+reaches a pitch deck is exactly the point of Phase 5's "verify, then
+improve" ordering — a suspiciously good number is itself a signal to
+check the methodology, not a result to report.
+
+Also fixed while producing these numbers: the eval runner now writes its
+report incrementally after each arm. A `--all-arms --repeat 3` run got
+killed mid-flight this session and lost everything — including 3
+already-completed arms' results — because the report previously only
+wrote once at the very end.
+
+Ranked improvement list, actually executed this session (Phase 5 Pass B,
+ranked by demo impact per hour, per `ORCHESTRATOR.md` §3's bias list):
+
+1. **Error message quality (ORCHESTRATOR's #1 priority)** — already
+   strong from the language agent's work (E022/E043 name the fix
+   verbatim); confirmed via the failure analysis that repair converges
+   reliably exactly when the message names a fix, and stalls when it
+   can't (an invented keyword like `copy`/`as` has no fix to name). No
+   further change needed here; the finding validates the existing design.
+2. **`extract_keywords` accuracy (#2 priority)** — fixed for real: the
+   contraction-quote bug affects any prompt phrased with contractions,
+   which is realistic natural-language phrasing, not an edge case.
+3. **Markdown-fence stripping** — not on the original ranked list, but
+   found live and fixed first because it was completely blocking every
+   single live-model task before the fix (0% pass rate on trivial tasks).
+   Judgment call: a demo-blocking bug outranks the pre-written list.
+4. **Repair-turn context assembly (#3 priority)** — partially addressed:
+   the fair-share grep fix and non-block-kind `get_examples` anchor both
+   improve what context repair turns see. The E020/E052 "fixes one thing,
+   doesn't check for another" pattern (§3 of the failure analysis) is a
+   further, un-implemented version of this — flagged as recommended next
+   step #3, not done tonight (time).
+5. **BM25 underscore tokenization (#4 priority)** — backend already
+   tested and confirmed this in Phase 1 (`\w+` naturally keeps
+   `noise_floor` as one token); nothing to fix.
+6. **Verdict block and attempt ledger fidelity (#5 priority)** — the
+   frontend agent's own browser-verified testing (Phase 3) already
+   confirms this against real fixtures; two real rendering bugs found and
+   fixed there (text overflow, ledger column width).
+
+Not done, time-boxed, honest: TASKS.md's remaining P1 items (COBOL
+corpus, warm-vs-cold cache comparison, model bake-off, corpus-switcher
+UI polish beyond what's built). Exact next commands for all of this are
+in the morning handoff below.
+
+---

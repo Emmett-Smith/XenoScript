@@ -84,12 +84,18 @@ eval arm A (2h, either) ──► arms B-E
       generated for real in Phase 2 by running solutions through the real
       interpreter — no more TODOs)
 - [x] Runner with `--arm` (`--all-arms`, `--repeat`, provenance stamping)
-- [x] **Arm A recorded** — 0% (0/20), live `qwen2.5-coder:3b` — the number
-      the whole pitch rests on, and it's real
-- [x] Arm B recorded (long-context competitor) — 5% (1/20), slow (p50 32.5s)
-- [~] Arms C, D, E with `--repeat 3` — C recorded at `--repeat 1` (5%,
-      1/20); D running; E needs cloud credentials this machine doesn't
-      have. `--repeat 3` not yet done for any arm (time cost — see LOG.md).
+- [x] **Arm A recorded** — 0% (0/20), live `qwen2.5-coder:3b`, consistent
+      across two separate runs — the number the whole pitch rests on
+- [x] Arm B recorded (long-context competitor) — 0-5% (varied run to run
+      on unchanged code — see LOG.md), consistently slow (p50 30s+)
+- [~] Arms C, D, E with `--repeat 3` — C=20% (4/20), D=25% (5/20), both
+      `--repeat 1` on the SAME commit (apples-to-apples, after fixing a
+      real bug where C's retrieval had silently drifted from D's — see
+      LOG.md "the critical correction"). E needs cloud credentials this
+      machine doesn't have. **`--repeat 3` not done for any arm** —
+      observed run-to-run variance (B swung 5%→0% with zero code change)
+      means this is a real gap, not a formality; exact command in the
+      morning handoff.
 
 ### Demo
 - [ ] Demo script written — **hour 1, before building**
@@ -109,7 +115,7 @@ eval arm A (2h, either) ──► arms B-E
 - [ ] Baseline chart in UI, reading from `/eval/latest`
 - [ ] Corpus switcher, live, no restart
 - [ ] Model bake-off: 2–3 current open-weight coding models, winner recorded below
-- [ ] Written failure analysis per `05_EVAL.md` §7
+- [x] Written failure analysis per `05_EVAL.md` §7 — `eval/FAILURE_ANALYSIS.md`
 
 ---
 
