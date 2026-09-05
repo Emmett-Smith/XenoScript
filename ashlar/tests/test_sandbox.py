@@ -11,13 +11,24 @@ from ashlar.config import (
 from ashlar.mcp.sandbox import run_verifier
 
 
-def _fake_meta(tmp_path, parse_cmd, timeout_s=10, mode="subprocess", extension=".stub"):
+def _fake_meta(
+    tmp_path,
+    parse_cmd,
+    timeout_s=10,
+    mode="subprocess",
+    extension=".stub",
+    output_format="json",
+    error_regex=None,
+):
     return CorpusMeta(
         language="fixture",
         display_name="Fixture",
         extension=extension,
         comment_prefix="#",
-        verifier=VerifierCommands(parse=parse_cmd, run=parse_cmd, symbols=None),
+        verifier=VerifierCommands(
+            parse=parse_cmd, run=parse_cmd, symbols=None,
+            output_format=output_format, error_regex=error_regex,
+        ),
         sandbox=CorpusSandbox(image=None, timeout_s=timeout_s, memory_mb=512, mode=mode),
         retrieval=RetrievalConfig(),
         root=tmp_path,
@@ -115,3 +126,79 @@ def test_run_verifier_command_substitution_uses_file_placeholder(tmp_path):
     meta = _fake_meta(tmp_path, parse_cmd=["python3", str(marker_script), "{file}"])
     result = run_verifier("this has MARKER in it\n", "parse", meta=meta, cfg=cfg)
     assert result["ok"] is True
+
+
+TEXT_TOOLCHAIN_ERROR_REGEX = r"^(?P<file>[^:]+):(?P<line>\d+):\s*(?P<severity>\w+):\s*(?P<message>.*)$"
+
+
+def _fake_text_toolchain(tmp_path):
+    """Mimics a linter that -- unlike PLINTH's CLI -- has no --json mode and
+    prints plain `file:line: severity: message` to stderr, matching
+    02_BACKEND.md #4's stated GnuCOBOL adapter case. Deliberately a
+    synthetic fixture, not literally cobol, so this proves the mechanism is
+    corpus-agnostic rather than testing one corpus's specific output."""
+    script = tmp_path / "textlint.py"
+    script.write_text(
+        "import sys\n"
+        "text = open(sys.argv[1]).read()\n"
+        "if 'BAD' in text:\n"
+        "    sys.stderr.write('candidate.fixture:3: error: bad thing found\\n')\n"
+        "    sys.stderr.write('candidate.fixture:5: warning: minor issue\\n')\n"
+        "    sys.exit(1)\n"
+        "sys.exit(0)\n"
+    )
+    return ["python3", str(script), "{file}"]
+
+
+def test_run_verifier_text_mode_parses_plain_text_errors(tmp_path):
+    cfg = load_config()
+    meta = _fake_meta(
+        tmp_path,
+        parse_cmd=_fake_text_toolchain(tmp_path),
+        output_format="text",
+        error_regex=TEXT_TOOLCHAIN_ERROR_REGEX,
+    )
+    result = run_verifier("this is BAD input\n", "parse", meta=meta, cfg=cfg)
+    assert result["ok"] is False
+    assert result["exit_code"] == 1
+    assert result["errors"] == [
+        {"file": "candidate.fixture", "line": 3, "col": None, "code": None,
+         "message": "bad thing found", "severity": "error"}
+    ]
+    assert result["warnings"] == [
+        {"file": "candidate.fixture", "line": 5, "col": None, "code": None,
+         "message": "minor issue", "severity": "warning"}
+    ]
+
+
+def test_run_verifier_text_mode_ok_on_clean_input(tmp_path):
+    cfg = load_config()
+    meta = _fake_meta(
+        tmp_path,
+        parse_cmd=_fake_text_toolchain(tmp_path),
+        output_format="text",
+        error_regex=TEXT_TOOLCHAIN_ERROR_REGEX,
+    )
+    result = run_verifier("this is clean input\n", "parse", meta=meta, cfg=cfg)
+    assert result["ok"] is True
+    assert result["errors"] == []
+    assert result["exit_code"] == 0
+
+
+def test_run_verifier_text_mode_without_error_regex_is_harness_error(tmp_path):
+    cfg = load_config()
+    meta = _fake_meta(tmp_path, parse_cmd=_fake_text_toolchain(tmp_path), output_format="text")
+    result = run_verifier("BAD\n", "parse", meta=meta, cfg=cfg)
+    assert result["ok"] is False
+    assert result["errors"][0]["code"] == "EHARNESS"
+
+
+def test_run_verifier_text_mode_invalid_regex_is_harness_error(tmp_path):
+    cfg = load_config()
+    meta = _fake_meta(
+        tmp_path, parse_cmd=_fake_text_toolchain(tmp_path),
+        output_format="text", error_regex="(unclosed[",
+    )
+    result = run_verifier("BAD\n", "parse", meta=meta, cfg=cfg)
+    assert result["ok"] is False
+    assert result["errors"][0]["code"] == "EHARNESS"

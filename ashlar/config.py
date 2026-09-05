@@ -71,6 +71,14 @@ class VerifierCommands:
     parse: list[str]
     run: list[str]
     symbols: list[str] | None = None
+    # "json" (default): the toolchain prints one JSON document matching
+    # 00_ARCHITECTURE.md #5 directly, like PLINTH's CLI does. "text": the
+    # toolchain prints human-readable errors (like GnuCOBOL's
+    # `file:line: error: message`) and `error_regex` (below) is how the
+    # sandbox extracts the #5 shape from that -- corpus-agnostic because
+    # the pattern lives in this corpus's meta.yaml, not in ashlar/ code.
+    output_format: str = "json"
+    error_regex: str | None = None  # required named groups: line, message. optional: file, col, severity
 
 
 @dataclasses.dataclass
@@ -115,7 +123,13 @@ def load_corpus_meta(name: str, repo_root: Path = REPO_ROOT) -> CorpusMeta:
         display_name=data["display_name"],
         extension=data["extension"],
         comment_prefix=data.get("comment_prefix", "#"),
-        verifier=VerifierCommands(parse=v["parse"], run=v["run"], symbols=v.get("symbols")),
+        verifier=VerifierCommands(
+            parse=v["parse"],
+            run=v["run"],
+            symbols=v.get("symbols"),
+            output_format=v.get("output_format", "json"),
+            error_regex=v.get("error_regex"),
+        ),
         sandbox=CorpusSandbox(
             image=s.get("image"),
             timeout_s=s.get("timeout_s", 10),
