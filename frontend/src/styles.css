@@ -67,6 +67,91 @@
   }
 }
 
+/* ---------- Embedded in VS Code -----------------------------------------
+   Set by vscodeBridge.ts once the extension host confirms itself by
+   relaying VS Code's own live `--vscode-*` theme variables (see that
+   file, and vscode-extension/src/extension.ts which reads them from the
+   real editor and posts them in). A tool living inside an editor should
+   look like it belongs there, not like an imported webpage -- so this
+   remaps the same six tokens above onto the user's actual active theme
+   (light, dark, whatever) instead of asserting an independent palette,
+   and flattens the boxed-card chrome below into the flatter, quieter
+   shape VS Code's own built-in panels use. The standalone browser demo
+   (specs/04_FRONTEND.md's palette) never sets data-embed and is
+   completely unaffected. ------------------------------------------------ */
+
+:root[data-embed="vscode"] {
+  --paper: var(--vscode-editor-background, #1e1e1e);
+  --ink: var(--vscode-foreground, #cccccc);
+  --dim: var(--vscode-descriptionForeground, #9d9d9d);
+  --rule: var(--vscode-panel-border, var(--vscode-widget-border, #454545));
+  --pending: var(--vscode-charts-yellow, #cca700);
+  --verified: var(--vscode-charts-green, #4caf50);
+  --fault: var(--vscode-errorForeground, var(--vscode-charts-red, #f14c4c));
+  --sans: var(--vscode-font-family, -apple-system, sans-serif);
+  --mono: var(--vscode-editor-font-family, "Menlo", "Consolas", monospace);
+}
+
+:root[data-embed="vscode"] .header,
+:root[data-embed="vscode"] .prompt-bar,
+:root[data-embed="vscode"] .modal-panel {
+  background: var(--paper);
+}
+
+:root[data-embed="vscode"] .column h2 {
+  font-size: var(--size-1);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+}
+
+/* VS Code panels signal state with color and weight, not bordered
+   cards -- drop the box around the verdict word entirely here. */
+:root[data-embed="vscode"] .verdict-block {
+  border: none;
+  border-left: 2px solid var(--rule);
+  padding: 4px 0 4px 12px;
+  transition: border-color var(--motion-verdict) ease;
+}
+:root[data-embed="vscode"] .verdict-block .word {
+  font-size: var(--size-4);
+}
+:root[data-embed="vscode"] .verdict-block.state-generating,
+:root[data-embed="vscode"] .verdict-block.state-unverified,
+:root[data-embed="vscode"] .verdict-block.state-repairing {
+  border-left-color: var(--pending);
+}
+:root[data-embed="vscode"] .verdict-block.state-verified {
+  border-left-color: var(--verified);
+}
+:root[data-embed="vscode"] .verdict-block.state-failed {
+  border-left-color: var(--fault);
+}
+
+:root[data-embed="vscode"] .header select,
+:root[data-embed="vscode"] .insert-code-button {
+  background: var(--vscode-input-background, var(--paper));
+  border-color: var(--vscode-input-border, var(--rule));
+  color: var(--vscode-input-foreground, var(--ink));
+  border-radius: 2px;
+}
+
+:root[data-embed="vscode"] .prompt-bar button {
+  background: var(--vscode-button-background, var(--ink));
+  color: var(--vscode-button-foreground, var(--paper));
+  border: none;
+  border-radius: 2px;
+}
+:root[data-embed="vscode"] .prompt-bar button:hover:not(:disabled) {
+  background: var(--vscode-button-hoverBackground, var(--ink));
+}
+:root[data-embed="vscode"] .prompt-bar button:disabled {
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid var(--rule);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -213,11 +298,29 @@ hr, .rule {
   }
 }
 
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .column h2 {
   font-size: var(--size-3);
   font-weight: 600;
-  margin: 0 0 12px;
+  margin: 0;
   color: var(--ink);
+}
+
+.insert-code-button {
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  border-radius: 2px;
+  padding: 3px 10px;
+  font-size: var(--size-1);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 /* ---------- Corpus panel ---------- */

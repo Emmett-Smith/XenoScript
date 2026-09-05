@@ -99,6 +99,7 @@ def _manifest_for(name: str, meta: CorpusMeta) -> dict[str, Any]:
     return {
         "name": name,
         "display_name": meta.display_name,
+        "extension": meta.extension,
         "symbols": symbols,
         "examples": examples,
         "pairs": pairs,

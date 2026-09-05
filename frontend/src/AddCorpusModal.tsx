@@ -13,6 +13,7 @@ import { API_BASE } from "./useTaskStream";
 interface CorpusManifest {
   name: string;
   display_name: string;
+  extension: string;
   symbols: number;
   examples: number;
   pairs: number;

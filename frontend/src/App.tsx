@@ -13,6 +13,7 @@ import { AddCorpusModal } from "./AddCorpusModal";
 interface CorpusManifest {
   name: string;
   display_name: string;
+  extension: string;
   symbols: number;
   examples: number;
   pairs: number;
@@ -151,7 +152,12 @@ export default function App() {
 
       <div className="columns">
         <CorpusPanel toolCalls={state.toolCalls} cacheHits={state.cacheHits} />
-        <CodePanel code={state.code} errors={state.errors} verdict={state.verdict} />
+        <CodePanel
+          code={state.code}
+          errors={state.errors}
+          verdict={state.verdict}
+          corpusExtension={active?.extension}
+        />
         <VerifierPanel
           verdict={state.verdict}
           iteration={state.iteration}

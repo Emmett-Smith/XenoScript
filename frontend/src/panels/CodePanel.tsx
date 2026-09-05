@@ -5,17 +5,22 @@
 
 import { useEffect, useRef } from "react";
 import type { VerdictState, VerifyError } from "../useTaskStream";
+import { insertCodeIntoEditor, useVsCodeEmbed } from "../vscodeBridge";
 
 export function CodePanel({
   code,
   errors,
   verdict,
+  corpusExtension,
 }: {
   code: string;
   errors: VerifyError[];
   verdict: VerdictState;
+  corpusExtension?: string;
 }) {
   const errorLineRef = useRef<HTMLDivElement | null>(null);
+  const embeddedInVsCode = useVsCodeEmbed();
+  const canInsert = embeddedInVsCode && verdict === "verified" && code.length > 0;
 
   const errorsByLine = new Map<number, VerifyError>();
   for (const e of errors) {
@@ -32,7 +37,18 @@ export function CodePanel({
 
   return (
     <div className="column code-column">
-      <h2>Generation</h2>
+      <div className="column-header">
+        <h2>Generation</h2>
+        {canInsert && (
+          <button
+            type="button"
+            className="insert-code-button"
+            onClick={() => insertCodeIntoEditor(code, corpusExtension)}
+          >
+            Insert into editor
+          </button>
+        )}
+      </div>
       <div className="code-panel">
         {lines.length === 0 && verdict === "idle" && (
           <div className="code-empty">no candidate yet</div>
