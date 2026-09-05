@@ -204,6 +204,107 @@ def strip_markdown_fences(source: str) -> str:
     return m.group(1) if m else source
 
 
+class _NullEmitter:
+    """No-op stand-in for EventEmitter, for callers (the eval runner's
+    single-shot arm C) that want the pre-fetch's retrieval behavior but
+    have no event stream to write to."""
+
+    def tool_call(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def tool_result(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
+
+@dataclass
+class PrefetchResult:
+    keywords: list[str]
+    hits: list[dict[str, Any]] = field(default_factory=list)
+    symbols: list[dict[str, Any]] = field(default_factory=list)
+    examples: list[dict[str, Any]] = field(default_factory=list)
+    example_symbol: str | None = None
+
+
+def deterministic_prefetch(
+    prompt: str,
+    symbol_names: list[str],
+    tool_client: ToolClient,
+    emitter: Any = None,
+) -> PrefetchResult:
+    """Steps 1-2 of 00_ARCHITECTURE.md #9's loop: harness-driven, not
+    model-chosen. Shared by `run_task` (arm D/E) and the eval runner's
+    arm C (`eval/runner.py`) so that comparison is a true isolation of
+    the verifier loop's contribution -- both need identical retrieval
+    quality, or "D minus C" measures retrieval drift too, not just the
+    loop's effect (05_EVAL.md #1's whole point for that arm).
+
+    `emitter` may be any object with `.tool_call(name, args)` and
+    `.tool_result(name, count, preview)` methods (typically an
+    `EventEmitter`); pass `None` when there's no event stream to write to.
+    """
+    if emitter is None:
+        emitter = _NullEmitter()
+
+    keywords = extract_keywords(prompt, symbol_names)
+
+    # One grep_corpus call per keyword, each capped to a fair share of the
+    # total budget, rather than one combined alternation with one shared
+    # limit. Phase 2 live-model diagnosis: extract_keywords legitimately
+    # ranks symbol-table matches first (03_HARNESS.md #1's own algorithm),
+    # but structural keywords ("define", "platform") are symbols too and
+    # appear in nearly every file -- a combined pattern let them exhaust
+    # the limit on the very first file(s) touched, before a rarer,
+    # genuinely diagnostic keyword (a specific identifier name) ever got a
+    # single hit. This does not change what grep_corpus does (still a dumb
+    # regex primitive, 00_ARCHITECTURE.md #7) -- it changes how the
+    # harness *calls* it, which is exactly the kind of tuning §1 assigns
+    # to this file, not to the MCP server.
+    hits: list[dict[str, Any]] = []
+    if keywords:
+        per_kw_limit = max(1, PREFETCH_GREP_LIMIT // len(keywords))
+        seen_hit_keys: set[tuple[Any, Any]] = set()
+        for kw in keywords:
+            if len(hits) >= PREFETCH_GREP_LIMIT:
+                break
+            emitter.tool_call("grep_corpus", {"pattern": kw, "limit": per_kw_limit})
+            kw_hits = tool_client.grep_corpus(re.escape(kw), limit=per_kw_limit)
+            clean = [h for h in kw_hits if "error" not in h]
+            emitter.tool_result("grep_corpus", len(clean), clean[:5])
+            for h in clean:
+                key = (h.get("file"), h.get("line"))
+                if key not in seen_hit_keys:
+                    seen_hit_keys.add(key)
+                    hits.append(h)
+
+    symbols: list[dict[str, Any]] = []
+    for k in keywords[:PREFETCH_SYMBOL_LIMIT]:
+        emitter.tool_call("lookup_symbol", {"name": k})
+        res = tool_client.lookup_symbol(k)
+        emitter.tool_result("lookup_symbol", 1 if res.get("found") else 0, [res])
+        symbols.append(res)
+
+    # Prefer a non-structural keyword (attribute/statement, not a bare
+    # block opener like "define"/"platform") as the anchor for
+    # get_examples -- a block keyword appears in every example file
+    # equally, so it carries no discriminative signal about *which*
+    # example is relevant to this specific prompt.
+    example_symbol = keywords[0] if keywords else None
+    for k, res in zip(keywords[:PREFETCH_SYMBOL_LIMIT], symbols):
+        if res.get("found") and res.get("kind") not in ("block", None):
+            example_symbol = k
+            break
+
+    examples: list[dict[str, Any]] = []
+    if example_symbol:
+        emitter.tool_call("get_examples", {"symbol": example_symbol, "n": PREFETCH_EXAMPLE_N})
+        examples = tool_client.get_examples(example_symbol, n=PREFETCH_EXAMPLE_N)
+        emitter.tool_result("get_examples", len(examples), examples[:PREFETCH_EXAMPLE_N])
+
+    return PrefetchResult(
+        keywords=keywords, hits=hits, symbols=symbols, examples=examples, example_symbol=example_symbol
+    )
+
+
 def run_task(
     prompt: str,
     corpus: Corpus,
@@ -240,61 +341,13 @@ def run_task(
     if budget_exceeded():
         return bail([])
 
-    # 1-2. DETERMINISTIC pre-fetch -- not model-chosen.
-    keywords = extract_keywords(prompt, corpus.symbol_names)
-
-    # One grep_corpus call per keyword, each capped to a fair share of the
-    # total budget, rather than one combined alternation with one shared
-    # limit. Phase 2 live-model diagnosis: extract_keywords legitimately
-    # ranks symbol-table matches first (03_HARNESS.md #1's own algorithm),
-    # but structural keywords ("define", "platform") are symbols too and
-    # appear in nearly every file -- a combined pattern let them exhaust
-    # the limit on the very first file(s) touched, before a rarer,
-    # genuinely diagnostic keyword (a specific identifier name) ever got a
-    # single hit. This does not change what grep_corpus does (still a dumb
-    # regex primitive, 00_ARCHITECTURE.md #7) -- it changes how the
-    # harness *calls* it, which is exactly the kind of tuning §1 assigns
-    # to this file, not to the MCP server.
-    hits: list[dict[str, Any]] = []
-    if keywords:
-        per_kw_limit = max(1, PREFETCH_GREP_LIMIT // len(keywords))
-        seen_hit_keys: set[tuple[Any, Any]] = set()
-        for kw in keywords:
-            if len(hits) >= PREFETCH_GREP_LIMIT:
-                break
-            emitter.tool_call("grep_corpus", {"pattern": kw, "limit": per_kw_limit})
-            kw_hits = deps.tool_client.grep_corpus(re.escape(kw), limit=per_kw_limit)
-            clean = [h for h in kw_hits if "error" not in h]
-            emitter.tool_result("grep_corpus", len(clean), clean[:5])
-            for h in clean:
-                key = (h.get("file"), h.get("line"))
-                if key not in seen_hit_keys:
-                    seen_hit_keys.add(key)
-                    hits.append(h)
-
-    symbols: list[dict[str, Any]] = []
-    for k in keywords[:PREFETCH_SYMBOL_LIMIT]:
-        emitter.tool_call("lookup_symbol", {"name": k})
-        res = deps.tool_client.lookup_symbol(k)
-        emitter.tool_result("lookup_symbol", 1 if res.get("found") else 0, [res])
-        symbols.append(res)
-
-    # Prefer a non-structural keyword (attribute/statement, not a bare
-    # block opener like "define"/"platform") as the anchor for
-    # get_examples -- a block keyword appears in every example file
-    # equally, so it carries no discriminative signal about *which*
-    # example is relevant to this specific prompt.
-    example_symbol = keywords[0] if keywords else None
-    for k, res in zip(keywords[:PREFETCH_SYMBOL_LIMIT], symbols):
-        if res.get("found") and res.get("kind") not in ("block", None):
-            example_symbol = k
-            break
-
-    examples: list[dict[str, Any]] = []
-    if example_symbol:
-        emitter.tool_call("get_examples", {"symbol": example_symbol, "n": PREFETCH_EXAMPLE_N})
-        examples = deps.tool_client.get_examples(example_symbol, n=PREFETCH_EXAMPLE_N)
-        emitter.tool_result("get_examples", len(examples), examples[:PREFETCH_EXAMPLE_N])
+    # 1-2. DETERMINISTIC pre-fetch -- not model-chosen. Shared with arm C
+    # of the eval runner (eval/runner.py) so "D minus C isolates the
+    # verifier loop's contribution" (05_EVAL.md #1) is actually true --
+    # both must see identically-good retrieval, or the gap between them
+    # measures retrieval-quality drift as well as the loop's effect.
+    pf = deterministic_prefetch(prompt, corpus.symbol_names, deps.tool_client, emitter)
+    hits, symbols, examples = pf.hits, pf.symbols, pf.examples
 
     top_failures = deps.memory.top_failures(deps.top_failures_n)
     context = assemble(hits, symbols, examples, top_failures)

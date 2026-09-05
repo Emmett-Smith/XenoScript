@@ -36,8 +36,14 @@ from typing import Any
 import yaml
 
 from ashlar.config import REPO_ROOT, Config, load_config, load_corpus_meta
-from ashlar.harness.keywords import build_pattern, extract_keywords
-from ashlar.harness.loop import Corpus, HarnessDeps, assemble, run_task, strip_markdown_fences
+from ashlar.harness.loop import (
+    Corpus,
+    HarnessDeps,
+    assemble,
+    deterministic_prefetch,
+    run_task,
+    strip_markdown_fences,
+)
 from ashlar.harness.memory import Memory
 from ashlar.harness.model import FakeModel, Model, ModelClient
 from ashlar.harness.prompts import system_prompt
@@ -138,13 +144,17 @@ def _build_single_shot_context(arm: str, prompt: str, corpus: Corpus, tool_clien
         return "\n\n".join(parts), 0
 
     if arm == "C":
-        keywords = extract_keywords(prompt, corpus.symbol_names)
-        pattern = build_pattern(keywords)
-        hits = tool_client.grep_corpus(pattern, limit=12) if pattern else []
-        symbols = [tool_client.lookup_symbol(k) for k in keywords[:6]]
-        examples = tool_client.get_examples(keywords[0], n=3) if keywords else []
-        tool_calls = 1 + len(symbols) + (1 if keywords else 0)
-        return assemble(hits, symbols, examples, []), tool_calls
+        # Shares ashlar.harness.loop's deterministic_prefetch with arm D's
+        # run_task -- not a reimplementation -- so "D minus C" (05_EVAL.md
+        # #1) measures only the verifier loop's contribution, not a
+        # difference in retrieval quality between two divergent copies of
+        # the same logic. (An earlier version of this function kept its
+        # own copy, which silently drifted out of sync with a Phase 5 fix
+        # to run_task's pre-fetch -- found via a same-day before/after
+        # eval comparison showing arm C hadn't moved when arm D had.)
+        pf = deterministic_prefetch(prompt, corpus.symbol_names, tool_client)
+        tool_calls = len(pf.symbols) + (1 if pf.hits or pf.keywords else 0) + (1 if pf.example_symbol else 0)
+        return assemble(pf.hits, pf.symbols, pf.examples, []), tool_calls
 
     raise ValueError(f"_build_single_shot_context is only for arms A/B/C, got {arm!r}")
 
