@@ -1,0 +1,5 @@
+# E043: space between number and unit -- must be glued, e.g. '1500m'.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+  set altitude = 1500 m
+end_platform

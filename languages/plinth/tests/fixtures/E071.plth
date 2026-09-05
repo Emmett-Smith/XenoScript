@@ -1,0 +1,19 @@
+# E071 (runtime): 'report' on a sensor that was never activated.
+define scenario s1
+  set duration = 10s
+  set step = 1s
+end_scenario
+
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+end_platform
+
+define sensor radar_a type radar
+  bind mount <- uav_01
+  set range_max = 1000m
+end_sensor
+
+execute
+  at 1s spawn uav_01
+  at 5s report radar_a
+end_execute

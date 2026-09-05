@@ -1,0 +1,5 @@
+# E060: value out of permitted range -- altitude's range is [0, 30000] m.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+  set altitude = 99999m
+end_platform

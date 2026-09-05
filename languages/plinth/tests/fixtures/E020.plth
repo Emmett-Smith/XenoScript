@@ -1,0 +1,5 @@
+# E020: unresolved bind -- radar_missing is never defined.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+  bind primary_sensor <- radar_missing
+end_platform

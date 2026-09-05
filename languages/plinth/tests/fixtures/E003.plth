@@ -1,0 +1,4 @@
+# E003: unknown keyword -- invalid platform type.
+define platform uav_01 type balloon
+  position at 1.00deg 1.00deg
+end_platform

@@ -1,0 +1,9 @@
+# E011: reference to undefined identifier -- radar_z was never defined.
+define scenario s1
+  set duration = 10s
+  set step = 1s
+end_scenario
+
+execute
+  at 1s activate radar_z
+end_execute

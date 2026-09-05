@@ -1,0 +1,14 @@
+# E072 (runtime): 'spawn' of a platform that was already spawned.
+define scenario s1
+  set duration = 10s
+  set step = 1s
+end_scenario
+
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+end_platform
+
+execute
+  at 1s spawn uav_01
+  at 5s spawn uav_01
+end_execute

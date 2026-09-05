@@ -1,0 +1,5 @@
+# E040: missing unit on a numeric literal -- altitude needs a length quantity.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+  set altitude = 1500
+end_platform

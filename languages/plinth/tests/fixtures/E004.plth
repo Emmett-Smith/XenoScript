@@ -1,0 +1,4 @@
+# E004: mismatched terminator -- end_sensor closing a platform.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+end_sensor

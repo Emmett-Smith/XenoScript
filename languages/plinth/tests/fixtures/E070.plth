@@ -1,0 +1,9 @@
+# E070 (runtime): 'halt' fires before the scenario duration has elapsed.
+define scenario s1
+  set duration = 10s
+  set step = 1s
+end_scenario
+
+execute
+  at 5s halt
+end_execute

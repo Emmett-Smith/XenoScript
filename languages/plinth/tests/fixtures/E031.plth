@@ -1,0 +1,7 @@
+# E031: temporal 'at' used inside a waypoint (only spatial 'position at' is
+# legal there).
+define route r1
+  waypoint
+    at 30s activate radar_a
+  end_waypoint
+end_route
