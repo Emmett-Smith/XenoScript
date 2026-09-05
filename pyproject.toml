@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A coding assistant for languages no model has seen."
 requires-python = ">=3.11"
 dependencies = [
-  "mcp>=1.0.0",
+  "mcp>=1.0.0,<2.0.0",  # mcp 2.x renamed mcp.server.fastmcp.FastMCP; 00_ARCHITECTURE.md #6 / 02_BACKEND.md #3 specify the 1.x import verbatim
   "openai>=1.0.0",
   "fastapi>=0.110.0",
   "uvicorn>=0.29.0",
