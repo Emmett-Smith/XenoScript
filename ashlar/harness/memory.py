@@ -59,9 +59,33 @@ CREATE TABLE IF NOT EXISTS failures (
 
 CREATE TABLE IF NOT EXISTS verified_cache (
   key TEXT PRIMARY KEY,
-  task TEXT, source TEXT, iterations INTEGER, ts TEXT
+  task TEXT, source TEXT, iterations INTEGER, ts TEXT,
+  behavioral INTEGER DEFAULT 0
 );
 """
+
+# Real bug, found live and now fixed: `_cache_entries()` (ashlar/mcp/
+# server.py) exposes every verified_cache row as a grep_corpus-citable
+# "real example" -- but a row only ever proved `verify(source, run=True)`
+# found no runtime error. For a task with no observable output (a bare
+# SET, no WRITE), that's trivially true even when the code is structurally
+# wrong (e.g. nesting a description string as a bogus second subscript
+# instead of using it as the value) -- there is nothing in an empty stdout
+# for extract_errors() to catch. That bad-but-"verified" row then got
+# cited as a real example for the next similar prompt, which imitated the
+# same wrong structure, which also had no output to catch it, which also
+# got cached -- a genuine, silent, self-reinforcing corruption loop,
+# confirmed live: 8 of 9 fresh add-patient prompts failed identically once
+# one bad generation slipped in. `behavioral` distinguishes a row that
+# only passed a syntax/runtime check from one that was actually checked
+# against real expected output (`corpora/<name>/pairs/*/expected.txt`) and
+# matched -- only `behavioral=1` rows are safe to cite as ground truth to
+# a *different* prompt. Non-behavioral rows still work for cache_lookup's
+# exact-repeat-prompt shortcut (re-verified before being served either
+# way, per this module's existing invariant), since re-serving your own
+# past answer to the identical prompt carries no extra risk -- only
+# citing it as evidence for someone else's prompt does.
+
 
 # Near-match similarity floor. Chosen for tonight per 03_HARNESS.md #4's
 # explicit allowance ("even simple substring/fuzzy similarity ... is
@@ -113,6 +137,14 @@ class Memory:
         con = sqlite3.connect(self.db_path)
         try:
             con.executescript(SCHEMA)
+            # Migration for databases created before `behavioral` existed
+            # (every corpus's symbols.db from earlier this session) --
+            # `CREATE TABLE IF NOT EXISTS` above is a no-op once the table
+            # already exists, so the column has to be added explicitly.
+            try:
+                con.execute("ALTER TABLE verified_cache ADD COLUMN behavioral INTEGER DEFAULT 0")
+            except sqlite3.OperationalError:
+                pass  # column already exists
             con.commit()
         finally:
             con.close()
@@ -153,14 +185,23 @@ class Memory:
         finally:
             con.close()
 
-    def record_success(self, prompt: str, source: str, iterations: int) -> None:
+    def record_success(
+        self, prompt: str, source: str, iterations: int, behavioral: bool = False
+    ) -> None:
+        """`behavioral=True` means this result was actually checked against
+        real expected output (a `pairs/*/expected.txt` match), not merely
+        found free of runtime errors -- see the schema comment above.
+        Callers with no ground truth to check against (most free-form
+        prompts) correctly pass the default `False`; the row still caches
+        normally for exact-repeat serving, it just won't be cited as a
+        real example to other, different prompts."""
         key = cache_key(prompt)
         con = self._connect()
         try:
             con.execute(
-                "INSERT OR REPLACE INTO verified_cache (key, task, source, iterations, ts) "
-                "VALUES (?, ?, ?, ?, ?)",
-                (key, prompt, source, iterations, _now_iso()),
+                "INSERT OR REPLACE INTO verified_cache (key, task, source, iterations, ts, behavioral) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (key, prompt, source, iterations, _now_iso(), int(behavioral)),
             )
             con.commit()
         finally:

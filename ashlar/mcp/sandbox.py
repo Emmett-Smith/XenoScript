@@ -162,6 +162,27 @@ def run_verifier(
 
         duration_ms = (time.monotonic() - start) * 1000
 
+        # A corpus's verifier is allowed to rewrite its own candidate file
+        # in place before running it -- e.g. MUMPS's rsm_run.py mechanically
+        # correcting a single-space `ELSE` to the two spaces RSM's grammar
+        # actually requires, a semantics-preserving fix the model itself
+        # proved unable to reliably apply even with an explicit repair
+        # instruction (see corpora/mumps/bin/rsm_run.py's
+        # `_normalize_known_quirks`). Real bug, found live and fixed: this
+        # correction used to happen only inside the verifier's own private
+        # subprocess, invisible to the caller -- code could verify
+        # successfully while the `source` string returned to the user (and
+        # inserted into their editor) still contained the original,
+        # actually-broken text, so "insert into editor, run for real
+        # outside this system" would fail even though the sidebar showed a
+        # pass. Re-reading the candidate file here and passing its final
+        # content back as `source` (only when it changed) lets the harness
+        # adopt the corrected text everywhere the original would otherwise
+        # have been shown, cached, or cited -- optional key, ignored by any
+        # corpus/caller that doesn't produce or consume it.
+        final_source = candidate_path.read_text()
+        source_override = {"source": final_source} if final_source != source else {}
+
         if meta.verifier.output_format == "text":
             if not meta.verifier.error_regex:
                 return _harness_error(
@@ -195,6 +216,7 @@ def run_verifier(
                 "stderr": proc.stderr,
                 "exit_code": proc.returncode,
                 "duration_ms": duration_ms,
+                **source_override,
             }
 
         try:
@@ -234,4 +256,5 @@ def run_verifier(
             "stderr": payload.get("stderr", proc.stderr),
             "exit_code": proc.returncode,
             "duration_ms": payload.get("duration_ms", duration_ms),
+            **source_override,
         }

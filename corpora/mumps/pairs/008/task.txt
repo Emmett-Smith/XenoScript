@@ -1,0 +1,1 @@
+Store the string GARCIA,MARIA^45^F in the uppercase global PATIENT under subscript 40, then write it back out.

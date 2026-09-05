@@ -109,36 +109,59 @@ def instrument(source: str) -> str:
     return "\n".join(out) + "\n"
 
 
+_SINGLE_SPACE_ELSE_LINE_RE = re.compile(r"^(\s*)ELSE (\S)", re.MULTILINE)
+
+
+def _normalize_known_quirks(text: str) -> str:
+    """Real, verified-live gotcha, mechanically corrected rather than left
+    for the model to get right on its own: `ELSE` followed by exactly one
+    space before its command is a genuine RSM `[Z13] Command syntax error`
+    (two or more spaces both work; see docs/manual.md). Re-tested live
+    after both documenting the rule in prose AND giving the repair loop an
+    explicit, targeted fix instruction on the exact failing line ("change
+    'ELSE WRITE' to 'ELSE  WRITE'") -- the small local model still repeated
+    the identical single-space mistake across all 4 repair attempts in 2
+    of 3 fresh tests. This is a real small-model limitation with precise
+    whitespace edits, not a fixable prompt. Since the fix is a single,
+    unambiguous, semantics-preserving whitespace correction (never changes
+    what the code does, only whether RSM's parser accepts it -- the same
+    class of thing a real formatter/linter autofix would do silently),
+    apply it mechanically before ever handing the model's source to RSM,
+    for both parse and run. Anchored to start-of-line so it can never touch
+    the substring "ELSE" appearing inside a string literal mid-line."""
+    return _SINGLE_SPACE_ELSE_LINE_RE.sub(r"\1ELSE  \2", text)
+
+
 def _run_rsm_with_stdin(text: str, timeout_s: float) -> subprocess.CompletedProcess[str]:
-    """Real, verified-live bug: `subprocess.run([RSM, ENV_DB], input=text,
-    ...)` silently produces empty stdout/stderr and exit code 0 for EVERY
-    input, success or failure alike -- rsm never actually processes
-    anything Python delivers via its internal pipe-writing mechanism
-    (Popen.communicate()'s `input=`). Confirmed by elimination: piping
-    through an actual shell (`cat file | rsm ...`) or handing rsm a real
-    open file object as stdin both work correctly; `input=` alone never
-    does, for any source, not just this one. So every source line here
-    is written to a real temp file and passed as `stdin=`, never via
+    """Real, verified-live bug (fixed): `subprocess.run([RSM, ENV_DB],
+    input=text, ...)` silently produces empty stdout/stderr and exit code 0
+    for EVERY input, success or failure alike -- rsm never actually
+    processes anything Python delivers via its internal pipe-writing
+    mechanism (Popen.communicate()'s `input=`). Confirmed by elimination:
+    piping through an actual shell (`cat file | rsm ...`) or handing rsm a
+    real open file object as stdin both work correctly; `input=` alone
+    never does, for any source, not just this one. So every source line
+    here is written to a real temp file and passed as `stdin=`, never via
     `input=`.
 
-    NOT fully resolved by this fix, and worth knowing before trusting a
-    quiet MUMPS "Verified" in the live app: every isolated, one-off
-    reproduction of the bug above (a fresh `python3 -c` process, run any
-    number of times) is fixed by this change, consistently. But driven
-    through the actual long-running `ashlar.api.server` process
-    specifically, the exact same empty-output symptom was still
-    reproduced 16/16 times in further live testing, with this fix
-    already in place -- while one-off scripts against the identical
-    environment, run moments apart, kept succeeding. The real
-    interpreter and the fix above are both confirmed correct in
-    isolation; something about the long-running server process itself
-    (accumulated subprocess/signal state over its lifetime? asyncio's
-    child-watcher interaction with a plain synchronous subprocess.run
-    call, which did not reproduce in a minimal asyncio.run() repro
-    either?) still needs isolating. Until then, treat MUMPS behavioral
-    (pair-scored) results from the live app as unreliable; compile-only
-    checking and the standalone demo-mumps/ project (run directly, never
-    through the server process) are unaffected."""
+    Second real, verified-live bug (also fixed, and this was the actual
+    cause of the long-standing "works standalone, empty output through the
+    server" mystery): RSM's direct-mode reader silently discards the final
+    piped-in line if the input does not end with a trailing newline -- exit
+    0, no error, no output, as if the command was never there. Confirmed by
+    isolating every other variable (threading, asyncio, process identity,
+    path form, job-table state, environment freshness -- none of which
+    reproduced or fixed anything) down to this one: the exact same call
+    with a trailing `\\n` appended succeeds every time; without it, it
+    fails every time. `instrument()` (used by `run_instrumented`, i.e.
+    verifier.parse) already appended one, which is why parse mode was
+    always reliable while raw `run_raw` (verifier.run, i.e. actual
+    behavioral output) was not -- model-generated source essentially never
+    ends in a newline on its own. Fixed once here, at the single point
+    both callers funnel through, rather than in each caller."""
+    text = _normalize_known_quirks(text)
+    if not text.endswith("\n"):
+        text += "\n"
     with tempfile.NamedTemporaryFile("w", suffix=".m", delete=False) as f:
         f.write(text)
         stdin_path = f.name
@@ -163,12 +186,42 @@ def run_raw(source: str, timeout_s: float) -> subprocess.CompletedProcess[str]:
     return _run_rsm_with_stdin(_WIPE_GLOBALS_PREAMBLE + source, timeout_s)
 
 
-def extract_errors(instrumented_output: str, file_label: str) -> list[str]:
+_SINGLE_SPACE_ELSE_RE = re.compile(r"^\s*ELSE \S")
+
+
+def _enrich_message(ecode: str, message: str, source_lines: list[str], lineno: int) -> str:
+    """Real, verified-live gotcha: `ELSE` followed by exactly one space
+    before its command is a genuine `[Z13] Command syntax error` in RSM
+    (two or more spaces both work) -- confirmed the model does not reliably
+    avoid this from prose documentation alone (re-tested live: 5/5 repair
+    attempts repeated the identical single-space mistake after the doc
+    already explained the rule in prose). The generic "[Z13] Command syntax
+    error" gives the repair loop nothing to act on, so when the failing
+    line actually matches this known pattern, name the real problem
+    directly -- this is the single highest-leverage thing a repair prompt
+    can be given: not more retrieval, a more specific error."""
+    if ecode == "Z13" and 1 <= lineno <= len(source_lines):
+        if _SINGLE_SPACE_ELSE_RE.match(source_lines[lineno - 1]):
+            return (
+                f"{message} -- ELSE must be followed by at least two spaces "
+                f"before its command (found only one). Change 'ELSE WRITE' "
+                f"to 'ELSE  WRITE' (two spaces)."
+            )
+    return message
+
+
+def extract_errors(
+    instrumented_output: str, file_label: str, source_lines: list[str] | None = None
+) -> list[str]:
     """Re-associates each inline `$ECODE=,code,` + message pair with the
     most recently printed line marker, emitting COBOL-convention
     `file:line: error: message` lines so this corpus can reuse the exact
     same generic text-output adapter/error_regex as corpora/cobol does
-    (ashlar/mcp/sandbox.py never branches on a language name)."""
+    (ashlar/mcp/sandbox.py never branches on a language name). When the
+    original (uninstrumented) source lines are available, well-known error
+    patterns get a more specific, actionable message -- see
+    `_enrich_message`."""
+    source_lines = source_lines or []
     lines = instrumented_output.splitlines()
     current_line = 0
     out: list[str] = []
@@ -182,6 +235,7 @@ def extract_errors(instrumented_output: str, file_label: str) -> list[str]:
         ecode = _ECODE_RE.match(lines[i])
         if ecode:
             message = lines[i + 1] if i + 1 < len(lines) else "M runtime error"
+            message = _enrich_message(ecode.group(1), message, source_lines, current_line)
             out.append(f"{file_label}:{current_line}: error: [{ecode.group(1)}] {message}")
             i += 2
             continue
@@ -195,10 +249,23 @@ def main() -> None:
     timeout_s = float(sys.argv[3]) if len(sys.argv) > 3 else 15.0
     source = Path(candidate_path).read_text()
 
+    # Write the mechanically-corrected text back to the candidate file
+    # itself, not just into the private copy `_run_rsm_with_stdin` builds
+    # for RSM -- `ashlar/mcp/sandbox.py`'s `run_verifier` re-reads this
+    # exact file after this process exits and threads any change back to
+    # the harness as the new `source`, so a fix that only ever lived inside
+    # this script's own subprocess call would otherwise still show (and
+    # let the user insert) the original, actually-broken text even though
+    # verification passed. See sandbox.py's `source_override` comment.
+    normalized = _normalize_known_quirks(source)
+    if normalized != source:
+        Path(candidate_path).write_text(normalized)
+        source = normalized
+
     try:
         if mode == "parse":
             raw = run_instrumented(source, timeout_s)
-            errors = extract_errors(raw, candidate_path)
+            errors = extract_errors(raw, candidate_path, source.splitlines())
             for line in errors:
                 print(line, file=sys.stderr)
             sys.exit(1 if errors else 0)

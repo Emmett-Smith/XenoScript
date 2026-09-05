@@ -393,6 +393,14 @@ def run_task(
         emitter.verify_start(i)
         vr = deps.tool_client.verify(source)
         emitter.verify_result(i, vr)
+        # A corpus's verifier may mechanically correct a semantics-
+        # preserving quirk in the candidate before running it (e.g. MUMPS's
+        # single-space-`ELSE` fix -- see ashlar/mcp/sandbox.py's
+        # `source_override` comment). When it does, adopt that text as the
+        # source of truth for everything downstream -- the run-mode check
+        # below, citations, the cache, and what's shown/inserted for the
+        # user -- so "verified" and "what you get" never diverge.
+        source = vr.get("source", source)
 
         if not vr.get("ok"):
             last_errors = vr.get("errors", [])
@@ -410,6 +418,7 @@ def run_task(
         if budget_exceeded():
             return bail(last_errors)
         rr = deps.tool_client.verify(source, run=True)
+        source = rr.get("source", source)
         emitter.run_output(rr.get("stdout", ""), rr.get("stderr", ""), rr.get("ok", False), rr.get("errors", []))
 
         expected = corpus.expected_for(prompt)
@@ -437,7 +446,7 @@ def run_task(
                     emitter.repair_start(i + 1, ["EDIFF"])
                 continue
 
-        deps.memory.record_success(prompt, source, i)
+        deps.memory.record_success(prompt, source, i, behavioral=expected is not None)
         citations = collect_citations(hits, examples)
         emitter.task_done(True, i, source, citations)
         return TaskResult(ok=True, source=source, iterations=i, citations=citations)

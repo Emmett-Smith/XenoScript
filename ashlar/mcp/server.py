@@ -164,14 +164,32 @@ def _iter_searchable_files(kind: str) -> list[tuple[str, Path]]:
 
 def _cache_entries() -> list[dict[str, str]]:
     """``verified_cache`` rows, exposed as kind='cache' search targets
-    (specs/02_BACKEND.md #5): every compile-clean solution the harness
-    writes back is retrievable through grep_corpus this way. Written by
-    the harness, only read here."""
+    (specs/02_BACKEND.md #5), restricted to ``behavioral=1`` rows only.
+
+    Real bug, found live and fixed: this used to expose *every* cached row,
+    on the premise that "every compile-clean solution the harness writes
+    back is retrievable." But "compile-clean" only means `verify(run=True)`
+    found no runtime error -- for a task with no observable output (a bare
+    SET, no WRITE), that's trivially true even for structurally wrong code,
+    since there's nothing in an empty stdout for error-extraction to catch.
+    A bad-but-error-free row cited as a "real example" to the next similar
+    prompt reproduced the same mistake, which was then *also* cached,
+    confirmed live as a genuine self-reinforcing corruption loop (see
+    `ashlar/harness/memory.py`'s schema comment for the full story). Only
+    rows that were actually checked against real expected output
+    (`corpora/<name>/pairs/*/expected.txt`) and matched are safe to hold up
+    as ground truth to a different prompt -- `cache_lookup`'s own
+    exact/near-repeat serving path is unaffected by this filter and still
+    considers every row, since re-serving your own past answer to the
+    identical prompt (always re-verified before being returned) carries no
+    extra risk."""
     conn = _connect_symbols_db()
     if conn is None:
         return []
     try:
-        rows = conn.execute("SELECT key, source FROM verified_cache").fetchall()
+        rows = conn.execute(
+            "SELECT key, source FROM verified_cache WHERE behavioral = 1"
+        ).fetchall()
     except sqlite3.Error:
         return []
     finally:

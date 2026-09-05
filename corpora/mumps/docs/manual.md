@@ -130,10 +130,12 @@ IF 5>10 WRITE "big",!
 ELSE  WRITE "small",!
 ```
 
-`ELSE` (note the double space before its command in the idiom above -- one
-space separates commands, `ELSE` followed by two spaces then its command is
-the traditional M style but a single space works identically) runs its
-command only when the most recently evaluated condition (`$TEST`) was false.
+`ELSE` (note the double space before its command in the idiom above) runs
+its command only when the most recently evaluated condition (`$TEST`) was
+false. **The double space is required, not stylistic** -- confirmed live:
+`ELSE WRITE ...` (one space) is a real `[Z13] Command syntax error`, while
+two or more spaces both work. Always write `ELSE` followed by at least two
+spaces before its command.
 
 ## Loops: FOR
 
