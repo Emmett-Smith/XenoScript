@@ -40,6 +40,63 @@ _STOPWORDS = {
     "write", "make", "create", "define", "add", "set", "using", "use",
 }
 
+# Generic English/software vocabulary clusters, fixed and corpus-agnostic:
+# the same clusters apply to every corpus, no matter what it is. Found
+# live: a prompt using "outputting" against PLINTH (whose real vocabulary
+# for that concept is "trace"/"report", not "output"/"print"/"display")
+# got a flat lookup_symbol "not found" and nothing else -- a synonym-
+# cluster member has no advantage over any other until it's checked
+# against *this* corpus's real symbol_names, so this never hardcodes
+# which corpus uses which word.
+_SYNONYM_CLUSTERS: tuple[frozenset[str], ...] = (
+    frozenset({"output", "print", "display", "show", "write", "emit",
+               "log", "report", "trace", "message", "echo"}),
+    frozenset({"loop", "repeat", "iterate", "iteration", "cycle",
+               "perform", "for", "while", "until", "times"}),
+    frozenset({"start", "begin", "init", "initialize", "launch", "spawn",
+               "activate"}),
+    frozenset({"stop", "end", "halt", "terminate", "finish", "deactivate",
+               "abort"}),
+    frozenset({"assign", "set", "store", "put", "save", "move", "value"}),
+    frozenset({"link", "bind", "reference", "refer", "point", "attach",
+               "connect", "mount"}),
+    frozenset({"check", "test", "verify", "compare", "condition",
+               "conditional", "branch", "decide", "if"}),
+    frozenset({"define", "declare", "create", "make", "build",
+               "construct", "new"}),
+    frozenset({"add", "sum", "increment", "subtract", "decrement",
+               "compute", "calculate", "total"}),
+)
+
+# Cheap suffix-stripping, not a real stemmer -- just enough to turn common
+# gerund/plural/past-tense forms ("outputting", "loops", "activated") into
+# something a symbol table or a synonym cluster might actually recognize.
+_SUFFIX_STRIPS: tuple[tuple[str, str], ...] = (
+    ("ing", ""), ("ing", "e"), ("ed", ""), ("ed", "e"), ("es", ""), ("s", ""),
+)
+
+
+def _stem_candidates(word: str) -> set[str]:
+    candidates = {word}
+    for suffix, replacement in _SUFFIX_STRIPS:
+        if word.endswith(suffix) and len(word) - len(suffix) >= 3:
+            candidates.add(word[: -len(suffix)] + replacement)
+    return candidates
+
+
+def _synonym_match(word: str, symbol_set: dict[str, str]) -> str | None:
+    """If `word` (or a cheap stem of it) belongs to a synonym cluster, and
+    some *other* member of that same cluster is a real symbol in this
+    corpus's own table, return that real symbol's canonical-cased name.
+    Never invents a symbol; only ever surfaces one that's already real."""
+    stems = _stem_candidates(word)
+    for cluster in _SYNONYM_CLUSTERS:
+        if not stems.isdisjoint(cluster):
+            for candidate in cluster:
+                if candidate in symbol_set:
+                    return symbol_set[candidate]
+    return None
+
 
 def _tokenize(text: str) -> list[str]:
     return _WORD_RE.findall(text)
@@ -65,9 +122,23 @@ def extract_keywords(
             ranked.append(word)
 
     # 1. symbol-table matches, ranked first, in prompt order.
+    matched_lower: set[str] = set()
     for tok in lower_tokens:
         if tok in symbol_set:
             add(symbol_set[tok])
+            matched_lower.add(tok)
+
+    # 1b. a token that didn't match a real symbol directly gets one more
+    # chance via a generic synonym/stem cluster before falling through to
+    # a raw literal that lookup_symbol is guaranteed to report "not
+    # found" for. See _SYNONYM_CLUSTERS above.
+    for tok in lower_tokens:
+        if tok in matched_lower or tok in _STOPWORDS:
+            continue
+        resolved = _synonym_match(tok, symbol_set)
+        if resolved:
+            add(resolved)
+            matched_lower.add(tok)
 
     # 2. quoted strings, verbatim (not lowercased -- may be exact identifiers).
     for m in _QUOTED_RE.finditer(prompt):

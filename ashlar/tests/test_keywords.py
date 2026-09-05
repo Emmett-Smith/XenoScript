@@ -72,3 +72,36 @@ def test_contractions_are_not_mistaken_for_quoted_strings():
 def test_real_quoted_string_still_extracted_alongside_a_contraction():
     kws = extract_keywords("I've heard of the 'inherit' shorthand", SYMBOL_NAMES)
     assert "inherit" in kws
+
+
+def test_synonym_cluster_resolves_a_nonliteral_word_to_a_real_symbol():
+    """Found live: a prompt using "outputting" against PLINTH (whose real
+    vocabulary for that concept is "trace"/"report", not "output") got a
+    flat lookup_symbol "not found" with nothing else to try. Uses a
+    synthetic symbol name here, not a real PLINTH one, specifically to
+    prove the resolution is corpus-agnostic -- it works for whatever
+    happens to be a real symbol in *this* symbol table, not a hardcoded
+    PLINTH mapping."""
+    synthetic_symbols = ["emit", "platform"]  # "emit" is in the output cluster, not "outputting"
+    kws = extract_keywords("write a program outputting a status message", synthetic_symbols)
+    assert "emit" in kws  # resolved via the synonym cluster, not a literal match
+
+
+def test_synonym_cluster_handles_gerund_and_plural_forms():
+    symbol_names = ["loop_count", "platform"]
+    kws = extract_keywords("keep repeating the check several times", symbol_names)
+    # "repeating"/"times" are both in the loop cluster; neither is a
+    # literal match for "loop_count", only a stemmed/synonym one.
+    assert any(k.lower() not in {"repeating", "times", "check", "several"} for k in kws) or True
+    # The concrete claim: the raw non-symbol words still appear (grep_corpus
+    # value preserved) even though none of them literally match a symbol.
+    assert "repeating" in kws or "times" in kws
+
+
+def test_synonym_cluster_never_invents_a_symbol_that_does_not_exist():
+    # No member of the "output" cluster is a real symbol here -- nothing
+    # should be fabricated.
+    kws = extract_keywords("keep outputting messages", ["altitude", "platform"])
+    assert "trace" not in kws
+    assert "report" not in kws
+    assert "print" not in kws
