@@ -27,14 +27,19 @@ eval arm A (2h, either) ──► arms B-E
 ## P0 — demo cannot happen without these
 
 ### Language (Partner)
-- [ ] `plinth` lexer + parser, `parse --json` matching contract §5
-- [ ] Error codes E001–E052 emitted with fix-naming messages
-- [ ] 5 examples parsing clean (enough to unblock backend)
-- [ ] `plinth run --json` with deterministic trace
-- [ ] `plinth symbols --json`, all 52 symbols
-- [ ] Remaining 10 examples
-- [ ] Runtime codes E070–E072
-- [ ] Dockerfile → `ashlar/plinth:latest`
+- [x] `plinth` lexer + parser, `parse --json` matching contract §5
+- [x] Error codes E001–E052 emitted with fix-naming messages
+- [x] 5 examples parsing clean (enough to unblock backend)
+- [x] `plinth run --json` with deterministic trace
+- [x] `plinth symbols --json`, all 52 symbols
+- [x] Remaining 10 examples (15 total)
+- [x] Runtime codes E070–E072
+- [x] Dockerfile → `ashlar/plinth:latest` (written, untested — no Docker
+      on this machine; sandbox.mode=subprocess is what's actually exercised)
+
+  225 tests passing. Merged into master in Phase 2; real end-to-end
+  integration proved (ingest, MCP tools, sandbox, live model all against
+  real corpora/plinth). See LOG.md.
 
 ### Backend (Emmett)
 - [x] Stub verifier + `corpora/stub/meta.yaml` — **do this first, hour 1**
@@ -70,8 +75,9 @@ eval arm A (2h, either) ──► arms B-E
 - [ ] Prompt bar
 
 ### Eval (either)
-- [x] 20 cases written (task.txt + rubric.yaml; 3 behavioral expected.txt left
-      as TODO pending real interpreter — see Notes)
+- [x] 20 cases written (task.txt + rubric.yaml; behavioral expected.txt
+      generated for real in Phase 2 by running solutions through the real
+      interpreter — no more TODOs)
 - [ ] Runner with `--arm`
 - [ ] **Arm A recorded** — the number the whole pitch rests on
 - [ ] Arm B recorded (long-context competitor)
@@ -151,3 +157,21 @@ Append freely. Format: `- [component] what the spec got wrong, what you did.`
   signature has no way to know which corpus/meta.yaml to use. Added
   optional `meta=`/`cfg=` keyword overrides (defaults load the active
   corpus from `config.yaml`), same pattern used in `ingest.pipeline`.
+- [language] `01_LANGUAGE.md` §4's grammar shows `NEWLINE` after block
+  headers, but §2 says whitespace is insignificant except as a token
+  separator. Read as: newlines are non-significant; the parser recovers
+  block structure from keyword shape + explicit `end_*` terminators.
+- [language] §5.4's bare-integer exception clause is ambiguous
+  ("count, priority, field_of_view multiplier and step subdivision... the
+  subdivision case is tolerance"). Read as: bare integers legal for
+  `priority`, `field_of_view`, `tolerance`; `step` always takes a time
+  quantity; `count` isn't an attribute anywhere in the grammar so wasn't
+  implemented.
+- [phase2] Eval case 019 originally asked to halt a 20s scenario at 15s —
+  unreachable by design (E070: halt must be at/after scenario duration).
+  Found by actually running it through the real interpreter during Phase 2
+  verification. Reworded to a 15s scenario halting at 15s.
+- [phase2] `set position at ...` is not valid PLINTH syntax — `position`
+  is a bare `position at <lat> <lon>` statement, not a `set`-assignment.
+  Three of my own hand-written eval-case repair snippets (015-017) had
+  this bug; found and fixed the same way, by running the real interpreter.

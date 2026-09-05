@@ -204,4 +204,108 @@ agent's actual `plinth symbols --json` output at merge time.
 
 Still waiting on `language` agent before Phase 2 integration.
 
+### Phase 1 — language agent: done
+
+Worktree `/Users/owner/XenoScript/.claude/worktrees/agent-a2c4d55469a27a10d`
+branch `worktree-agent-a2c4d55469a27a10d`, 8 commits, 225 tests passing.
+
+Full PLINTH vertical: lexer/parser/checker/runtime/symbols sharing one
+`grammar.py` constants module (so `symbols --json` can't drift from what
+the checker enforces), 15 examples, 15 pairs, docs with the deliberate
+gaps, 23 error-code fixtures, golden traces for all 15 examples. Dockerfile
+written but untested (no Docker on this machine, as expected).
+
+**Resolved ambiguities I'm adopting as-is:** newlines non-significant
+(parser recovers structure from keywords + explicit `end_*` terminators,
+not `NEWLINE` tokens); `mount` implemented as `bind mount <- <platform>`
+(matches the architecture doc's own trace example verbatim); strict
+declaration-before-reference on every plain identifier reference, `bind`
+as the sole forward-reference escape hatch; §5.4's bare-integer exception
+read as `priority`/`field_of_view`/`tolerance` (not `step`, which always
+takes a time quantity); first-error-wins rather than accumulating a list.
+
+### Phase 1 complete. Starting Phase 2 (integration, done personally).
+
+All three branches merged into master (`d02dd37`..`5b8161e`, one trivial
+`pyproject.toml` conflict on the already-identical `mcp` pin, one
+`specs/TASKS.md`/`uv.lock` conflict on the harness agent's own
+"Chosen model" note -- kept the equivalent text already on master,
+regenerated `uv.lock` fresh rather than hand-merging it). Full suite green
+post-merge: 112 ashlar/eval tests, 225 language tests.
+
+**The real integration proof, not just merged code:**
+
+- `corpora/stub` → `corpora/plinth` swap confirmed as a genuine one-line
+  `config.yaml` change (`corpus: stub` → `corpus: plinth`) -- no code
+  touched. `python -m ashlar.ingest --corpus corpora/plinth`: 52 symbols
+  (all `source=verifier`), 15 examples/445 lines, 15 pairs, 27 doc chunks,
+  0.34s. Zero `solution.plth` leakage into the index (checked directly).
+- Real MCP server exercised via a real stdio JSON-RPC session against the
+  real PLINTH corpus (not just direct function calls this time):
+  `lookup_symbol`, `grep_corpus`, `verify` all correct.
+- Real sandbox → real interpreter, both paths: a deliberately broken
+  `1500 m` source returns the exact fix-naming E043 message from
+  `01_LANGUAGE.md`; the fixed version passes. `verify(source, run=True)`
+  against a real `corpora/plinth/pairs/001/solution.plth` produces a
+  byte-exact match against its `expected.txt`.
+- **The actual Phase 2 exit criterion**: wrote
+  `scripts/phase2_integration_smoke.py` -- one task, real PLINTH corpus,
+  `FakeModel` scripted to fail iteration 1 (real E043) then succeed
+  iteration 2, full event stream asserted against the §8 contract and
+  written to `eval/fixtures/event_streams/phase2_fail_then_repair.jsonl`
+  for the frontend agent to use as a Phase 3 fixture. Passes.
+- **Live corpus switching, twice in a row, no restart**: drove the actual
+  FastAPI app (not a mock) through `stub → plinth → stub → plinth` via
+  `POST /corpus/switch`, confirming `tool_client` and `Corpus.symbol_names`
+  genuinely re-point each time (52 symbols under `plinth`, 0 under `stub`,
+  correctly, every time). This is one of the four invariants the morning
+  handoff needs to confirm -- confirmed, ahead of Phase 5.
+- **One live task through the real model**: `qwen2.5-coder:3b` → real
+  PLINTH → real sandbox, end to end, 6.7s, `ok=True` in 2 iterations.
+
+**Architecture gap found and fixed:** the harness agent's
+`_build_tool_client`/`AppState.switch_corpus` (built without a real MCP
+server available in their worktree) hardcoded `Corpus(symbol_names=[],
+pairs={})` and used a `FakeToolClient` wrapping only the subprocess
+verifier -- `lookup_symbol`/`grep_corpus`/`get_examples` returned nothing
+through the API even once real data existed. Also, `ashlar/mcp/server.py`
+bound its corpus at import time with no way to repoint it, which would
+have made `POST /corpus/switch` a lie for the MCP tools specifically (the
+API's own bookkeeping would update; what the tools actually returned
+would not). Fixed: `ashlar/mcp/server.py` gained `set_active_corpus()`;
+`ashlar/mcp/client.py`'s new `RealToolClient` calls through to the real
+tool functions; `Corpus.from_disk(meta)` in `loop.py` loads real
+`symbol_names`/`pairs` from disk. All three wired together in
+`ashlar/api/server.py`.
+
+**Real bug found via the live-model run, fixed:** `qwen2.5-coder:3b` wraps
+output in a markdown fence (` ```plinth ... ``` `) despite
+`prompts/system.md`'s explicit "no markdown fences" instruction, and
+repeats the identical fenced, unparseable output on every one of 4 repair
+iterations -- the E001-on-backtick error never points it at the real
+problem, so it never converges. This is exactly the "don't trust the
+model, constrain it" principle `00_ARCHITECTURE.md` §9 argues for tool
+selection, applied to output formatting too. Added
+`_strip_markdown_fences()` in `ashlar/harness/loop.py`, applied
+immediately after `generate()` and before anything else sees the source.
+Confirmed live: the identical task went from `ok=False, max_iterations` to
+`ok=True, 2 iterations` after the fix. **Flagging this as the single
+highest-value Phase 5 finding so far** -- it's the kind of thing that
+would have silently killed the live demo if the model is used unscripted.
+
+**My own authoring bugs found by actually running the real interpreter**
+(exactly the point of Pass A-style verification): eval cases 015-017's
+embedded broken snippets used `set position at ...`, but `position` is a
+bare `position at <lat> <lon>` statement, not a `set`-assignment -- fixed
+all three. Eval case 019 originally asked to halt a 20s scenario at 15s,
+which is unreachable by design (E070: halt must be at/after scenario
+duration) -- reworded to something achievable (15s scenario, halt at
+15s). Generated real golden `expected.txt` for eval cases 018-020 (were
+TODO placeholders) by actually running solutions through the real
+interpreter -- no fabricated traces.
+
+Full suite green: 113 ashlar/eval tests (112 + 1 new fence-stripping
+test), 225 language tests, ruff clean, corpus-agnostic invariant holds,
+offline check passes.
+
 ---
