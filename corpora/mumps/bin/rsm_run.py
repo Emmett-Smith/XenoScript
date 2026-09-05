@@ -36,6 +36,7 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -108,20 +109,58 @@ def instrument(source: str) -> str:
     return "\n".join(out) + "\n"
 
 
+def _run_rsm_with_stdin(text: str, timeout_s: float) -> subprocess.CompletedProcess[str]:
+    """Real, verified-live bug: `subprocess.run([RSM, ENV_DB], input=text,
+    ...)` silently produces empty stdout/stderr and exit code 0 for EVERY
+    input, success or failure alike -- rsm never actually processes
+    anything Python delivers via its internal pipe-writing mechanism
+    (Popen.communicate()'s `input=`). Confirmed by elimination: piping
+    through an actual shell (`cat file | rsm ...`) or handing rsm a real
+    open file object as stdin both work correctly; `input=` alone never
+    does, for any source, not just this one. So every source line here
+    is written to a real temp file and passed as `stdin=`, never via
+    `input=`.
+
+    NOT fully resolved by this fix, and worth knowing before trusting a
+    quiet MUMPS "Verified" in the live app: every isolated, one-off
+    reproduction of the bug above (a fresh `python3 -c` process, run any
+    number of times) is fixed by this change, consistently. But driven
+    through the actual long-running `ashlar.api.server` process
+    specifically, the exact same empty-output symptom was still
+    reproduced 16/16 times in further live testing, with this fix
+    already in place -- while one-off scripts against the identical
+    environment, run moments apart, kept succeeding. The real
+    interpreter and the fix above are both confirmed correct in
+    isolation; something about the long-running server process itself
+    (accumulated subprocess/signal state over its lifetime? asyncio's
+    child-watcher interaction with a plain synchronous subprocess.run
+    call, which did not reproduce in a minimal asyncio.run() repro
+    either?) still needs isolating. Until then, treat MUMPS behavioral
+    (pair-scored) results from the live app as unreliable; compile-only
+    checking and the standalone demo-mumps/ project (run directly, never
+    through the server process) are unaffected."""
+    with tempfile.NamedTemporaryFile("w", suffix=".m", delete=False) as f:
+        f.write(text)
+        stdin_path = f.name
+    try:
+        with open(stdin_path) as stdin_file:
+            return subprocess.run(
+                [str(RSM), str(ENV_DB)], stdin=stdin_file, capture_output=True, text=True, timeout=timeout_s,
+            )
+    finally:
+        Path(stdin_path).unlink(missing_ok=True)
+
+
 def run_instrumented(source: str, timeout_s: float) -> str:
     ensure_env()
     instrumented = _WIPE_GLOBALS_PREAMBLE + instrument(source)
-    proc = subprocess.run(
-        [str(RSM), str(ENV_DB)], input=instrumented, capture_output=True, text=True, timeout=timeout_s,
-    )
+    proc = _run_rsm_with_stdin(instrumented, timeout_s)
     return proc.stdout
 
 
 def run_raw(source: str, timeout_s: float) -> subprocess.CompletedProcess[str]:
     ensure_env()
-    return subprocess.run(
-        [str(RSM), str(ENV_DB)], input=_WIPE_GLOBALS_PREAMBLE + source, capture_output=True, text=True, timeout=timeout_s,
-    )
+    return _run_rsm_with_stdin(_WIPE_GLOBALS_PREAMBLE + source, timeout_s)
 
 
 def extract_errors(instrumented_output: str, file_label: str) -> list[str]:
