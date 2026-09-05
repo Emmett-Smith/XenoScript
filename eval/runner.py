@@ -173,7 +173,17 @@ def run_case_looped(arm: str, case: CaseSpec, corpus: Corpus, deps: HarnessDeps)
     result = run_task(case.task, corpus, events.append, deps, task_id=f"eval_{arm}_{case.id}")
     tool_calls = sum(1 for e in events if e["type"] == "tool_call")
 
-    ok, reason, codes = result.ok, result.reason, [e.get("code") for e in result.last_errors]
+    # 05_EVAL.md #3 wants the error-code histogram "across all attempts,"
+    # not just the last one -- pull every verify_result's errors from the
+    # full event stream, not only TaskResult.last_errors (which is only
+    # the final iteration's).
+    codes = [
+        err.get("code")
+        for e in events
+        if e["type"] == "verify_result"
+        for err in e.get("errors", [])
+    ]
+    ok, reason = result.ok, result.reason
     if ok:
         # Loop already enforced compile (+ run/diff where applicable); still
         # apply must_contain/must_not_contain -- those check *how* a task
