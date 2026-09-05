@@ -70,10 +70,20 @@ CREATE TABLE IF NOT EXISTS verified_cache (
 # task. A real BM25-over-cached-tasks index is the natural upgrade once the
 # backend's indexer is wired in (same corpus BM25 index, kind='cache' rows
 # per 02_BACKEND.md #5).
-SIMILARITY_FLOOR = 0.82
+#
+# Real bug, found live: 0.82 is too permissive. Two prompts asking to create
+# *different* patients ("...patient number 21 storing TESTPERSON,RUN1^33^M"
+# vs "...patient number 30 storing WILSON,TOM^52^M") score 0.869 -- the long
+# shared sentence scaffolding dominates the ratio even though the actual
+# data differs completely -- so the cache silently served patient 21's
+# source for a prompt about patient 30. Genuine same-task rephrasing (typo,
+# "add" vs "create", added "please") measured 0.94-0.97 on the same prompt.
+# Raised the floor above the collision case and below the rephrasing case.
+SIMILARITY_FLOOR = 0.93
 
 _PUNCT_RE = re.compile(r"[^\w\s]")
 _WS_RE = re.compile(r"\s+")
+_DIGITS_RE = re.compile(r"\d+")
 
 
 def normalize_task(text: str) -> str:
@@ -121,10 +131,20 @@ class Memory:
                 return CacheEntry(*row)
 
             norm_prompt = normalize_task(prompt)
+            prompt_digits = _DIGITS_RE.findall(norm_prompt)
             best: tuple | None = None
             best_score = 0.0
             for row in con.execute("SELECT key, task, source, iterations FROM verified_cache"):
-                score = difflib.SequenceMatcher(None, norm_prompt, normalize_task(row[1])).ratio()
+                candidate_norm = normalize_task(row[1])
+                # Hard disqualifier, checked before the fuzzy ratio: numeric
+                # literals (patient IDs, quantities, ...) are the most common
+                # real differentiator between two instances of the same task
+                # template. Two prompts that share almost every word but
+                # reference different numbers are different tasks, no matter
+                # how high the overall text-similarity ratio comes out.
+                if prompt_digits != _DIGITS_RE.findall(candidate_norm):
+                    continue
+                score = difflib.SequenceMatcher(None, norm_prompt, candidate_norm).ratio()
                 if score > best_score:
                     best_score, best = score, row
             if best is not None and best_score >= SIMILARITY_FLOOR:

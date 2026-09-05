@@ -161,13 +161,22 @@ arguably a *stronger* demo moment than a green checkmark alone.
 
 ### Reliable, live-tested MUMPS prompts (use these, don't improvise cold)
 
-- `"Create a new entry in the uppercase global PATIENT for patient
-  number <N> storing <NAME>^<AGE>^<SEX>"` — works first try, reliably.
+**IMPORTANT UPDATE (2026-09-05, ~19:50 local)**: the old add-patient
+phrasing below (`"Create a new entry..."`) was RE-TESTED live tonight
+after a "keep iterating" pass and turned out to be **unreliable** —
+1/4 correct on a clean cache, not "works first try" as previously
+claimed. See "Cache-poisoning bug + corrected add-patient prompt" below
+for the full story and the replacement prompt (9/9 clean in testing).
+**Use the new prompt, not this one, for the live demo.**
+
+- ~~`"Create a new entry in the uppercase global PATIENT for patient
+  number <N> storing <NAME>^<AGE>^<SEX>"`~~ — superseded, see above.
   **The exact phrase "uppercase global PATIENT" matters**: M global
   names are case-sensitive, and without an explicit case hint the model
   reliably writes lowercase `^patient`, a completely different global
   that the demo's `list_patients.m` (which reads `^PATIENT`) will never
   see. Use a fresh `<N>` each time (10 is already taken in the live db).
+  This case-sensitivity note still applies to the new prompt too.
 - `"Delete patient record <N> from the uppercase global PATIENT."` →
   produces real `KILL ^PATIENT(N)`. Was broken (`DELETE ...`, invalid)
   until a real retrieval bug was fixed today (see below) — confirmed
@@ -187,6 +196,93 @@ inside an invented `program NAME ... END` pseudo-code shell that isn't
 valid M at all, and it usually repeats the identical mistake across all
 4 repair attempts rather than self-correcting. Keep demo prompts to one
 clear action.
+
+### Cache-poisoning bug + corrected add-patient prompt (2026-09-05, ~19:50 local)
+
+Two real, verified-live bugs found tonight while re-testing "reliable"
+prompts 3x each with genuinely varied data (not just once) — the user
+asked "should we keep adding symbols" and the honest answer turned out
+to be "no, go verify what we already claim works first," which was the
+right call:
+
+**Bug 1 — cache fuzzy-match floor was way too loose.** `ashlar/harness/
+memory.py`'s `cache_lookup()` fuzzy-matches a new prompt against every
+past cached prompt via `difflib.SequenceMatcher` and serves the cached
+answer above `SIMILARITY_FLOOR` (was 0.82). Two prompts asking to
+create *different* patients ("...patient number 21 storing
+TESTPERSON,RUN1^33^M" vs "...patient number 30 storing
+WILSON,TOM^52^M") score 0.869 — the long shared sentence scaffolding
+dominates the ratio even though the actual data is completely
+different — so three genuinely different demo requests all silently
+got served patient 21's stale cached source. Genuine same-task
+rephrasing (typo, "add" vs "create", added "please") measured
+0.94–0.97 on the same base prompt. **Fixed**: raised
+`SIMILARITY_FLOOR` to 0.93, and added a hard disqualifier — if the two
+prompts' digit sequences differ (patient IDs, any numeric literal),
+never treat them as a cache hit regardless of text-similarity score,
+since a different number is the single most common real signal that
+two similarly-worded prompts are actually different task instances.
+This is a generic harness fix, not MUMPS-specific — it protects every
+corpus.
+
+**Bug 2 — the verified cache self-poisons, compounding a bad answer.**
+`ashlar/mcp/server.py`'s `_cache_entries()` exposes every
+`verified_cache` row as a `grep_corpus`-citable example ("every
+compile-clean solution the harness writes back is retrievable through
+grep_corpus," by design, per `specs/02_BACKEND.md #5`). The problem:
+"compile-clean" only means `verify(source, run=True)` found no runtime
+error — it does NOT mean semantically correct. A `SET`-only task (no
+`WRITE`) has no observable output, so a malformed statement like `SET
+^PATIENT(21,"TESTPERSON,RUN1^33^M")="Value"` (nesting the description
+text as a bogus second subscript, with a literal hallucinated value)
+runs without error, gets marked `ok: true`, and gets written into
+`verified_cache`. That cached "example" then gets cited as real context
+for the *next* similar prompt, which imitates the same wrong structure,
+which also passes (still no runtime error), which gets cached too —
+a genuine, silent, self-reinforcing corruption loop. This is why, once
+one bad generation slipped through, 8 of the next 9 fresh add-patient
+tests all failed with the exact same malformed nested-subscript
+pattern regardless of prompt phrasing. **Not fully fixed** (would need
+real semantic verification, e.g. requiring a readback `WRITE` checked
+against an `expected.txt` pair — tried this, see below, doesn't work
+yet for an unrelated reason). **Mitigated**: manually purged every
+malformed row from `corpora/mumps/.index/symbols.db`'s `verified_cache`
+table. **Before the live demo, re-check this table is still clean**:
+`sqlite3 corpora/mumps/.index/symbols.db "SELECT source FROM
+verified_cache WHERE source LIKE '%PATIENT(%,\"%';"` should print
+nothing. If it prints rows, delete them the same way.
+
+**Why a `pairs/` + readback-`WRITE` fix doesn't work yet**: tried
+adding `corpora/mumps/pairs/008/` with a `task.txt`/`expected.txt` pair
+for a self-verifying add-patient prompt (store + write it back,
+checked against real expected output). This hits the *other*,
+already-documented, still-unresolved bug directly: MUMPS output
+capture through the live server returns empty stdout 100% of the time,
+so the EDIFF check always reports "0% similar" and the task fails on
+every iteration even when the generated code is correct (confirmed:
+the exact same code produces the exact right output when run directly
+via `rsm_run.py` outside the server). **Reverted this pair** — do not
+re-add a `pairs/` entry with a `WRITE` for MUMPS until the live-server
+stdout-capture bug is actually fixed; it will make that exact prompt
+fail every time instead of just being unverified-but-usually-correct.
+
+**Corrected, actually-reliable add-patient prompt** (9/9 clean live,
+vs. 1/4 for the old phrasing, both tested with a clean cache to rule
+out the poisoning bug above):
+
+> `"Store the string <NAME>^<AGE>^<SEX> as the value of the uppercase
+> global PATIENT at the single subscript <N> (do not add any other
+> subscripts), then write it back out."`
+
+The key difference from the old phrasing: being explicit that it's a
+**single flat subscript** and that no other subscripts should be
+added. Without that, the model reliably (not randomly — same failure
+mode every time) misreads "storing X" as an instruction to nest X as a
+*second* subscript key (`^PATIENT(N,"X")="X"` or similar), presumably
+pattern-matching too literally against the corpus's own multi-level
+global examples (`nested_vitals.m`). This is a real model-capability
+limitation, not something fixable with more examples — the fix was
+purely in how explicit the prompt is about the shape of the SET.
 
 ### MUMPS corpus content, and a second real bug found and fixed today
 
