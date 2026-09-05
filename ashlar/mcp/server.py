@@ -31,14 +31,28 @@ from ashlar.mcp.sandbox import run_verifier
 
 mcp = FastMCP("ashlar")
 
-# Loaded once at import time. Corpus-agnostic: whichever corpus
-# config.yaml names, this is all state any tool below needs.
+# Bound at import time to whichever corpus config.yaml names, and
+# re-pointable live via set_active_corpus() -- this is what lets
+# `POST /corpus/switch` (03_HARNESS.md #5) change every tool below without a
+# process restart. Corpus-agnostic: nothing here branches on a language
+# name, only on this state.
 _cfg: Config = load_config()
 _meta: CorpusMeta = load_corpus_meta(_cfg.corpus)
 
 CONTEXT_LINES = 1
 MAX_READ_LINES = 2000
 VALID_GREP_KINDS = ("all", "doc", "example", "cache")
+
+
+def set_active_corpus(name: str) -> CorpusMeta:
+    """Re-point every tool at a different corpus, in place. `name` is the
+    name of any folder under `corpora/`."""
+    global _cfg, _meta
+    import dataclasses
+
+    _cfg = dataclasses.replace(_cfg, corpus=name)
+    _meta = load_corpus_meta(name)
+    return _meta
 
 
 def _corpus_root() -> Path:

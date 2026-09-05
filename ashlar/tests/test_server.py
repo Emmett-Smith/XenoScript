@@ -18,7 +18,12 @@ from ashlar.mcp import server
 
 @pytest.fixture(scope="module", autouse=True)
 def _ingested_stub_corpus():
+    # Pin this module to corpora/stub explicitly via set_active_corpus
+    # rather than relying on config.yaml's ambient default -- Phase 2
+    # integration flipped that default to "plinth" once the real
+    # interpreter landed, and these tests assert stub-specific content.
     run_ingest("corpora/stub")
+    server.set_active_corpus("stub")
 
 
 # ---------------------------------------------------------------------------

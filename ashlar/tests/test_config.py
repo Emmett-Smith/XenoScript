@@ -6,7 +6,12 @@ from ashlar.config import REPO_ROOT, effective_sandbox_mode, load_config, load_c
 
 def test_load_config():
     cfg = load_config()
-    assert cfg.corpus == "stub"
+    # corpus is whatever config.yaml currently names -- Phase 2 flipped the
+    # checked-in default from "stub" to "plinth" once the real interpreter
+    # landed (00_ARCHITECTURE.md #4's whole point: this is a data change,
+    # not a code change). Assert it's a real, loadable corpus rather than
+    # pinning to one name.
+    assert cfg.corpus in {"stub", "plinth"}
     assert cfg.model.base_url == "http://localhost:11434/v1"
     assert cfg.harness.max_iter == 4
     assert cfg.sandbox.mode == "subprocess"

@@ -22,6 +22,7 @@ the code is self-documenting):
 
 from __future__ import annotations
 
+import re
 import time
 import uuid
 from collections.abc import Callable
@@ -64,6 +65,36 @@ class Corpus:
 
     def expected_for(self, prompt: str) -> str | None:
         return self.pairs.get(normalize_task(prompt))
+
+    @classmethod
+    def from_disk(cls, meta: CorpusMeta) -> Corpus:
+        """Loads `symbol_names` from `<corpus>/.index/symbols.db` (if the
+        backend's ingest has run for this corpus) and `pairs` from
+        `<corpus>/pairs/*/{task.txt,expected.txt}`. Corpus-agnostic: reads a
+        fixed schema and a fixed directory layout, no per-language
+        branching. Missing pieces (no ingest yet, no pairs/) degrade to
+        empty rather than raising -- retrieval/behavioral-check just has
+        less to work with, honestly."""
+        symbol_names: list[str] = []
+        db_path = meta.root / ".index" / "symbols.db"
+        if db_path.exists():
+            import sqlite3
+
+            conn = sqlite3.connect(db_path)
+            try:
+                symbol_names = [row[0] for row in conn.execute("SELECT name FROM symbols")]
+            finally:
+                conn.close()
+
+        pairs: dict[str, str] = {}
+        pairs_dir = meta.root / "pairs"
+        if pairs_dir.is_dir():
+            for d in sorted(pairs_dir.iterdir()):
+                task_file, expected_file = d / "task.txt", d / "expected.txt"
+                if task_file.exists() and expected_file.exists():
+                    pairs[normalize_task(task_file.read_text())] = expected_file.read_text()
+
+        return cls(meta=meta, symbol_names=symbol_names, pairs=pairs)
 
 
 @dataclass
@@ -153,6 +184,26 @@ def _elapsed(start: float) -> float:
     return time.monotonic() - start
 
 
+_FENCE_RE = re.compile(r"^\s*```[^\n]*\n(.*?)\n?```\s*$", re.DOTALL)
+
+
+def _strip_markdown_fences(source: str) -> str:
+    """Local models routinely wrap output in a markdown code fence despite
+    `prompts/system.md`'s explicit "output only source code, no markdown
+    fences" instruction -- observed live in Phase 2 integration against
+    qwen2.5-coder:3b, which fenced identical output on every one of 4
+    repair iterations and never once produced anything that could parse
+    (every attempt failed with the same E001 on the fence's backtick).
+    00_ARCHITECTURE.md #9's whole premise is that the harness constrains
+    the model rather than trusting it to follow instructions -- this is
+    that principle applied to output formatting, not just tool selection.
+    Strips one leading/trailing fence (with or without a language tag on
+    the opening line) if the entire source is wrapped in one; otherwise
+    returns it unchanged."""
+    m = _FENCE_RE.match(source)
+    return m.group(1) if m else source
+
+
 def run_task(
     prompt: str,
     corpus: Corpus,
@@ -227,6 +278,7 @@ def run_task(
         source = deps.model.generate(
             system, context, prompt, history_text, stream=True, on_token=emitter.model_token
         )
+        source = _strip_markdown_fences(source)
         emitter.model_done(i, source)
 
         if budget_exceeded():

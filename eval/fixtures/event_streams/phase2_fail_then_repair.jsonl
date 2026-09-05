@@ -1,0 +1,58 @@
+{"type": "task_start", "task_id": "phase2_smoke", "prompt": "Give platform uav_f an altitude of exactly fifteen hundred meters, written the way PLINTH expects a quantity to be written.", "ts": 0}
+{"type": "tool_call", "tool": "grep_corpus", "args": {"pattern": "platform|altitude|Give|uav_f|exactly|fifteen|hundred|meters", "limit": 12}, "ts": 0}
+{"type": "tool_result", "tool": "grep_corpus", "hits": 12, "preview": [{"file": "docs/errors.md", "line": 14, "text": "- **E002** -- unterminated block. A block was opened (`define platform", "context_before": ["  that doesn't belong in the current block."], "context_after": ["  ...`, `execute`, ...) but the file ended, or another top-level"], "kind": "doc"}, {"file": "docs/errors.md", "line": 18, "text": "  a fixed set of words -- for example, `type` on a platform must be one", "context_before": ["- **E003** -- unknown keyword. Used for enum-like slots that only accept"], "context_after": ["  of `air`, `ground`, `surface`, `space`, and `angle_mode` must be `deg`"], "kind": "doc"}, {"file": "docs/errors.md", "line": 22, "text": "  `end_*` keyword, e.g. `end_sensor` closing a `platform`.", "context_before": ["- **E004** -- mismatched terminator. The block was closed with the wrong"], "context_after": [""], "kind": "doc"}, {"file": "docs/manual.md", "line": 4, "text": "scenarios: platforms moving around, sensors detecting things, signals", "context_before": ["PLINTH is a scenario input-deck language for describing simulation"], "context_after": ["being emitted, and a timeline of actions to execute. Files use the"], "kind": "doc"}, {"file": "docs/manual.md", "line": 9, "text": "This manual covers the core of the language: scenarios, platforms,", "context_before": [""], "context_after": ["sensors, routes, and the execute timeline. It does not claim to be"], "kind": "doc"}], "ts": 1}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "platform"}, "ts": 1}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 1, "preview": [{"found": true, "name": "platform", "kind": "structural", "valid_parents": [], "valid_children": [], "arg_shape": "", "dimension": null, "required": false, "doc_anchor": "docs/errors.md#structural-e001-e004", "example_refs": [{"file": "examples/bind_chain.plth", "line": 8}, {"file": "examples/bind_chain.plth", "line": 18}, {"file": "examples/bind_forward.plth", "line": 3}, {"file": "examples/bind_forward.plth", "line": 9}, {"file": "examples/coastal.plth", "line": 1}, {"file": "examples/coastal.plth", "line": 2}, {"file": "examples/coastal.plth", "line": 8}, {"file": "examples/endurance.plth", "line": 8}, {"file": "examples/full_scenario.plth", "line": 2}, {"file": "examples/full_scenario.plth", "line": 13}, {"file": "examples/full_scenario.plth", "line": 23}, {"file": "examples/full_scenario.plth", "line": 29}, {"file": "examples/full_scenario.plth", "line": 34}, {"file": "examples/ground_net.plth", "line": 7}, {"file": "examples/ground_net.plth", "line": 12}, {"file": "examples/layered_ir.plth", "line": 8}, {"file": "examples/layered_ir.plth", "line": 14}, {"file": "examples/multi_sensor.plth", "line": 1}, {"file": "examples/multi_sensor.plth", "line": 7}, {"file": "examples/patrol_pair.plth", "line": 9}], "source": "verifier"}], "ts": 2}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "altitude"}, "ts": 2}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 1, "preview": [{"found": true, "name": "altitude", "kind": "attribute", "valid_parents": ["platform", "waypoint"], "valid_children": [], "arg_shape": "<quantity:length>", "dimension": "length", "required": false, "doc_anchor": "docs/manual.md#4-the-platform-block", "example_refs": [{"file": "examples/bind_chain.plth", "line": 10}, {"file": "examples/bind_chain.plth", "line": 20}, {"file": "examples/bind_forward.plth", "line": 11}, {"file": "examples/coastal.plth", "line": 10}, {"file": "examples/endurance.plth", "line": 10}, {"file": "examples/full_scenario.plth", "line": 15}, {"file": "examples/full_scenario.plth", "line": 25}, {"file": "examples/full_scenario.plth", "line": 31}, {"file": "examples/full_scenario.plth", "line": 36}, {"file": "examples/full_scenario.plth", "line": 66}, {"file": "examples/full_scenario.plth", "line": 70}, {"file": "examples/ground_net.plth", "line": 9}, {"file": "examples/ground_net.plth", "line": 14}, {"file": "examples/layered_ir.plth", "line": 10}, {"file": "examples/layered_ir.plth", "line": 16}, {"file": "examples/multi_sensor.plth", "line": 9}, {"file": "examples/patrol_pair.plth", "line": 3}, {"file": "examples/patrol_pair.plth", "line": 11}, {"file": "examples/patrol_pair.plth", "line": 17}, {"file": "examples/radians.plth", "line": 11}], "source": "verifier"}], "ts": 2}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "Give"}, "ts": 2}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 0, "preview": [{"found": false, "name": "Give"}], "ts": 2}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "uav_f"}, "ts": 2}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 0, "preview": [{"found": false, "name": "uav_f"}], "ts": 2}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "exactly"}, "ts": 2}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 0, "preview": [{"found": false, "name": "exactly"}], "ts": 3}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "fifteen"}, "ts": 3}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 0, "preview": [{"found": false, "name": "fifteen"}], "ts": 3}
+{"type": "tool_call", "tool": "get_examples", "args": {"symbol": "platform", "n": 3}, "ts": 3}
+{"type": "tool_result", "tool": "get_examples", "hits": 3, "preview": [{"file": "examples/bind_chain.plth", "start": 6, "end": 10, "text": "end_scenario\n\ndefine platform uav_50 type ground\n  position at 33.00deg -117.00deg\n  set altitude = 0m", "verified": true}, {"file": "examples/bind_chain.plth", "start": 16, "end": 20, "text": "end_sensor\n\ndefine platform uav_51 type air\n  position at 33.10deg -117.10deg\n  set altitude = 1800m", "verified": true}, {"file": "examples/bind_forward.plth", "start": 1, "end": 5, "text": "# bind_forward.plth -- demonstrates: bind to a later definition (the\n# set-vs-bind gotcha, 01_LANGUAGE.md Sec 5.1). radar_b is defined after\n# the platform that binds to it.\ndefine scenario fwd_bind\n  set duration = 20s", "verified": true}], "ts": 4}
+{"type": "model_start", "iteration": 1, "ts": 4}
+{"type": "model_token", "text": "define ", "ts": 4}
+{"type": "model_token", "text": "platform ", "ts": 4}
+{"type": "model_token", "text": "uav_f ", "ts": 4}
+{"type": "model_token", "text": "type ", "ts": 4}
+{"type": "model_token", "text": "air\n ", "ts": 4}
+{"type": "model_token", "text": " ", "ts": 4}
+{"type": "model_token", "text": "position ", "ts": 4}
+{"type": "model_token", "text": "at ", "ts": 4}
+{"type": "model_token", "text": "40.0deg ", "ts": 4}
+{"type": "model_token", "text": "120.0deg\n ", "ts": 4}
+{"type": "model_token", "text": " ", "ts": 4}
+{"type": "model_token", "text": "set ", "ts": 4}
+{"type": "model_token", "text": "altitude ", "ts": 4}
+{"type": "model_token", "text": "= ", "ts": 4}
+{"type": "model_token", "text": "1500 ", "ts": 4}
+{"type": "model_token", "text": "m\nend_platform\n", "ts": 4}
+{"type": "model_done", "iteration": 1, "source": "define platform uav_f type air\n  position at 40.0deg 120.0deg\n  set altitude = 1500 m\nend_platform\n", "ts": 4}
+{"type": "verify_start", "iteration": 1, "ts": 4}
+{"type": "verify_result", "iteration": 1, "ok": false, "errors": [{"file": "/var/folders/rv/9gpjtm0501q3_k60hn0cgy9c0000gn/T/tmpc0v0i83l/candidate.plth", "line": 3, "col": 18, "code": "E043", "message": "space between number and unit near '1500 m'; write '1500m' with no space", "severity": "error"}], "ts": 66}
+{"type": "repair_start", "iteration": 2, "fixing": ["E043@3"], "ts": 66}
+{"type": "model_start", "iteration": 2, "ts": 66}
+{"type": "model_token", "text": "define ", "ts": 66}
+{"type": "model_token", "text": "platform ", "ts": 66}
+{"type": "model_token", "text": "uav_f ", "ts": 66}
+{"type": "model_token", "text": "type ", "ts": 66}
+{"type": "model_token", "text": "air\n ", "ts": 66}
+{"type": "model_token", "text": " ", "ts": 66}
+{"type": "model_token", "text": "position ", "ts": 66}
+{"type": "model_token", "text": "at ", "ts": 66}
+{"type": "model_token", "text": "40.0deg ", "ts": 66}
+{"type": "model_token", "text": "120.0deg\n ", "ts": 66}
+{"type": "model_token", "text": " ", "ts": 66}
+{"type": "model_token", "text": "set ", "ts": 66}
+{"type": "model_token", "text": "altitude ", "ts": 66}
+{"type": "model_token", "text": "= ", "ts": 66}
+{"type": "model_token", "text": "1500m\nend_platform\n", "ts": 66}
+{"type": "model_done", "iteration": 2, "source": "define platform uav_f type air\n  position at 40.0deg 120.0deg\n  set altitude = 1500m\nend_platform\n", "ts": 66}
+{"type": "verify_start", "iteration": 2, "ts": 66}
+{"type": "verify_result", "iteration": 2, "ok": true, "errors": [], "ts": 127}
+{"type": "task_done", "task_id": "phase2_smoke", "ok": true, "iterations": 2, "source": "define platform uav_f type air\n  position at 40.0deg 120.0deg\n  set altitude = 1500m\nend_platform\n", "citations": [{"file": "docs/errors.md", "line": 14}, {"file": "docs/errors.md", "line": 18}, {"file": "docs/errors.md", "line": 22}, {"file": "docs/manual.md", "line": 4}, {"file": "docs/manual.md", "line": 9}, {"file": "docs/manual.md", "line": 25}, {"file": "docs/manual.md", "line": 27}, {"file": "docs/manual.md", "line": 46}, {"file": "docs/manual.md", "line": 51}, {"file": "docs/manual.md", "line": 85}, {"file": "docs/manual.md", "line": 115}, {"file": "docs/manual.md", "line": 117}, {"file": "examples/bind_chain.plth", "start": 6, "end": 10}, {"file": "examples/bind_chain.plth", "start": 16, "end": 20}, {"file": "examples/bind_forward.plth", "start": 1, "end": 5}], "ts": 129}

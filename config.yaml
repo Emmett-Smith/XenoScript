@@ -1,7 +1,7 @@
 # Ashlar top-level config. Corpus specifics live in corpora/<name>/meta.yaml.
 # This file plus meta.yaml is the whole surface for adding a language.
 
-corpus: stub          # name of a folder under corpora/
+corpus: plinth        # name of a folder under corpora/
 
 model:
   base_url: http://localhost:11434/v1

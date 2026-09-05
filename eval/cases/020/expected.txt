@@ -1,1 +1,5 @@
-TODO: golden trace not yet generated -- no PLINTH interpreter was available when this eval case was authored (Phase 1 language agent was still in progress). Fill in by running the accepted solution through `plinth run --json` once the interpreter lands, per specs/05_EVAL.md #2. See LOG.md Phase 4 notes.
+[t=0.000] scenario report_test start step=1.000 duration=30.000
+[t=0.000] spawn uav_j pos=40.0000,120.0000 alt=0.000
+[t=5.000] activate radar_j on uav_j
+[t=10.000] report radar_j range_max=40000.000 detections=0
+[t=30.000] scenario end status=ok

@@ -1,1 +1,4 @@
-TODO: golden trace not yet generated -- no PLINTH interpreter was available when this eval case was authored (Phase 1 language agent was still in progress). Fill in by running the accepted solution through `plinth run --json` once the interpreter lands, per specs/05_EVAL.md #2. See LOG.md Phase 4 notes.
+[t=0.000] scenario halt_test start step=1.000 duration=15.000
+[t=0.000] spawn uav_i pos=40.0000,120.0000 alt=1000.000
+[t=15.000] halt
+[t=15.000] scenario end status=ok

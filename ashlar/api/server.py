@@ -40,8 +40,9 @@ from ashlar.config import REPO_ROOT, Config, CorpusMeta, load_config, load_corpu
 from ashlar.harness.loop import Corpus, HarnessDeps, run_task
 from ashlar.harness.memory import Memory
 from ashlar.harness.model import FakeModel, ModelClient
-from ashlar.harness.subprocess_verify import run_verifier
-from ashlar.harness.tool_client import FakeToolClient, ToolClient
+from ashlar.harness.tool_client import ToolClient
+from ashlar.mcp import server as mcp_server
+from ashlar.mcp.client import RealToolClient
 
 FRONTEND_ORIGIN = "http://localhost:5173"
 CORPORA_DIR = REPO_ROOT / "corpora"
@@ -59,10 +60,11 @@ def _build_model(cfg: Config) -> ModelClient:
 
 
 def _build_tool_client(meta: CorpusMeta) -> ToolClient:
-    def verify(source: str, run: bool = False, stdin: str = "") -> dict[str, Any]:
-        return run_verifier(meta, source, mode="run" if run else "parse", stdin=stdin)
-
-    return FakeToolClient(verify_fn=verify)
+    """The real `ashlar.mcp.server` tool functions, re-pointed at `meta`'s
+    corpus in place -- this is what makes `POST /corpus/switch` change what
+    every tool returns without a process restart (03_HARNESS.md #5)."""
+    mcp_server.set_active_corpus(meta.root.name)
+    return RealToolClient()
 
 
 def _db_path_for(meta: CorpusMeta) -> Path:
@@ -135,7 +137,7 @@ class AppState:
             self.memory = Memory(_db_path_for(self.meta))
             self.model = _build_model(self.cfg)
             self.tool_client = _build_tool_client(self.meta)
-            self.corpus = Corpus(meta=self.meta, symbol_names=[], pairs={})
+            self.corpus = Corpus.from_disk(self.meta)
         return _manifest_for(name, self.meta)
 
     def deps(self) -> HarnessDeps:

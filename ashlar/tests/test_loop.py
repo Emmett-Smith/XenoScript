@@ -226,3 +226,32 @@ def test_end_to_end_against_real_stub_verifier_subprocess(tmp_path):
     verify_results = [e for e in events if e["type"] == "verify_result"]
     assert [v["ok"] for v in verify_results] == [False, True]
     assert verify_results[0]["errors"][0]["code"] == "E041"
+
+
+def test_markdown_fenced_output_is_stripped_before_verify(tmp_path):
+    """Phase 2 integration finding: qwen2.5-coder:3b wraps output in a
+    markdown fence despite prompts/system.md explicitly forbidding it, and
+    repeats the identical fenced output on every repair iteration since the
+    error (E001 on the backtick) never points it at the real problem. The
+    harness must not trust the model to follow that instruction -- strip
+    one leading/trailing fence before it ever reaches verify()."""
+    meta = load_corpus_meta("stub")
+
+    def real_verify(source, run, stdin):
+        return run_verifier(meta, source, mode="run" if run else "parse", stdin=stdin)
+
+    fenced = "```plinth\nthis is clean source with no errors\n```"
+    model = FakeModel(responses=[fenced])
+    tool_client = FakeToolClient(verify_fn=real_verify)
+    memory = Memory(tmp_path / "symbols.db")
+    corpus = _make_corpus(meta)
+    deps = HarnessDeps(model=model, tool_client=tool_client, memory=memory)
+
+    events: list[dict] = []
+    result = run_task("say hello", corpus, events.append, deps)
+
+    assert result.ok is True
+    assert result.iterations == 1
+    assert result.source == "this is clean source with no errors"
+    model_done = next(e for e in events if e["type"] == "model_done")
+    assert model_done["source"] == "this is clean source with no errors"

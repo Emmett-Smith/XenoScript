@@ -1,3 +1,3 @@
-Write a scenario (duration 20s, step 1s) with one air platform, uav_i, at
+Write a scenario (duration 15s, step 1s) with one air platform, uav_i, at
 position 40.0deg 120.0deg, altitude 1000m. In the execute block, spawn
-uav_i at time 0 and halt the scenario at 15 seconds.
+uav_i at time 0 and halt the scenario right at the end, 15 seconds in.

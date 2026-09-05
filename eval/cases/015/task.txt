@@ -2,7 +2,7 @@ This scenario fails to compile. Fix it so it compiles clean, changing as
 little as possible:
 
     define platform uav_f type air
-      set position at 40.0deg 120.0deg
+      position at 40.0deg 120.0deg
       set altitude = 1500 m
     end_platform
 

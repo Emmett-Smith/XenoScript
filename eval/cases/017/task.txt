@@ -8,7 +8,7 @@ little as possible:
     end_scenario
 
     define platform uav_h type air
-      set position at 40.0deg 120.0deg
+      position at 40.0deg 120.0deg
       set heading = 1.2rad
     end_platform
 
