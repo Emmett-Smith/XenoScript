@@ -39,10 +39,15 @@ eval arm A (2h, either) ──► arms B-E
 ### Backend (Emmett)
 - [x] Stub verifier + `corpora/stub/meta.yaml` — **do this first, hour 1**
 - [x] Config loader (`config.yaml` + `meta.yaml`)
-- [ ] Ingest: chunker, BM25 index
-- [ ] Symbol table with source precedence
-- [ ] MCP server, all 5 tools
-- [ ] Sandbox with `--network=none` + subprocess fallback
+- [x] Ingest: chunker, BM25 index
+- [x] Symbol table with source precedence
+- [x] MCP server, all 5 tools
+- [x] Sandbox — subprocess fallback done and tested; container/`--network=none`
+      path intentionally unimplemented tonight (pre-decided, see Orchestrator)
+
+  Built in isolated worktree, 58/58 tests, real stdio MCP session exercised
+  all 5 tools. Not yet merged — Phase 2. See `LOG.md` for the `mcp` package
+  version pin that must carry through the merge.
 
 ### Harness (Emmett)
 - [x] Model client, OpenAI-compatible, streaming
@@ -138,3 +143,11 @@ Append freely. Format: `- [component] what the spec got wrong, what you did.`
   field (`subprocess|container`), overriding `config.yaml`'s top-level
   `sandbox.mode`. Not in the #4 example, but explicitly requested by
   `ORCHESTRATOR.md` Phase 0 ("set it in config.yaml and in every meta.yaml").
+- [backend] `pyproject.toml`'s unpinned `mcp>=1.0.0` resolves via `uv sync`
+  to `mcp==2.1.1`, which renames `mcp.server.fastmcp.FastMCP` and breaks
+  the exact import both `00_ARCHITECTURE.md` §6 and `02_BACKEND.md` §3
+  specify verbatim. Pinned to `mcp>=1.0.0,<2.0.0` (resolves 1.29.1).
+- [backend] `02_BACKEND.md`'s `run_verifier(source, mode, stdin="")`
+  signature has no way to know which corpus/meta.yaml to use. Added
+  optional `meta=`/`cfg=` keyword overrides (defaults load the active
+  corpus from `config.yaml`), same pattern used in `ingest.pipeline`.

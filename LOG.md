@@ -158,4 +158,50 @@ generic but only exercised against one corpus so far.
 
 Still waiting on `language` and `backend` agents before Phase 2 integration.
 
+### Phase 1 — backend agent: done
+
+Worktree `/Users/owner/XenoScript/.claude/worktrees/agent-afa13be4cc4c0f07d`
+branch `worktree-agent-afa13be4cc4c0f07d`, 5 commits (on top of Phase 0),
+58/58 tests, ruff clean, zero `plinth`/`cobol` under `ashlar/` incl. tests.
+
+Built: `ashlar/mcp/sandbox.py` (`run_verifier`, subprocess-only, container
+raises `NotImplementedError` as instructed), `ashlar/ingest/{chunker,indexer,
+symbols,pipeline,__main__}.py`, `ashlar/mcp/server.py` (all 5 tools), plus
+fixture content under `corpora/stub/{docs,examples,pairs}`. Exercised all
+5 MCP tools via a real stdio JSON-RPC session (not just direct calls) —
+transcript in the agent's full report. `read_file` path-traversal and
+`grep_corpus` bad-regex both return clean error dicts, tested.
+
+**Important dependency finding, must survive the merge:** `uv sync`
+resolves `mcp>=1.0.0` to `2.1.1`, which renames
+`mcp.server.fastmcp.FastMCP` and breaks the exact import
+`00_ARCHITECTURE.md` §6 / `02_BACKEND.md` §3 specify verbatim. Backend
+pinned `mcp>=1.0.0,<2.0.0` in `pyproject.toml` (resolves to 1.29.1) in its
+worktree. **Action for me at merge time:** apply this same pin to the
+merged `pyproject.toml`, re-`uv sync`, and confirm the harness agent's
+code (which may reference `mcp` types too) still imports clean under 1.x.
+
+**Backend's symbol-precedence reading** (adopting as-is): exactly one tier
+is authoritative per corpus — verifier if `meta.yaml` defines the
+`symbols` command, else parsed-examples, else docs — every other tier may
+only enrich (`doc_anchor`, `example_refs`), never introduce new rows or
+overwrite `source`. Chosen specifically so "52 PLINTH symbols, all
+source=verifier" is achievable exactly once, not polluted by scraping.
+Matches the spec's stated intent in `02_BACKEND.md` §2.
+
+**Noted oddity, not backend's bug:** the Phase-0 stub verifier's JSON
+payload self-reports `exit_code: 1` on failure but the script never calls
+`sys.exit()`, so the real process exit code is 0. Backend's sandbox
+correctly derives `ok` from `errors`/actual `proc.returncode`, not the
+payload's self-reported field — this is arguably a hardening improvement,
+not a bug, since it protects against a lying toolchain. Leaving the stub
+as-is (it's disposable) but the "never trust self-reported exit_code
+alone" lesson should carry into the real PLINTH sandbox invocation too.
+
+**`verifier.symbols` output schema** — inferred (`01_LANGUAGE.md` was out
+of backend's scope), needs a quick cross-check against the language
+agent's actual `plinth symbols --json` output at merge time.
+
+Still waiting on `language` agent before Phase 2 integration.
+
 ---
