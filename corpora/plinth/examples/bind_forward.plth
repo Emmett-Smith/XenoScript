@@ -1,0 +1,23 @@
+# bind_forward.plth -- demonstrates: bind to a later definition (the
+# set-vs-bind gotcha, 01_LANGUAGE.md Sec 5.1). radar_b is defined after
+# the platform that binds to it.
+define scenario fwd_bind
+  set duration = 20s
+  set step = 1s
+end_scenario
+
+define platform uav_09 type air
+  position at 10.00deg 20.00deg
+  set altitude = 900m
+  bind primary_sensor <- radar_b
+end_platform
+
+define sensor radar_b type radar
+  bind mount <- uav_09
+  set range_max = 40000m
+end_sensor
+
+execute
+  at 2s spawn uav_09
+  at 2s activate radar_b
+end_execute

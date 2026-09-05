@@ -1,0 +1,30 @@
+# route_long.plth -- demonstrates: a multi-waypoint route.
+define scenario transit
+  set duration = 40s
+  set step = 1s
+end_scenario
+
+define platform uav_05 type air
+  position at 0.00deg 0.00deg
+  set altitude = 1200m
+  set speed = 50mps
+end_platform
+
+define route coastal_leg
+  waypoint
+    position at 1.00deg 1.00deg
+    set altitude = 1200m
+  end_waypoint
+  waypoint
+    position at 2.00deg 2.00deg
+    set altitude = 1400m
+    set speed = 55mps
+  end_waypoint
+  waypoint
+    position at 3.00deg 3.00deg
+  end_waypoint
+end_route
+
+execute
+  at 1s spawn uav_05 on route coastal_leg
+end_execute
