@@ -1,0 +1,4 @@
+define platform uav_01 type air
+  set altitude = 2200 m
+  FAIL bad_construct
+end platform
