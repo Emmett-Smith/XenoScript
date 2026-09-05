@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A coding assistant for languages no model has seen."
 requires-python = ">=3.11"
 dependencies = [
-  "mcp>=1.0.0",
+  "mcp>=1.0.0,<2.0.0",
   "openai>=1.0.0",
   "fastapi>=0.110.0",
   "uvicorn>=0.29.0",
