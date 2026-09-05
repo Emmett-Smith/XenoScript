@@ -1,0 +1,52 @@
+language: cobol
+display_name: COBOL
+extension: .cbl
+
+# GnuCOBOL free-form source (-free, which every command below uses) treats
+# "*>" as its comment marker, both as a standalone line and trailing after
+# code on the same line -- confirmed for real: `cobc -fsyntax-only -free`
+# accepted both forms cleanly. Fixed-form COBOL's column-7 "*" convention
+# does not apply here since none of this corpus's source uses fixed-form
+# columns; using "*" as comment_prefix would be wrong for -free source.
+comment_prefix: "*>"
+
+verifier:
+  # {file} is substituted with an absolute path inside the sandbox.
+  # cobc has no --json mode; it prints plain-text diagnostics to stderr
+  # (e.g. "file.cbl:4: error: invalid literal: 'HELLO ...'"), so this
+  # corpus uses the generic text-output adapter (ashlar/mcp/sandbox.py)
+  # instead of the JSON path PLINTH uses.
+  parse: ["cobc", "-fsyntax-only", "-free", "{file}"]
+  # cobc is compile-only -- there is no single command that compiles AND
+  # executes, so verifier.run points at a small wrapper script that does
+  # both. The sandbox always runs commands with cwd = repo root, so this
+  # relative path resolves correctly.
+  run: ["bash", "corpora/cobol/bin/run.sh", "{file}"]
+  # No verifier.symbols: cobc cannot dump its own grammar (00_ARCHITECTURE.md
+  # #4), so the symbol table falls back to tier 2 (parsed examples) per
+  # specs/02_BACKEND.md #2 -- this is expected and correct for this corpus.
+  output_format: text
+  error_regex: '^(?P<file>[^:\n]+):(?P<line>\d+):\s*(?P<severity>\w+):\s*(?P<message>.*)$'
+
+sandbox:
+  mode: subprocess
+  # Compiling is slower than parsing PLINTH's interpreted source (real
+  # gcc/cobc invocation under the hood), so this gets more headroom than
+  # PLINTH's 10s.
+  timeout_s: 20
+  memory_mb: 512
+
+retrieval:
+  # PLINTH is a small, invented DSL with almost no prose to search --
+  # bm25_weight: 0.75 there is "exact keyword match matters for DSLs".
+  # COBOL is the opposite case: real, substantial prose documentation
+  # (docs/manual.md covers divisions, PIC clauses, verbs, etc. in real
+  # depth) plus decades of idiom that a semantic match over docs text
+  # can surface even when the exact keyword isn't present (e.g. a task
+  # that says "loop" should still find PERFORM UNTIL). So COBOL's split
+  # leans further toward embeddings than PLINTH's does, while still
+  # keeping BM25 as the majority signal -- COBOL keywords (MOVE, PERFORM,
+  # COMPUTE, PIC) are still exact reserved words worth matching literally.
+  bm25_weight: 0.6
+  embedding_weight: 0.4
+  chunk_strategy: heading
