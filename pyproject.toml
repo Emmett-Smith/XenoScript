@@ -28,6 +28,10 @@ line-length = 100
 # rather than raising to the model (specs/02_BACKEND.md #3) -- the blind
 # except is intentional here, not an oversight.
 "ashlar/mcp/server.py" = ["BLE001"]
+# POST /corpus/create must never let an internal error 500 out with a raw
+# stack trace -- any failure mid-write rolls back and returns a clean
+# {"error": ...}, same intentional-blind-except reasoning as above.
+"ashlar/api/server.py" = ["BLE001"]
 
 [tool.pytest.ini_options]
 testpaths = ["ashlar", "eval"]

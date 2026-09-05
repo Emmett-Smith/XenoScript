@@ -318,9 +318,11 @@ async def post_corpus_create(
     bm25_weight: float = Form(0.75),
     embedding_weight: float = Form(0.25),
     chunk_strategy: str = Form("heading"),
-    docs: list[UploadFile] = File(default=[]),
-    examples: list[UploadFile] = File(default=[]),
+    docs: list[UploadFile] | None = File(default=None),  # noqa: B008 -- standard FastAPI pattern
+    examples: list[UploadFile] | None = File(default=None),  # noqa: B008
 ) -> JSONResponse:
+    docs = docs or []
+    examples = examples or []
     try:
         clean_name = _validate_corpus_name(name)
         target_dir = CORPORA_DIR / clean_name
