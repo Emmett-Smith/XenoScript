@@ -376,7 +376,31 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
           { kind: "run_output", stdout: event.stdout, stderr: event.stderr, ok: event.ok, errors: event.errors ?? [] },
         ],
       };
-    case "task_done":
+    case "task_done": {
+      // A cache-hit success never fires model_start/model_done (see
+      // ashlar/harness/loop.py's cache branch) -- so there is no
+      // `attempt` timeline step at all to show the final code on, or to
+      // hang "Insert into editor" off of. Found live: a cache-hit run
+      // rendered no code block and no insert button anywhere. Synthesize
+      // one here if the loop genuinely never created it; if a real
+      // attempt step already carries this exact verified code (the
+      // ordinary generate/verify path), don't duplicate it.
+      const hasVerifiedAttempt = state.timeline.some(
+        (s) => s.kind === "attempt" && s.verified === true && s.code === event.source,
+      );
+      const timeline = hasVerifiedAttempt
+        ? state.timeline
+        : [
+            ...state.timeline,
+            {
+              kind: "attempt" as const,
+              iteration: event.iterations,
+              code: event.source,
+              streaming: false,
+              verified: event.ok,
+              errors: [],
+            },
+          ];
       return {
         ...state,
         done: true,
@@ -385,8 +409,9 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
         code: event.source,
         citations: event.citations,
         errors: event.ok ? [] : state.errors,
-        timeline: [...state.timeline, { kind: "final", ok: event.ok, reason: null }],
+        timeline: [...timeline, { kind: "final", ok: event.ok, reason: null }],
       };
+    }
     case "task_failed":
       return {
         ...state,

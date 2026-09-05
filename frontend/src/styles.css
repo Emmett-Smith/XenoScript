@@ -212,8 +212,10 @@ hr, .rule {
 }
 
 .main-scroll {
+  overflow-x: hidden;
   overflow-y: auto;
   min-height: 0;
+  min-width: 0;
   padding: 16px 20px;
 }
 
@@ -268,6 +270,7 @@ hr, .rule {
 .timeline-step.collapsed {
   display: flex;
   width: 100%;
+  min-width: 0;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
@@ -296,6 +299,7 @@ hr, .rule {
   justify-content: space-between;
   gap: 12px;
   width: 100%;
+  min-width: 0;
   background: none;
   border: none;
   padding: 10px 0;
@@ -325,6 +329,12 @@ hr, .rule {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* A flex child's default min-width is its content's natural width, not
+     0 -- so without this, ellipsis truncation never actually engages at
+     narrow widths and the summary instead overflows or forces the whole
+     row wider than its container. Real bug, not just untested: this is
+     exactly what "formatting messes up when sizing is changed" was. */
+  min-width: 0;
 }
 
 .timeline-step.ok .timeline-step-summary { color: var(--verified); }
@@ -407,6 +417,7 @@ hr, .rule {
 
 .code-line {
   display: flex;
+  min-width: 0;
   white-space: pre;
 }
 
@@ -421,6 +432,8 @@ hr, .rule {
 
 .code-line .text {
   position: relative;
+  flex: 1;
+  min-width: 0;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -506,57 +519,6 @@ hr, .rule {
      (e.g. GnuCOBOL's missing-newline warning), not a failure --
      same treatment as other secondary/non-alarming text */
   color: var(--dim);
-}
-
-/* ---------- Baseline chart ---------- */
-
-.baseline-chart {
-  margin-top: 24px;
-  border-top: 1px solid var(--rule);
-  padding-top: 12px;
-}
-
-.baseline-chart h3 {
-  font-size: var(--size-2);
-  font-weight: 600;
-  margin: 0 0 10px;
-}
-
-.baseline-row {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 6px;
-  font-size: var(--size-1);
-}
-
-.baseline-row .label {
-  width: 11em;
-  flex-shrink: 0;
-  color: var(--dim);
-}
-
-.baseline-row .bar-track {
-  flex: 1;
-  height: 10px;
-  background: transparent;
-  position: relative;
-}
-
-.baseline-row .bar-fill {
-  height: 100%;
-  background: var(--ink);
-}
-
-.baseline-row .value {
-  width: 3.5em;
-  text-align: right;
-  color: var(--ink);
-}
-
-.baseline-empty {
-  color: var(--dim);
-  font-size: var(--size-1);
 }
 
 /* ---------- Prompt bar ---------- */

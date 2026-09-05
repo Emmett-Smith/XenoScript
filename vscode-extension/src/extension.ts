@@ -57,7 +57,7 @@ function getWebviewHtml(): string {
   <meta charset="UTF-8" />
   <meta
     http-equiv="Content-Security-Policy"
-    content="default-src 'none'; frame-src ${FRONTEND_URL}; connect-src ${FRONTEND_URL} ${BACKEND_URL}; style-src 'unsafe-inline'; img-src ${FRONTEND_URL} data:;"
+    content="default-src 'none'; frame-src ${FRONTEND_URL}; connect-src ${FRONTEND_URL} ${BACKEND_URL}; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src ${FRONTEND_URL} data:;"
   />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>

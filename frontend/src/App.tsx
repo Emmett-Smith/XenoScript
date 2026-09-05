@@ -5,7 +5,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE, useTaskStream, type FixtureName } from "./useTaskStream";
 import { Timeline } from "./panels/Timeline";
-import { BaselineChart } from "./panels/BaselineChart";
 import { PromptBar } from "./panels/PromptBar";
 import { AddCorpusModal } from "./AddCorpusModal";
 
@@ -151,7 +150,6 @@ export default function App() {
 
       <div className="main-scroll">
         <Timeline prompt={state.prompt} timeline={state.timeline} corpusExtension={active?.extension} />
-        <BaselineChart corpusName={active?.name ?? null} />
       </div>
 
       <PromptBar onSubmit={handleSubmit} running={running} />
