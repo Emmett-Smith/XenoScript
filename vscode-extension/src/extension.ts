@@ -37,7 +37,7 @@ const THEME_VAR_NAMES = [
 ];
 
 /**
- * Builds the HTML shown inside the "Ashlar" sidebar webview.
+ * Builds the HTML shown inside the "XenoScript" sidebar webview.
  *
  * The webview embeds the existing Vite/React frontend (served at
  * FRONTEND_URL) in an <iframe>, plus a small bridge script with two
@@ -83,7 +83,7 @@ function getWebviewHtml(): string {
       line-height: 1.4;
       border-bottom: 1px solid var(--vscode-panel-border, #444);
     }
-    #ashlar-frame {
+    #xenoscript-frame {
       display: block;
       flex: 1;
       width: 100%;
@@ -93,18 +93,18 @@ function getWebviewHtml(): string {
 </head>
 <body>
   <div id="fallback-notice">
-    If this is blank, the Ashlar backend isn't running yet &mdash; see the command
-    "Ashlar: Open in Browser" or run <code>uv run python -m ashlar.api.server</code>
+    If this is blank, the XenoScript backend isn't running yet &mdash; see the command
+    "XenoScript: Open in Browser" or run <code>uv run python -m ashlar.api.server</code>
     and <code>npm run dev</code> in the <code>frontend/</code> directory first.
   </div>
   <iframe
-    id="ashlar-frame"
+    id="xenoscript-frame"
     src="${FRONTEND_URL}"
     sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
   ></iframe>
   <script>
     const vscodeApi = acquireVsCodeApi();
-    const frame = document.getElementById('ashlar-frame');
+    const frame = document.getElementById('xenoscript-frame');
     const themeVarNames = ${JSON.stringify(THEME_VAR_NAMES)};
 
     function currentThemeKind() {
@@ -190,11 +190,11 @@ async function insertCodeIntoEditor(code: string, fileExtension?: string): Promi
       editBuilder.replace(selection, code);
     }
   });
-  void vscode.window.showInformationMessage('Ashlar: inserted generated code into the active editor.');
+  void vscode.window.showInformationMessage('XenoScript: inserted generated code into the active editor.');
 }
 
-class AshlarSidebarViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'ashlar.sidebar';
+class XenoScriptSidebarViewProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = 'xenoscript.sidebar';
 
   public resolveWebviewView(webviewView: vscode.WebviewView): void {
     webviewView.webview.options = {
@@ -211,23 +211,23 @@ class AshlarSidebarViewProvider implements vscode.WebviewViewProvider {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-  const provider = new AshlarSidebarViewProvider();
+  const provider = new XenoScriptSidebarViewProvider();
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
-      AshlarSidebarViewProvider.viewType,
+      XenoScriptSidebarViewProvider.viewType,
       provider,
     ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('ashlar.openAssistant', async () => {
-      await vscode.commands.executeCommand('ashlar.sidebar.focus');
+    vscode.commands.registerCommand('xenoscript.openAssistant', async () => {
+      await vscode.commands.executeCommand('xenoscript.sidebar.focus');
     }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('ashlar.openInBrowser', async () => {
+    vscode.commands.registerCommand('xenoscript.openInBrowser', async () => {
       await vscode.env.openExternal(vscode.Uri.parse(FRONTEND_URL));
     }),
   );

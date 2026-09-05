@@ -99,7 +99,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <span className="brand">Ashlar</span>
+        <span className="brand">XenoScript</span>
         <span className="manifest">
           {active
             ? `${active.display_name} · ${active.symbols} symbols · ${active.examples} examples · offline`

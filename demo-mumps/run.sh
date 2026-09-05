@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Runs a real M routine against a real, persistent Reference Standard M
-# database -- this is the same open-source interpreter Ashlar's own
+# database -- this is the same open-source interpreter XenoScript's own
 # verifier uses (see ~/XenoScript/.toolchains/rsm), pointed at a
 # standalone volume that's yours to keep, browse, and build on. Unlike
-# Ashlar's internal verifier (which wipes every global before each check,
+# XenoScript's internal verifier (which wipes every global before each check,
 # on purpose, so one task can never see another's leftover state), this
 # database really does persist between runs -- that's the point: set a
 # patient record in one run, read it back in a completely separate one.
@@ -27,7 +27,7 @@ if [ ! -f "$DB" ]; then
 fi
 
 # Idempotent start: if the environment is already up (from an earlier
-# run.sh call, or because Ashlar's own server raised the shared-memory
+# run.sh call, or because XenoScript's own server raised the shared-memory
 # ceiling this session), this just no-ops instead of erroring.
 if ! "$RSM" -x 'QUIT' "$DB" >/dev/null 2>&1; then
   echo "Starting the environment ..." >&2

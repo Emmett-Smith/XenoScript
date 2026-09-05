@@ -1,7 +1,7 @@
 # demo-cobol — a real, standalone COBOL project
 
 Real COBOL programs, compiled and run with the real GnuCOBOL compiler
-(`cobc`) -- the same toolchain Ashlar's own verifier uses. No daemon, no
+(`cobc`) -- the same toolchain XenoScript's own verifier uses. No daemon, no
 shared state to worry about (unlike the MUMPS demo next door): each run
 just compiles the source into a fresh binary and executes it.
 

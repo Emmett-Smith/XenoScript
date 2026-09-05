@@ -1,8 +1,8 @@
 # demo-mumps — a real, standalone MUMPS project
 
-This is a real, persistent MUMPS/M project, independent of the Ashlar
+This is a real, persistent MUMPS/M project, independent of the XenoScript
 extension. Open this folder directly in VS Code, browse and run these
-files yourself, and you can verify with your own eyes that Ashlar's
+files yourself, and you can verify with your own eyes that XenoScript's
 generated code runs against exactly the same real interpreter -- nothing
 here is a mock or a canned demo.
 
@@ -10,7 +10,7 @@ here is a mock or a canned demo.
 
 [Reference Standard M (RSM)](https://github.com/Reference-Standard-M/rsm),
 a real open-source implementation of ANSI M, already built at
-`../.toolchains/rsm/bin/rsm` for this repo. Same binary Ashlar's own
+`../.toolchains/rsm/bin/rsm` for this repo. Same binary XenoScript's own
 verifier calls.
 
 ## Try it (from a VS Code integrated terminal, in this folder)
@@ -30,18 +30,18 @@ persistent database and not a script re-running itself.
 
 ## Why this database won't randomly reset
 
-Ashlar's own verifier (used when you ask it to write MUMPS code) uses a
+XenoScript's own verifier (used when you ask it to write MUMPS code) uses a
 *different*, separate database at `../corpora/mumps/env/mumps.dat`, and
 deliberately wipes every global before each check it runs, so one
 generation task can never see another's leftover state. This project's
 `db/hospital.dat` is a completely different file and is never touched by
-Ashlar -- what you build here stays here.
+XenoScript -- what you build here stays here.
 
 ## One real constraint worth knowing
 
 Each MUMPS environment needs its own small slice of macOS's shared
 memory, and the OS default ceiling is only 4 MiB total -- too small for
-both this project's environment and Ashlar's own to run at once, out of
+both this project's environment and XenoScript's own to run at once, out of
 the box. If `./run.sh` reports `Unable to create shared memory segment`,
 either raise the ceiling once:
 
@@ -49,7 +49,7 @@ either raise the ceiling once:
 sudo sysctl -w kern.sysv.shmmax=16777216 kern.sysv.shmall=4096
 ```
 
-or stop whichever of the two (Ashlar's backend / this project) you're
+or stop whichever of the two (XenoScript's backend / this project) you're
 not actively using.
 
 ## Suggested VS Code setup

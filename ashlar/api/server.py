@@ -177,7 +177,7 @@ def list_corpora() -> list[dict[str, Any]]:
     return [_manifest_for(m.language, m) for m in metas]
 
 
-app = FastAPI(title="ashlar")
+app = FastAPI(title="xenoscript")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_ORIGIN],

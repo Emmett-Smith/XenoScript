@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Compiles and runs a real COBOL program with the real GnuCOBOL compiler
-# (the same toolchain Ashlar's own verifier uses) -- no daemon, no shared
+# (the same toolchain XenoScript's own verifier uses) -- no daemon, no shared
 # state, just: compile, then execute the resulting binary. Usage:
 #   ./run.sh programs/greeter.cbl
 set -euo pipefail

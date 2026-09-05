@@ -153,7 +153,7 @@ export function AddCorpusModal({
           </div>
 
           <p className="modal-note">
-            These commands must already run on this machine. Ashlar does not install,
+            These commands must already run on this machine. XenoScript does not install,
             detect, or guess a toolchain — it only runs exactly what you type here, the
             same way meta.yaml's verifier block works for every existing corpus.
           </p>

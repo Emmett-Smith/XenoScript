@@ -1,9 +1,9 @@
 {
-  "name": "ashlar-mumps-assistant",
-  "displayName": "Ashlar — MUMPS AI Assistant",
+  "name": "xenoscript-mumps-assistant",
+  "displayName": "XenoScript — MUMPS AI Assistant",
   "description": "AI coding assistant for MUMPS, the language behind most EHR systems (Epic, VistA, Meditech).",
   "version": "0.0.1",
-  "publisher": "ashlar-hackathon",
+  "publisher": "xenoscript-hackathon",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -11,23 +11,23 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:ashlar.sidebar"
+    "onView:xenoscript.sidebar"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "ashlar",
-          "title": "Ashlar",
+          "id": "xenoscript",
+          "title": "XenoScript",
           "icon": "media/icon.svg"
         }
       ]
     },
     "views": {
-      "ashlar": [
+      "xenoscript": [
         {
-          "id": "ashlar.sidebar",
+          "id": "xenoscript.sidebar",
           "name": "MUMPS Assistant",
           "type": "webview"
         }
@@ -35,12 +35,12 @@
     },
     "commands": [
       {
-        "command": "ashlar.openAssistant",
-        "title": "Ashlar: Open Assistant"
+        "command": "xenoscript.openAssistant",
+        "title": "XenoScript: Open Assistant"
       },
       {
-        "command": "ashlar.openInBrowser",
-        "title": "Ashlar: Open in Browser"
+        "command": "xenoscript.openInBrowser",
+        "title": "XenoScript: Open in Browser"
       }
     ]
   },
