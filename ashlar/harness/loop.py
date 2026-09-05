@@ -187,7 +187,7 @@ def _elapsed(start: float) -> float:
 _FENCE_RE = re.compile(r"^\s*```[^\n]*\n(.*?)\n?```\s*$", re.DOTALL)
 
 
-def _strip_markdown_fences(source: str) -> str:
+def strip_markdown_fences(source: str) -> str:
     """Local models routinely wrap output in a markdown code fence despite
     `prompts/system.md`'s explicit "output only source code, no markdown
     fences" instruction -- observed live in Phase 2 integration against
@@ -278,7 +278,7 @@ def run_task(
         source = deps.model.generate(
             system, context, prompt, history_text, stream=True, on_token=emitter.model_token
         )
-        source = _strip_markdown_fences(source)
+        source = strip_markdown_fences(source)
         emitter.model_done(i, source)
 
         if budget_exceeded():
