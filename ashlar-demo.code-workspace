@@ -1,0 +1,13 @@
+{
+  "folders": [
+    { "name": "demo-mumps (real MUMPS project)", "path": "demo-mumps" },
+    { "name": "demo-cobol (real COBOL project)", "path": "demo-cobol" },
+    { "name": "XenoScript (Ashlar source)", "path": "." }
+  ],
+  "settings": {
+    "files.associations": {
+      "*.m": "mumps",
+      "*.cbl": "COBOL"
+    }
+  }
+}

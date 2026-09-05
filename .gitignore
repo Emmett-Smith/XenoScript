@@ -11,3 +11,5 @@ dist/
 .claude/worktrees/
 .toolchains/
 corpora/mumps/env/
+demo-mumps/db/
+demo-mumps/log/
