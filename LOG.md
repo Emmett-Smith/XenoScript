@@ -1,5 +1,276 @@
 # LOG
 
+## LATEST HANDOFF (2026-09-05, ~19:00 local) — read this first, supersedes everything below
+
+Hackathon has ~12 hours left as of this writing. Everything below this
+section (MUMPS UPDATE, CURRENT HANDOFF, MORNING HANDOFF) is real history
+and still worth reading for detail/rationale, but this section is the
+current, accurate state and the first thing to read after a context
+compaction.
+
+### The pitch, locked in
+
+"An AI coding assistant for MUMPS — the language still running the VA's
+EHR and much of Epic/Meditech — that verifies every line against a real
+interpreter instead of guessing." MUMPS leads, COBOL is the "and it
+already works for a language the model partially knows" second beat,
+PLINTH (the invented zero-memorization language) is a pocket answer for
+"how do we know this isn't just memorized," never something to lead
+with. Corpus dropdown is ordered exactly this way now (see below).
+
+### Product is now "XenoScript," not "Ashlar," everywhere user-visible
+
+Renamed: VS Code extension name/id/icon/sidebar title/commands, browser
+header + tab title, corpus-upload modal copy, landing pitch
+(`frontend/LANDING_PAGE_PITCH.md`), both demo READMEs, the multi-root
+workspace file (now `xenoscript-demo.code-workspace` — the OLD
+`ashlar-demo.code-workspace` is deleted; if a stale window is still open
+from it, close and reopen the new one). Deliberately did **NOT** rename
+the internal `ashlar` Python package (`ashlar/api/server.py`,
+`ashlar.harness`, `ashlar.mcp`, etc.) or the extension↔webview message-
+protocol strings (`"ashlar-vscode-host"`/`"ashlar-webapp"`) — neither is
+forward-facing, and renaming the package would mean touching every
+import in the codebase for zero visible benefit. The extension's
+identity changed (`ashlar-mumps-assistant` → `xenoscript-mumps-
+assistant`), so it was uninstalled and reinstalled fresh, not updated in
+place — confirm with `code --list-extensions` if anything seems off.
+
+### The VS Code extension: real, working, docked correctly
+
+Lives in `vscode-extension/`. It's a thin webview shell — an iframe
+pointing at `http://localhost:5173`, no UI reimplemented. The human has
+it docked in the **Secondary Side Bar** (right side, like Copilot
+Chat/Claude Code), which is a manual one-time drag on their end, not
+something set from code. Real theme sync now works (dark/light both
+confirmed) — the actual root cause of it never working before was **not
+a race condition**, it was the webview's own Content-Security-Policy
+(`default-src 'none'`) silently blocking its own inline bridge script
+entirely, `script-src` was simply never added. Proved this by extracting
+the real generated HTML and testing it outside VS Code with and without
+the fix. **Insert into editor** works: a button appears on any verified
+result, posts the code up through the same bridge, and the extension
+host inserts it at the cursor (or replaces the selection) in the active
+editor, or opens a new file if none is open.
+
+To rebuild+reinstall after any `vscode-extension/src/extension.ts`
+change:
+```bash
+cd vscode-extension && rm -rf out *.vsix && npx tsc -p . && npx vsce package --no-dependencies
+CODE_BIN="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+"$CODE_BIN" --install-extension xenoscript-mumps-assistant-0.0.1.vsix --force
+```
+Then **Cmd+Shift+P → "Developer: Reload Window"** in the real VS Code
+window — extension host code does not hot-reload otherwise. Pure
+frontend (`frontend/src/**`) changes need NO extension rebuild at all,
+just a panel close/reopen, since the webview just iframes the live Vite
+dev server.
+
+### The frontend is now a single chronological timeline, not 3 panels
+
+Old layout (Corpus | Generation | Verifier columns, always all visible)
+is gone. `frontend/src/panels/Timeline.tsx` renders one scrolling
+transcript in the order things actually happened: prompt → retrieval →
+each generate/verify/repair round as its own step → real run output →
+final verdict. Older steps auto-collapse to a one-line summary once the
+run has moved past them (click to re-expand, nothing is ever discarded).
+Every step gets a glanceable state mark (● pending / ✓ ok / ✗ fail) and
+a state-aware label — this was a real, since-fixed bug: the "GENERATING"
+label used to never update even after a result was fully verified,
+making a successful result visually read as permanently stuck. The
+Baseline chart (research-style arm-comparison bars) was removed entirely
+per direct feedback that it read as inaccurate/confusing next to a live
+result — `BaselineChart.tsx` is deleted, not just unused.
+
+When embedded in VS Code specifically (`[data-embed="vscode"]` in
+`styles.css`, set by `frontend/src/vscodeBridge.ts` once a real theme
+message arrives), expanded steps get a subtle card background
+(`--vscode-editorWidget-background`) instead of blending flat into the
+page, and raw technical noise is softened: a 64-char cache hash reads as
+"matched a previously verified answer / cache key 018e4feb96…", and "(no
+stdout)" became "Ran successfully, no output printed (expected for code
+that only stores data)". The standalone browser demo (no `data-embed`
+set) is completely unaffected by any of this — it still uses
+specs/04_FRONTEND.md's original locked palette.
+
+### Two real, standalone demo projects — proof independent of the app
+
+`demo-mumps/` and `demo-cobol/` (repo root, siblings of `ashlar/`,
+`frontend/`) are real, git-tracked mini-projects with their own READMEs,
+meant to be opened directly and run from an integrated terminal,
+completely independent of the FastAPI backend. `xenoscript-demo.code-
+workspace` opens both plus the main repo as a 3-folder multi-root
+workspace.
+
+`demo-mumps/` has a real, **persistent** hospital database
+(`db/hospital.dat`, gitignored — a build artifact) and routines
+(`routines/*.m`) that read and write real patient records across
+genuinely separate process invocations — proven live: seed, then in a
+separate run look up what was seeded, add new records with real
+`$ORDER`-computed IDs, list them all. `routines/add_patient_ai_demo.m`
+is a real, AI-generated-then-saved routine (see "reliable demo prompts"
+below) — running it and then `list_patients.m` is the single best "look,
+the AI's code actually did something real" moment available right now.
+
+One real, already-resolved constraint worth remembering if it recurs:
+MUMPS environments each need a slice of macOS's default 4 MiB total
+shared-memory ceiling, and two can't coexist under that default. The
+human already ran (their own sudo, not mine):
+```bash
+sudo sysctl -w kern.sysv.shmmax=16777216 kern.sysv.shmall=4096
+```
+which is confirmed to let `demo-mumps`'s environment and the main app's
+backend run at the same time now. This resets on reboot — if the
+machine restarts before the demo, that command needs to run again, or
+`demo-mumps/run.sh` will fail with "Unable to create shared memory
+segment" (and so might the backend, depending on which grabbed the
+budget first).
+
+If a `RSM_CRASH` file or a leaked shared-memory segment ever reappears
+(has happened repeatedly from rapid successive testing), the fix is
+always: `ipcs -m` / `ipcs -s` to find the orphaned segment, `ipcrm -m
+<id>` / `ipcrm -s <id>` to remove it, delete the stray `RSM_CRASH` file.
+
+### The one big unresolved bug — know this before demoing MUMPS live
+
+MUMPS's real captured execution output (the "Ran it" / run_output step,
+and therefore the 97%-behavioral-similarity check for curated pairs) is
+**broken specifically when driven through the actual long-running
+`ashlar.api.server` process** — confirmed 16/16 reproductions live, one
+task after another, fresh server restart included. The same exact
+subprocess call, run in ANY isolated one-off script (plain `python3 -c`,
+inside an `asyncio.run()` loop, inside a background thread, any
+combination tried), succeeds every single time. Root cause NOT found
+despite extensive live testing (see the "MUMPS UPDATE" section far below
+for the full blow-by-blow) — a real, partial fix already landed
+(`corpora/mumps/bin/rsm_run.py`'s `_run_rsm_with_stdin` now hands `rsm` a
+real file object as stdin instead of `subprocess.run`'s `input=`, which
+is empirically necessary but not sufficient). The daemon-thread-per-task
+execution model (`ashlar/api/server.py`'s `post_task` spawns a
+`threading.Thread(daemon=True)` per request) is the most likely
+remaining suspect but was not confirmed.
+
+**Practical consequence, and the actual workaround in use for the demo**:
+compile-checking (does this parse as real M) is unaffected and fully
+reliable. Behavioral/output display specifically is not, in the live
+sidebar. The demo therefore does NOT rely on the sidebar's own Output
+panel to prove real execution — it uses **Insert into editor**, then
+runs the code for real in `demo-mumps/`'s independent terminal, which
+never goes through the server's subprocess path at all. This is
+confirmed to work end to end (see `add_patient_ai_demo.m` above) and is
+arguably a *stronger* demo moment than a green checkmark alone.
+
+### Reliable, live-tested MUMPS prompts (use these, don't improvise cold)
+
+- `"Create a new entry in the uppercase global PATIENT for patient
+  number <N> storing <NAME>^<AGE>^<SEX>"` — works first try, reliably.
+  **The exact phrase "uppercase global PATIENT" matters**: M global
+  names are case-sensitive, and without an explicit case hint the model
+  reliably writes lowercase `^patient`, a completely different global
+  that the demo's `list_patients.m` (which reads `^PATIENT`) will never
+  see. Use a fresh `<N>` each time (10 is already taken in the live db).
+- `"Delete patient record <N> from the uppercase global PATIENT."` →
+  produces real `KILL ^PATIENT(N)`. Was broken (`DELETE ...`, invalid)
+  until a real retrieval bug was fixed today (see below) — confirmed
+  fixed and working now.
+- `"Categorize a glucose value of <N> as LOW, NORMAL, or HIGH."` →
+  produces real `$SELECT(...)` code, first try.
+- COBOL: the `GREETER` pair prompt (`"Write a COBOL program named
+  GREETER that displays exactly one line of output: \"HELLO,
+  ASHLAR.\""` — yes, the literal string still says ASHLAR, it's real
+  captured program output/test data, not branding, deliberately left
+  alone) is a reliable cache-hit, real-output demo moment, and COBOL's
+  own run/output path is NOT affected by the MUMPS-only bug above.
+
+**What reliably fails**: multi-step/compound prompts ("delete X and
+confirm it's gone") tend to make the model wrap correct M fragments
+inside an invented `program NAME ... END` pseudo-code shell that isn't
+valid M at all, and it usually repeats the identical mistake across all
+4 repair attempts rather than self-correcting. Keep demo prompts to one
+clear action.
+
+### MUMPS corpus content, and a second real bug found and fixed today
+
+Examples doubled: 10 → 18 (`corpora/mumps/examples/`), now covering
+nested/multi-level globals, `KILL`+`$DATA` (delete/exists-check),
+`$SELECT` (multi-way branch), `$JUSTIFY`/`$TRANSLATE`/`$FIND` (number
+formatting, date-separator swap, substring position + name-splitting).
+`docs/manual.md` has matching new sections, all verified live before
+being written, in the file's existing style.
+
+While testing this, found and fixed a real, previously-unnoticed bug in
+`ashlar/ingest/symbols.py`'s tier-2 symbol extraction (shared by every
+corpus, not MUMPS-specific): it tokenized whole example-file lines,
+comments included, so English prose in a comment ("...the real M way to
+**delete** a record...") turned the plain word "delete" into a fake
+"symbol" that then shadowed the real delete→`KILL` synonym-cluster
+resolution (a bare word matching itself beat the correct redirect).
+`CorpusMeta.comment_prefix` already existed for exactly this and was
+simply never used in that function. Fixed: lines are now split at their
+own corpus's comment marker before tokenizing. Real, measurable effect:
+MUMPS's tier-2 symbol count actually *dropped* after the fix (283 → 82,
+noise removed, not a regression) and COBOL's did too (218 → 102); PLINTH
+is unaffected (it gets real symbols from its own interpreter's dump, tier
+1, never this heuristic). Also added three more generic synonym clusters
+(`ashlar/harness/keywords.py`): delete/remove/kill/discharge/erase/
+clear/purge/drop, exists/found/present/has/contains/available, and
+categorize/classify/select/choose/pick/match/case/switch. All of this is
+corpus-agnostic — no language-specific logic added to `ashlar/`.
+
+### Corpus dropdown: order + hidden corpus
+
+`ashlar/config.py`'s `CorpusMeta` gained two new generic fields, both
+read from each corpus's own `meta.yaml`, no hardcoded names anywhere in
+`ashlar/`: `hidden: bool` (stub is now hidden from `GET /corpora` and
+therefore the dropdown, but still fully real and directly switchable by
+name — a wide swath of the test suite depends on that) and `order: int`
+(mumps=0, cobol=1, plinth=2, everything else defaults to 100/last).
+Confirmed live: `GET /corpora` returns exactly `[mumps, cobol, plinth]`
+in that order.
+
+### Full checklist to get everything running from cold
+
+```bash
+# Terminal 1 (if not already running -- check with curl first)
+ollama serve
+
+# Terminal 2
+cd ~/XenoScript
+uv run python -m ashlar.api.server        # :8000, does NOT hot-reload .py changes
+
+# Terminal 3
+cd ~/XenoScript/frontend && npm run dev   # :5173, DOES hot-reload
+
+# Open the workspace
+open ~/XenoScript/xenoscript-demo.code-workspace
+```
+Then click the XenoScript icon (wherever it's docked) in VS Code.
+Sanity checks: `curl -s localhost:8000/corpora` should list exactly
+mumps/cobol/plinth in that order; `curl -s -o /dev/null -w '%{http_code}'
+localhost:5173/` should print 200.
+
+### What's still open / not done
+
+- The MUMPS-through-the-live-server output bug above — real, understood
+  at the symptom level, root cause not isolated. Don't sink more time
+  into it without a specific new lead; the terminal-based workaround is
+  solid for demo purposes.
+- `--repeat 3` eval reliability sweeps: never run for any corpus, ever,
+  this whole project. Numbers everywhere are directional, not exact.
+- Model bake-off: still blocked, only `qwen2.5-coder:3b` has ever been
+  available on this machine.
+- No human has yet done a full live run-through of the actual demo
+  script inside real VS Code end to end in one sitting — everything's
+  been verified in pieces (curl for generation, terminal for execution,
+  Chrome-simulated-embed for visuals). Doing that run-through together
+  was the suggested next step before this handoff was requested.
+- MUMPS's `program`, `$HOROLOG`, `NEW`-with-real-scoping, and dotted-DO
+  blocks are all either unverified-as-demo-worthy or confirmed NOT to
+  work in this corpus's direct-mode execution model (see "Execution
+  model" in `corpora/mumps/docs/manual.md`) — don't improvise prompts
+  that would need them.
+
+---
+
 ## MUMPS UPDATE (2026-09-05, ~15:45 local) — read this before the CURRENT HANDOFF below, which predates it
 
 The earlier "MUMPS -- investigated, ruled out" note below is now **wrong**
