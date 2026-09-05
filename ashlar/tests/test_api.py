@@ -33,14 +33,16 @@ def test_corpus_switch_unknown_corpus_404():
     assert resp.status_code == 404
 
 
-def test_eval_latest_reports_no_report_yet_when_empty():
+def test_eval_latest_reports_real_state_not_a_hardcoded_stub():
     client = _client()
     resp = client.get("/eval/latest")
     assert resp.status_code == 200
     body = resp.json()
-    # eval/reports/ is empty tonight (no live model, no eval run) -- must be
-    # a real not-hardcoded check, not a permanent stub.
-    assert body == {"error": "no report yet"} or "reports" in str(body)
+    # eval/reports/ started empty tonight (no live model at session start),
+    # then Phase 4 actually ran the eval runner and populated it -- this
+    # must reflect whichever of those two real states currently holds, not
+    # a permanent hardcoded stub either way.
+    assert body == {"error": "no report yet"} or {"git_sha", "arms", "model_endpoints"} <= body.keys()
 
 
 def test_post_task_returns_task_id_and_stream_emits_full_event_sequence():

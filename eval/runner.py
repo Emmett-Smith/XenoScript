@@ -371,7 +371,17 @@ def main() -> None:
                 model: ModelClient = FakeModel(responses=args.fake_responses or [])
                 model_endpoints[arm] = "fake-model"
             else:
-                model = _build_model(cfg, arm, args.cloud_base_url, args.cloud_api_key, args.cloud_model)
+                try:
+                    model = _build_model(cfg, arm, args.cloud_base_url, args.cloud_api_key, args.cloud_model)
+                except SystemExit as e:
+                    # In --all-arms mode, a single arm missing credentials
+                    # (arm E, most likely) must not lose every other arm's
+                    # already-completed results -- skip it, keep going, and
+                    # say so plainly rather than silently dropping it.
+                    print(f"=== arm {arm}: SKIPPED -- {e} ===", file=sys.stderr)
+                    if args.arm == arm:
+                        raise
+                    continue
                 model_endpoints[arm] = getattr(model, "name", "fake-model")
                 if arm == "E":
                     model_endpoints[arm] = f"{args.cloud_base_url} ({args.cloud_model})"
