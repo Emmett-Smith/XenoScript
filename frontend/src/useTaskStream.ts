@@ -87,6 +87,14 @@ export interface CacheHitEvent {
   key: string;
   ts: number;
 }
+export interface RunOutputEvent {
+  type: "run_output";
+  stdout: string;
+  stderr: string;
+  ok: boolean;
+  errors: VerifyError[];
+  ts: number;
+}
 export type Citation =
   | { file: string; line: number }
   | { file: string; start: number; end: number };
@@ -118,6 +126,7 @@ export type TaskEvent =
   | VerifyResultEvent
   | RepairStartEvent
   | CacheHitEvent
+  | RunOutputEvent
   | TaskDoneEvent
   | TaskFailedEvent;
 
@@ -134,6 +143,7 @@ const EVENT_TYPES: TaskEvent["type"][] = [
   "verify_result",
   "repair_start",
   "cache_hit",
+  "run_output",
   "task_done",
   "task_failed",
 ];
@@ -183,6 +193,10 @@ export interface TaskStreamState {
   done: boolean;
   failedReason: string | null;
   lastErrors: VerifyError[] | null;
+  // Real execution output of the verified candidate (run_output event) --
+  // null until the first successful run, distinct from `errors` (which is
+  // compile-time verify() errors, not runtime stdout/stderr).
+  runOutput: { stdout: string; stderr: string; ok: boolean; errors: VerifyError[] } | null;
 }
 
 const initialState: TaskStreamState = {
@@ -200,6 +214,7 @@ const initialState: TaskStreamState = {
   done: false,
   failedReason: null,
   lastErrors: null,
+  runOutput: null,
 };
 
 // Internal-only action, not part of the §8 SSE contract — used to clear
@@ -268,6 +283,11 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
       return { ...state, verdict: "repairing", iteration: event.iteration };
     case "cache_hit":
       return { ...state, cacheHits: [...state.cacheHits, event.key] };
+    case "run_output":
+      return {
+        ...state,
+        runOutput: { stdout: event.stdout, stderr: event.stderr, ok: event.ok, errors: event.errors ?? [] },
+      };
     case "task_done":
       return {
         ...state,
@@ -369,6 +389,8 @@ function delayForEvent(e: TaskEvent): number {
       return 200;
     case "verify_result":
       return 350;
+    case "run_output":
+      return 250;
     case "task_done":
     case "task_failed":
       return 300;

@@ -352,3 +352,37 @@ def test_cache_hit_also_emits_run_output(tmp_path):
     run_events = [e for e in events if e["type"] == "run_output"]
     assert len(run_events) == 1
     assert run_events[0]["stdout"] == "cached run output\n"
+
+
+def test_run_output_carries_the_reason_when_compile_passes_but_run_cannot(tmp_path):
+    """A compile-clean program can still have nothing runnable (e.g.
+    PLINTH's real "no scenario defined; nothing to run" for a bare
+    platform block) -- a real, expected outcome, not a harness bug. The
+    UI needs the reason, not a silent empty box next to a green verdict."""
+    meta = load_corpus_meta("stub")
+
+    def verify_fn(source, run, stdin):
+        if not run:
+            return {"ok": True, "errors": [], "warnings": [], "stdout": "",
+                     "stderr": "", "exit_code": 0, "duration_ms": 1}
+        return {
+            "ok": False,
+            "errors": [{"file": None, "line": None, "col": None, "code": "EHARNESS",
+                        "message": "no scenario defined; nothing to run", "severity": "error"}],
+            "warnings": [], "stdout": "", "stderr": "", "exit_code": 1, "duration_ms": 1,
+        }
+
+    model = FakeModel(responses=["clean source"])
+    tool_client = FakeToolClient(verify_fn=verify_fn)
+    memory = Memory(tmp_path / "symbols.db")
+    corpus = _make_corpus(meta)
+    deps = HarnessDeps(model=model, tool_client=tool_client, memory=memory)
+
+    events: list[dict] = []
+    result = run_task("just a platform, no scenario", corpus, events.append, deps)
+
+    assert result.ok is True  # compile still passed
+    run_events = [e for e in events if e["type"] == "run_output"]
+    assert len(run_events) == 1
+    assert run_events[0]["ok"] is False
+    assert run_events[0]["errors"][0]["message"] == "no scenario defined; nothing to run"

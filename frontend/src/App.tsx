@@ -124,6 +124,7 @@ export default function App() {
           done={state.done}
           failedReason={state.failedReason}
           citations={state.citations}
+          runOutput={state.runOutput}
         />
       </div>
 

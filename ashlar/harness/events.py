@@ -68,8 +68,13 @@ class EventEmitter:
     def cache_hit(self, key: str) -> None:
         self._send({"type": "cache_hit", "key": key})
 
-    def run_output(self, stdout: str, stderr: str, ok: bool) -> None:
-        self._send({"type": "run_output", "stdout": stdout, "stderr": stderr, "ok": ok})
+    def run_output(self, stdout: str, stderr: str, ok: bool, errors: list[Any] | None = None) -> None:
+        # `errors` (00_ARCHITECTURE.md #5 shape) is why a compile-clean
+        # program can still have nothing to show: e.g. PLINTH's "no
+        # scenario defined; nothing to run" for a program that only
+        # declares a platform. Without this the UI has no way to explain
+        # an empty, failed run next to a green "verified" compile result.
+        self._send({"type": "run_output", "stdout": stdout, "stderr": stderr, "ok": ok, "errors": errors or []})
 
     def task_done(self, ok: bool, iterations: int, source: str, citations: list[Any]) -> None:
         self._send({

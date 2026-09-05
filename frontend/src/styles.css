@@ -373,6 +373,53 @@ hr, .rule {
   font-size: var(--size-2);
 }
 
+/* ---------- Terminal / output ---------- */
+
+.terminal-panel {
+  margin-top: 24px;
+  border-top: 1px solid var(--rule);
+  padding-top: 12px;
+}
+
+.terminal-panel h3 {
+  font-size: var(--size-2);
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.terminal-empty {
+  font-family: var(--mono);
+  font-size: var(--size-1);
+  color: var(--dim);
+}
+
+.terminal-body {
+  border-left: 2px solid var(--rule);
+  padding-left: 10px;
+}
+
+.terminal-body.ok {
+  border-left-color: var(--verified);
+}
+
+.terminal-body.fault {
+  border-left-color: var(--fault);
+}
+
+.terminal-stdout,
+.terminal-stderr {
+  font-family: var(--mono);
+  font-size: var(--size-1);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+.terminal-stderr {
+  color: var(--fault);
+}
+
 /* ---------- Baseline chart ---------- */
 
 .baseline-chart {

@@ -6,6 +6,7 @@
 
 import type { AttemptRecord, Citation, VerdictState, VerifyError } from "../useTaskStream";
 import { BaselineChart } from "./BaselineChart";
+import { TerminalPanel } from "./TerminalPanel";
 
 const WORD: Record<VerdictState, string> = {
   idle: "ready",
@@ -44,6 +45,7 @@ export function VerifierPanel({
   done,
   failedReason,
   citations,
+  runOutput,
 }: {
   verdict: VerdictState;
   iteration: number;
@@ -53,6 +55,7 @@ export function VerifierPanel({
   done: boolean;
   failedReason: string | null;
   citations: Citation[];
+  runOutput: { stdout: string; stderr: string; ok: boolean; errors: VerifyError[] } | null;
 }) {
   const showCurrentError = errors.length > 0 && verdict !== "verified";
 
@@ -92,6 +95,8 @@ export function VerifierPanel({
           {citations.length} citation{citations.length === 1 ? "" : "s"}
         </div>
       )}
+
+      <TerminalPanel runOutput={runOutput} />
 
       <BaselineChart />
     </div>
