@@ -42,27 +42,44 @@ Do not assume. Probe, then adapt, then record findings in `LOG.md`.
 python3 --version                      # need 3.11+
 node --version && npm --version
 curl -s http://localhost:11434/api/tags # is a model server up? which models?
-docker info                            # available? daemon running?
 git rev-parse --is-inside-work-tree
 ```
 
+Do **not** probe for Docker. Sandboxing is pre-decided as subprocess mode —
+see Phase 0.
+
 Adaptation rules:
 
-- **No model server reachable** → build everything, and make the harness's
-  model layer fully testable with a `FakeModel` that returns canned source
-  from a fixture directory. Every loop and UI test must pass without a live
-  model. Note in `LOG.md` that arms A–E could not be run and leave the eval
-  runner ready to execute.
+- **No model server reachable — this is the expected case tonight.** Build
+  everything, and make the harness's model layer fully testable with a
+  `FakeModel` that returns canned source from a fixture directory. Every loop
+  and UI test must pass without a live model. Note in `LOG.md` that arms A–E
+  could not be run and leave the eval runner ready with the exact command
+  written down.
 - **Model server up but you don't know which model to use** → use whatever
   `/api/tags` reports, largest coding-oriented model first. Record the exact
-  name and tag in `TASKS.md` under "Chosen model." Do not download models
-  overnight without being told to; a multi-gigabyte pull can stall the whole
-  session.
-- **No Docker** → set `sandbox.mode: subprocess` in every `meta.yaml` and
-  implement that path first. The container path stays specified and stubbed.
-  Note it. This is an expected and acceptable outcome, not a blocker.
+  name and tag in `TASKS.md` under "Chosen model." **Never download model
+  weights** — a multi-gigabyte pull can stall the whole session.
 - **Python or Node missing** → do not attempt system installs. Build what you
   can, log the gap prominently at the top of `LOG.md`.
+
+### Machine constraint: 8 GB RAM
+
+The demo machine has 8 GB. This shapes two decisions, so respect them:
+
+- Only a small local model will fit (roughly 3B class, quantized). Assume the
+  local model is **weak at multi-turn tool orchestration**. This makes the
+  harness-driven deterministic pre-fetch in `03_HARNESS.md` §1 not merely
+  preferable but load-bearing — the model must be able to succeed while doing
+  nothing but generating and repairing. Do not add any code path that
+  *requires* the model to select a tool correctly.
+- Keep prompt assembly tight. Budget a 4k-token context and enforce it: cap
+  retrieved chunks, truncate long examples on line boundaries, and summarize
+  prior failed attempts to one line each. Log the assembled prompt's token
+  count on every iteration so the human can see the budget being respected.
+
+Note in the handoff that eval arm E (cloud model) will need to be run by the
+human, since local arms are capacity-limited.
 
 ## 3. Build phases
 
@@ -74,6 +91,10 @@ criteria are met and committed.
 - Repo layout per `00_ARCHITECTURE.md` §3
 - `config.yaml`, config loader, `corpora/stub/` with a stub verifier
   (`00`-compliant: returns ok unless source contains `FAIL`)
+- **`sandbox.mode: subprocess` is pre-decided by the human — set it in
+  `config.yaml` and in every `meta.yaml`.** Do not probe for Docker, do not
+  implement the container path tonight. Keep it specified and stubbed with a
+  `NotImplementedError` so the interface stays honest.
 - `pytest` runs and passes with one trivial test
 - CI-style script `scripts/check.sh` running lint + tests + the
   corpus-agnostic grep assertion
