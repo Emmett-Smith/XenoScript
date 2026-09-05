@@ -528,3 +528,77 @@ UI polish beyond what's built). Exact next commands for all of this are
 in the morning handoff below.
 
 ---
+
+### Session continues, live — human present, requested ongoing iteration
+
+Human came back to interact with the running demo directly (browser
+automation, live prompts). Notable findings from that interaction:
+
+- **MUMPS investigated and ruled out for tonight, with real evidence.**
+  Human asked about adding MUMPS (healthcare-industry angle) as a third
+  corpus, same pattern as COBOL. Checked: no Homebrew formula for
+  GT.M/YottaDB, no Docker on this machine, and critically — YottaDB's own
+  `CMakeLists.txt` only implements `Linux` and `AIX` platform branches;
+  there's no `sr_darwin` directory in the source tree at all (unlike
+  `sr_linux`, which holds the OS-specific process/signal/shared-memory
+  code the M runtime needs). Cloned the real repo and confirmed the build
+  fails immediately at `cmake ..` with an explicit `FATAL_ERROR` on
+  unsupported OS. This isn't "untested on Mac," it's architecturally
+  Linux/AIX-only. Real path forward: a Linux VM (trivial there, prebuilt
+  packages exist) — noted for the human, not pursued further tonight.
+- User asked to leave the machine running (caffeinate) and keep iterating
+  autonomously. Dispatched a background agent for 3 live-reported issues
+  (COBOL warning rendering as a fault-red error despite `ok: true`; stale
+  25% baseline; wanting to see a real multi-cycle repair before verified)
+  while continuing other work directly.
+- **Real coordination lesson**: dispatched agent and lead agent both tried
+  to drive the same Chrome tab concurrently and stepped on each other
+  (a modal got closed mid-interaction). Backed off browser/live-model work
+  entirely while the agent had it, switched to pure code review / corpus
+  content / non-model-calling work until it finished. Worth remembering:
+  browser automation and live-model calls are exclusive resources when a
+  background agent is using them too, same as any shared external system.
+
+**Agent's 3 fixes, all landed:**
+1. `TerminalPanel`'s stderr was always styled `--fault` regardless of
+   `runOutput.ok` — a benign GnuCOBOL warning on a real `ok: true` success
+   looked identical to a failure. Fixed: `--fault` only when `ok` is
+   false, `--dim` otherwise. Confirmed live.
+2. Fresh `--all-arms --repeat 1` sweep on current code: **A=0%, B=5%,
+   C=20%, D=25%** — same as the last corrected numbers, now with clean
+   current-commit provenance. Baseline chart confirmed reading it live.
+3. Found a real (if not 100%-reproducible) multi-cycle repair prompt: a
+   deliberately broken snippet combining the spacing gotcha (E043) *and*
+   the set-vs-bind gotcha (E022) in one source, which converges through
+   both distinct errors before verifying on attempt 2-3. Documented
+   honestly that model sampling variance means this doesn't show two
+   distinct errors on every single run — sometimes the model gets one of
+   the two right on the first try. Also documented several rejected
+   attempts (oscillating failures that never converge) rather than
+   pretending only the good result was tried.
+
+**My own work while the agent had the browser/model:**
+- Reviewed `/corpus/create` and `AddCorpusModal.tsx` line by line — no
+  bugs found, solid work.
+- COBOL corpus: 3 more real pairs (PERFORM UNTIL, named paragraphs,
+  SUBTRACT), now 9 pairs, every one compiled+run through real `cobc`.
+- Built per-corpus eval case set support (`cases_dir_for`) — additive,
+  PLINTH's flat 20 cases never moved, zero risk to the in-flight sweep
+  (confirmed `load_cases()` runs once before the arms loop, so editing
+  the module on disk mid-run is safe; Python doesn't hot-reload).
+- **Caught a real bug in my own change before committing it**: the flat
+  fallback iteration treated the new `eval/cases/cobol/` container
+  directory as if it were itself a case, crashing on a missing
+  `rubric.yaml`. Fixed by skipping any subdirectory without one.
+- 10 real COBOL eval cases: basic structure, arithmetic (`COMPUTE`,
+  `ADD ... GIVING`, `SUBTRACT`), a genuine COBOL gotcha (`MOVE`-ing a
+  7-character literal into `PIC X(3)` truncates silently to `"TOO"`, no
+  compile error — confirmed live), conditionals, both loop shapes, one
+  repair task. Every expected output captured from real `cobc` execution,
+  every case re-verified against its own solution via the runner's own
+  `_grade()` afterward.
+
+COBOL eval sweep (`--all-arms --corpus cobol --repeat 1`) running now —
+the real "you wrote both ends" rebuttal number, in progress.
+
+---

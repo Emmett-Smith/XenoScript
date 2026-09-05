@@ -97,6 +97,11 @@ eval arm A (2h, either) ──► arms B-E
       means this is a real gap, not a formality; exact command in the
       morning handoff.
 
+  Re-confirmed with a fresh, fully current sweep (git `6099ea9`):
+  A=0%, B=5%, C=20%, D=25% — same numbers, now provenance-clean. The
+  frontend's Baseline chart reads this report live (confirmed in browser),
+  no hardcoded values.
+
 ### Demo
 - [ ] Demo script written — **hour 1, before building**
 - [ ] Offline run verified with networking disabled
@@ -107,8 +112,10 @@ eval arm A (2h, either) ──► arms B-E
 
 ## P1 — strongly improves the pitch
 
-- [ ] COBOL corpus: `meta.yaml`, docs, 10 examples, 10 eval cases
-- [ ] COBOL arms A–D recorded
+- [x] COBOL corpus: `meta.yaml`, docs, 11 examples, 9 pairs, 10 eval cases —
+      real GnuCOBOL compiler (`brew install gnucobol`), everything verified
+      against it for real, zero invented syntax. See LOG.md.
+- [~] COBOL arms A–D recorded — sweep running, results pending
 - [ ] Verified snippet cache + reindex
 - [ ] Failure memory + `top_failures` injection
 - [ ] Cold vs warm cache comparison recorded
