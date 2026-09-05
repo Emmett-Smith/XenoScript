@@ -1,0 +1,57 @@
+{
+  "name": "ashlar-mumps-assistant",
+  "displayName": "Ashlar — MUMPS AI Assistant",
+  "description": "AI coding assistant for MUMPS, the language behind most EHR systems (Epic, VistA, Meditech).",
+  "version": "0.0.1",
+  "publisher": "ashlar-hackathon",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:ashlar.sidebar"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ashlar",
+          "title": "Ashlar",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "ashlar": [
+        {
+          "id": "ashlar.sidebar",
+          "name": "MUMPS Assistant",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "ashlar.openAssistant",
+        "title": "Ashlar: Open Assistant"
+      },
+      {
+        "command": "ashlar.openInBrowser",
+        "title": "Ashlar: Open in Browser"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^2.29.0",
+    "typescript": "^5.5.0"
+  }
+}
