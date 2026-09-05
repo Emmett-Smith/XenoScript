@@ -1,4 +1,4 @@
-# MUMPS / M Language Reference (Ashlar corpus)
+# MUMPS / M Language Reference (XenoScript corpus)
 
 This corpus targets [Reference Standard M](https://github.com/Reference-Standard-M/rsm)
 (RSM), a real, open-source implementation of ANSI/MDC Standard M X11.1-1995
