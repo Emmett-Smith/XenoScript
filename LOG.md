@@ -146,10 +146,28 @@ Not pursued further; tell the human if a Linux box/VM becomes available.
 - Physical projector legibility check (none available).
 - Literal wifi-off reload (code + `eval/offline_check.py` both say
   clean; not physically tested with the radio off).
-- Composition-category PLINTH tasks (0/3 in eval) — root cause not
-  fully traced (same "identical error every iteration" signature as a
-  case that WAS traced, but not confirmed to be the same underlying
-  cause).
+- Composition-category PLINTH tasks (0/3 in eval) — **root cause now
+  confirmed live, post-handoff**: re-ran the exact "identical error
+  every iteration" signature by hand (`POST /task` with
+  `{"corpus":"plinth","prompt":"write a program outputting the message
+  hello"}`). The repair turn already surfaced `report`'s real
+  `valid_parents=[execute]` via `lookup_symbol`, correctly, every
+  iteration — but nothing in `prompts/repair.md` told the model what a
+  `valid_parents` entry *means to do*, so `qwen2.5-coder:3b` regenerated
+  byte-identical wrong source 4 times in a row. Added a generic
+  ("nest inside one of these blocks, don't repeat the top-level line")
+  instruction line to `prompts/repair.md`, corpus-agnostic, 155 tests
+  still pass (commit `ba4285e`). Re-ran the identical prompt afterward:
+  this 3B model is also plainly stochastic — the retry produced a
+  *different* wrong candidate (bare `hello`, no `report` at all) that
+  never triggered the new instruction in the first place, so the fix's
+  real effect on this specific prompt is unconfirmed. **Conclusion: this
+  is a real, now partially-mitigated repair-prompt gap, but convergence
+  on hard prompts is still fundamentally capped by this one small
+  local model's weak instruction-following — not a retrieval or
+  backend logic bug.** Don't chase this further by tuning prompts
+  against one cherry-picked example; if it matters, the real fix is a
+  stronger model (bake-off, still blocked on availability).
 - `--repeat 3`'s absence means every percentage above should be read as
   "roughly this," not "exactly this."
 
