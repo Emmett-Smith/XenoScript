@@ -21,6 +21,26 @@ def test_underscore_identifiers_tokenize_as_a_single_token():
     assert re.findall(r"\w+", "noise_floor") == ["noise_floor"]
 
 
+def test_hyphenated_identifiers_tokenize_as_a_single_token():
+    # Same class of bug, different corpus: found live against COBOL's real
+    # idiomatic identifier convention (WS-INDEX, CUSTOMER-NAME), which a
+    # tokenizer built only for PLINTH's underscore convention split into
+    # spurious halves ("WS" and "INDEX" as two "symbols").
+    assert tokenize("ws-index") == ["ws-index"]
+    assert tokenize("customer-name") == ["customer-name"]
+    assert tokenize("move customer-name to ws-index now") == [
+        "move",
+        "customer-name",
+        "to",
+        "ws-index",
+        "now",
+    ]
+    # A lone/trailing hyphen (subtraction, a range dash) must not be
+    # absorbed into a neighboring token.
+    assert tokenize("a - b") == ["a", "b"]
+    assert tokenize("total - 1") == ["total", "1"]
+
+
 def test_tokenize_lowercases():
     assert tokenize("NOISE_FLOOR") == ["noise_floor"]
 

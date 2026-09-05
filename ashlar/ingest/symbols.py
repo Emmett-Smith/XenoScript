@@ -65,8 +65,14 @@ CREATE TABLE IF NOT EXISTS verified_cache (
 );
 """
 
-IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
-CODE_SPAN_RE = re.compile(r"`([A-Za-z_][A-Za-z0-9_]*)`")
+# Same identifier convention as ashlar.ingest.indexer.TOKEN_RE and for the
+# same reason: PLINTH's identifiers are underscore-joined, COBOL's real
+# idiomatic identifiers are hyphen-joined (`WS-INDEX`), and a bare
+# `[A-Za-z0-9_]*` splits every one of the latter into spurious symbols. An
+# interior `-` is allowed only when followed by another word character, so
+# a trailing/isolated `-` is never absorbed.
+IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*")
+CODE_SPAN_RE = re.compile(r"`([A-Za-z_][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*)`")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*\S)\s*$")
 
 # Structural/common words filtered out of the tier-2 example vocabulary scan

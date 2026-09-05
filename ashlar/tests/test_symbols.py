@@ -185,6 +185,30 @@ def test_build_symbol_table_falls_back_to_examples_when_no_symbols_command(tmp_p
     assert doc_anchor is not None
 
 
+def test_build_symbol_table_handles_hyphenated_identifiers(tmp_path):
+    # Real bug found against COBOL's corpus: IDENT_RE was built only for
+    # PLINTH's underscore convention and split a hyphenated identifier
+    # (WS-INDEX) into two spurious symbols ("WS" and "INDEX") instead of
+    # recognizing it as one. Corpus-agnostic fixture, not literally cobol.
+    cfg = load_config()
+    (tmp_path / "examples").mkdir()
+    (tmp_path / "examples" / "a.fix").write_text(
+        "move ws-index to customer-name\ndisplay ws-index\n"
+    )
+    (tmp_path / "docs").mkdir()
+    meta = _meta(tmp_path, symbols_cmd=None)
+    db_path = tmp_path / ".index" / "symbols.db"
+    build_symbol_table(meta, cfg, db_path)
+
+    conn = sqlite3.connect(str(db_path))
+    names = {row[0] for row in conn.execute("SELECT name FROM symbols")}
+    conn.close()
+    assert "ws-index" in names
+    assert "customer-name" in names
+    assert "ws" not in names
+    assert "index" not in names
+
+
 def test_build_symbol_table_with_verifier_writes_exact_rows_to_db(tmp_path):
     cfg = load_config()
     cmd = _write_symbols_script(

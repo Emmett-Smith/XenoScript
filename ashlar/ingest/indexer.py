@@ -5,11 +5,18 @@ weight from ``meta.yaml``'s ``retrieval.bm25_weight`` -- it never branches on
 a language name.
 
 Tokenizer note (see specs/02_BACKEND.md #1, called out as a silent
-retrieval-quality killer): ``\\w+`` is used deliberately because Python's
-``re`` module treats ``_`` as a word character, so identifiers like
-``noise_floor`` or ``end_platform`` tokenize as a single token, not two.
-This is asserted explicitly in ashlar/tests/test_indexer.py -- don't trust
-the docstring, the test proves it.
+retrieval-quality killer): underscore identifiers like ``noise_floor`` or
+``end_platform`` (PLINTH's convention) must tokenize as one token, not two.
+Real second-corpus experience (COBOL) surfaced the same failure mode for a
+*different* convention: COBOL's idiomatic identifiers are hyphenated
+(``WS-INDEX``, ``CUSTOMER-NAME``), and a bare ``\\w+`` (Python's ``\\w``
+excludes ``-``) splits every one of those into two spurious "symbols."
+Corpus-agnostic fix: the pattern allows an interior ``-`` as long as a
+word character follows it, so a hyphen never becomes its own token and a
+trailing/isolated ``-`` (e.g. in ``a - b`` or a bare minus sign before a
+number) is never absorbed. Both conventions are asserted explicitly in
+ashlar/tests/test_indexer.py -- don't trust the docstring, the tests prove
+it.
 """
 
 from __future__ import annotations
@@ -21,12 +28,12 @@ from typing import Any
 
 from rank_bm25 import BM25Okapi
 
-TOKEN_RE = re.compile(r"\w+")
+TOKEN_RE = re.compile(r"\w+(?:-\w+)*")
 
 
 def tokenize(text: str) -> list[str]:
-    """Split text into tokens, preserving underscore identifiers as single
-    tokens. Lowercased for case-insensitive matching."""
+    """Split text into tokens, preserving underscore- and hyphen-joined
+    identifiers as single tokens. Lowercased for case-insensitive matching."""
     return TOKEN_RE.findall(text.lower())
 
 
