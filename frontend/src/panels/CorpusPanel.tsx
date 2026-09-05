@@ -7,7 +7,7 @@
 
 import type { ToolCallRecord } from "../useTaskStream";
 
-function previewLines(preview: unknown[]): string[] {
+export function previewLines(preview: unknown[]): string[] {
   const lines: string[] = [];
   for (const item of preview.slice(0, 3)) {
     const it = item as Record<string, unknown>;
@@ -40,7 +40,7 @@ function previewLines(preview: unknown[]): string[] {
   return lines;
 }
 
-function ToolCall({
+export function ToolCall({
   call,
   collapsed,
 }: {

@@ -127,7 +127,12 @@ function getWebviewHtml(): string {
       );
     }
 
-    // Initial theme send once the frontend has loaded and can receive it.
+    // Fallback initial send once the frame's own load event fires --
+    // kept as a backstop, but NOT relied on alone: a fast/cached iframe
+    // load can fire before this very listener gets attached (the load
+    // event and this addEventListener call race each other), silently
+    // dropping the only theme message and leaving the panel stuck on
+    // default colors. Found live, not hypothetical.
     frame.addEventListener('load', sendTheme);
 
     // VS Code signals a theme change by swapping the body's
@@ -136,13 +141,19 @@ function getWebviewHtml(): string {
     // the panel.
     new MutationObserver(sendTheme).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-    // The other direction: the embedded app asks to insert generated
-    // code into the real editor. Only accept messages that actually
-    // came from our own iframe.
+    // The real fix for the race above: the embedded app announces
+    // "ready" itself, from inside its own script, only once its own
+    // message listener is already attached -- so responding to *that*
+    // (rather than only our own guess at when the iframe finished
+    // loading) can never miss the receiving end.
     window.addEventListener('message', (event) => {
       if (event.source !== frame.contentWindow) return;
       const data = event.data;
       if (!data || data.source !== 'ashlar-webapp') return;
+      if (data.type === 'ready') {
+        sendTheme();
+        return;
+      }
       vscodeApi.postMessage(data);
     });
   </script>

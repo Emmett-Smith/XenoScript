@@ -4,9 +4,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE, useTaskStream, type FixtureName } from "./useTaskStream";
-import { CorpusPanel } from "./panels/CorpusPanel";
-import { CodePanel } from "./panels/CodePanel";
-import { VerifierPanel } from "./panels/VerifierPanel";
+import { Timeline } from "./panels/Timeline";
+import { BaselineChart } from "./panels/BaselineChart";
 import { PromptBar } from "./panels/PromptBar";
 import { AddCorpusModal } from "./AddCorpusModal";
 
@@ -150,26 +149,9 @@ export default function App() {
         </div>
       )}
 
-      <div className="columns">
-        <CorpusPanel toolCalls={state.toolCalls} cacheHits={state.cacheHits} />
-        <CodePanel
-          code={state.code}
-          errors={state.errors}
-          verdict={state.verdict}
-          corpusExtension={active?.extension}
-        />
-        <VerifierPanel
-          verdict={state.verdict}
-          iteration={state.iteration}
-          maxIter={state.maxIter}
-          errors={state.errors}
-          attempts={state.attempts}
-          done={state.done}
-          failedReason={state.failedReason}
-          citations={state.citations}
-          runOutput={state.runOutput}
-          corpusName={active?.name ?? null}
-        />
+      <div className="main-scroll">
+        <Timeline prompt={state.prompt} timeline={state.timeline} corpusExtension={active?.extension} />
+        <BaselineChart corpusName={active?.name ?? null} />
       </div>
 
       <PromptBar onSubmit={handleSubmit} running={running} />

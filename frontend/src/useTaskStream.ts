@@ -174,6 +174,26 @@ export interface AttemptRecord {
   errors: VerifyError[];
 }
 
+// A single chronological narrative of what the harness actually did, in
+// the order it did it -- the shape a chat transcript needs (retrieval,
+// then each generate/verify/repair round as its own step, then the real
+// run output), rather than three panels that only ever show latest state.
+// Built incrementally by the reducer below as events arrive; nothing
+// here is derived after the fact from a stored log, so it stays cheap
+// even for a long repair loop.
+export type TimelineStep =
+  | { kind: "retrieval"; toolCalls: ToolCallRecord[]; cacheHit: string | null }
+  | {
+      kind: "attempt";
+      iteration: number;
+      code: string;
+      streaming: boolean;
+      verified: boolean | null; // null while awaiting verify_result
+      errors: VerifyError[];
+    }
+  | { kind: "run_output"; stdout: string; stderr: string; ok: boolean; errors: VerifyError[] }
+  | { kind: "final"; ok: boolean; reason: string | null };
+
 export interface TaskStreamState {
   taskId: string | null;
   prompt: string | null;
@@ -197,6 +217,7 @@ export interface TaskStreamState {
   // null until the first successful run, distinct from `errors` (which is
   // compile-time verify() errors, not runtime stdout/stderr).
   runOutput: { stdout: string; stderr: string; ok: boolean; errors: VerifyError[] } | null;
+  timeline: TimelineStep[];
 }
 
 const initialState: TaskStreamState = {
@@ -215,7 +236,16 @@ const initialState: TaskStreamState = {
   failedReason: null,
   lastErrors: null,
   runOutput: null,
+  timeline: [],
 };
+
+function updateLast<T>(list: T[], match: (item: T) => boolean, update: (item: T) => T): T[] {
+  const idx = list.length - 1 - [...list].reverse().findIndex(match);
+  if (idx < 0 || idx >= list.length) return list;
+  const next = list.slice();
+  next[idx] = update(next[idx]);
+  return next;
+}
 
 // Internal-only action, not part of the §8 SSE contract — used to clear
 // all three panels on a corpus switch (04_FRONTEND.md "Corpus switcher").
@@ -233,6 +263,7 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
         prompt: event.prompt,
         verdict: "unverified",
         iteration: 1,
+        timeline: [{ kind: "retrieval", toolCalls: [], cacheHit: null }],
       };
     case "tool_call":
       return {
@@ -241,6 +272,11 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
           ...state.toolCalls,
           { tool: event.tool, args: event.args },
         ],
+        timeline: updateLast(
+          state.timeline,
+          (s) => s.kind === "retrieval",
+          (s) => (s.kind === "retrieval" ? { ...s, toolCalls: [...s.toolCalls, { tool: event.tool, args: event.args }] } : s),
+        ),
       };
     case "tool_result": {
       const idx = state.toolCalls.map((c) => c.tool).lastIndexOf(event.tool);
@@ -251,7 +287,21 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
         hits: event.hits,
         preview: event.preview,
       };
-      return { ...state, toolCalls };
+      return {
+        ...state,
+        toolCalls,
+        timeline: updateLast(
+          state.timeline,
+          (s) => s.kind === "retrieval",
+          (s) => {
+            if (s.kind !== "retrieval") return s;
+            const tc = s.toolCalls.slice();
+            const i = tc.map((c) => c.tool).lastIndexOf(event.tool);
+            if (i !== -1) tc[i] = { ...tc[i], hits: event.hits, preview: event.preview };
+            return { ...s, toolCalls: tc };
+          },
+        ),
+      };
     }
     case "model_start":
       return {
@@ -260,11 +310,32 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
         iteration: event.iteration,
         code: "",
         errors: [],
+        timeline: [
+          ...state.timeline,
+          { kind: "attempt", iteration: event.iteration, code: "", streaming: true, verified: null, errors: [] },
+        ],
       };
     case "model_token":
-      return { ...state, code: state.code + event.text };
+      return {
+        ...state,
+        code: state.code + event.text,
+        timeline: updateLast(
+          state.timeline,
+          (s) => s.kind === "attempt",
+          (s) => (s.kind === "attempt" ? { ...s, code: s.code + event.text } : s),
+        ),
+      };
     case "model_done":
-      return { ...state, code: event.source, verdict: "unverified" };
+      return {
+        ...state,
+        code: event.source,
+        verdict: "unverified",
+        timeline: updateLast(
+          state.timeline,
+          (s) => s.kind === "attempt",
+          (s) => (s.kind === "attempt" ? { ...s, code: event.source, streaming: false } : s),
+        ),
+      };
     case "verify_start":
       return { ...state, verdict: "unverified" };
     case "verify_result": {
@@ -277,16 +348,33 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
         attempts,
         errors: event.errors,
         verdict: event.ok ? "verified" : "unverified",
+        timeline: updateLast(
+          state.timeline,
+          (s) => s.kind === "attempt",
+          (s) => (s.kind === "attempt" ? { ...s, verified: event.ok, errors: event.errors, streaming: false } : s),
+        ),
       };
     }
     case "repair_start":
       return { ...state, verdict: "repairing", iteration: event.iteration };
     case "cache_hit":
-      return { ...state, cacheHits: [...state.cacheHits, event.key] };
+      return {
+        ...state,
+        cacheHits: [...state.cacheHits, event.key],
+        timeline: updateLast(
+          state.timeline,
+          (s) => s.kind === "retrieval",
+          (s) => (s.kind === "retrieval" ? { ...s, cacheHit: event.key } : s),
+        ),
+      };
     case "run_output":
       return {
         ...state,
         runOutput: { stdout: event.stdout, stderr: event.stderr, ok: event.ok, errors: event.errors ?? [] },
+        timeline: [
+          ...state.timeline,
+          { kind: "run_output", stdout: event.stdout, stderr: event.stderr, ok: event.ok, errors: event.errors ?? [] },
+        ],
       };
     case "task_done":
       return {
@@ -297,6 +385,7 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
         code: event.source,
         citations: event.citations,
         errors: event.ok ? [] : state.errors,
+        timeline: [...state.timeline, { kind: "final", ok: event.ok, reason: null }],
       };
     case "task_failed":
       return {
@@ -306,6 +395,7 @@ function reducer(state: TaskStreamState, event: Action): TaskStreamState {
         failedReason: event.reason,
         lastErrors: event.last_errors,
         errors: event.last_errors,
+        timeline: [...state.timeline, { kind: "final", ok: false, reason: event.reason }],
       };
     default:
       return state;
