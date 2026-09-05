@@ -112,7 +112,17 @@ Record choices here so agents stop re-litigating them.
 | — | No fine-tuning | Cannot demo a curve in 36h; cache + failure memory is the honest version |
 | — | Model name lives only in `config.yaml` | Bake-off pending; keeps us vendor-neutral |
 
-**Chosen model:** _pending bake-off — record name, tag, and eval score here_
+**Chosen model:** `qwen2.5-coder:3b` — this is a re-probe finding, not a
+bake-off result. `curl -s http://localhost:11434/api/tags` returned
+`{"models":[]}` at harness build session start, and the same empty result on
+a first re-probe; a second re-probe partway through the session (right
+before writing `ashlar/api/server.py`) found `qwen2.5-coder:3b` had landed
+(1.9GB, Q4_K_M, 32k context). It's the only model on the box tonight, so
+there is no real 2-3-model bake-off to record a winner from — this is simply
+what's available, wired into `config.yaml` and used for one live smoke test
+against `run_task`/`corpora/stub` (see harness agent's report in LOG.md /
+handoff for the transcript). A real bake-off against alternative
+~3B-class coding models is still open P1 work.
 
 ---
 
