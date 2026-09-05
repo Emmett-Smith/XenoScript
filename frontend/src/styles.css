@@ -516,3 +516,130 @@ hr, .rule {
   padding: 4px 20px;
   border-bottom: 1px solid var(--rule);
 }
+
+/* ---------- Add corpus modal ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(19, 26, 43, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10;
+}
+
+.modal-panel {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 24px 28px;
+  width: 560px;
+  max-width: 100%;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.modal-panel h2 {
+  font-size: var(--size-4);
+  font-weight: 600;
+  margin: 0 0 16px;
+  color: var(--ink);
+}
+
+.modal-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-row {
+  display: flex;
+  gap: 16px;
+}
+
+.modal-row label,
+.modal-field-full {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--size-1);
+  color: var(--dim);
+  flex: 1;
+}
+
+.modal-row label input,
+.modal-field-full input {
+  font-size: var(--size-2);
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 2px;
+}
+
+.modal-row label input:focus-visible,
+.modal-field-full input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--ink);
+}
+
+.modal-note {
+  font-size: var(--size-1);
+  color: var(--dim);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.modal-output-format {
+  align-items: baseline;
+  gap: 12px;
+}
+
+.modal-toggle-label {
+  font-size: var(--size-1);
+  color: var(--dim);
+}
+
+.modal-radio {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex: none;
+  font-size: var(--size-2);
+  color: var(--ink);
+}
+
+.modal-error {
+  color: var(--fault);
+  font-size: var(--size-1);
+  margin: 0;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.modal-actions button {
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  border-radius: 2px;
+  padding: 6px 16px;
+  font-size: var(--size-2);
+  cursor: pointer;
+}
+
+.modal-actions button[type="button"] {
+  border-color: var(--rule);
+  color: var(--dim);
+}
+
+.modal-actions button:disabled {
+  color: var(--dim);
+  border-color: var(--rule);
+  cursor: default;
+}
