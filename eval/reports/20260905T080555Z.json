@@ -1,0 +1,328 @@
+{
+  "git_sha": "8eb9ef56f263ed0f63de53a3d11e4a7f18181bcc",
+  "timestamp": "2026-09-05T08:05:55Z",
+  "corpus": "plinth",
+  "repeat": 1,
+  "model_endpoints": {
+    "D": "http://localhost:11434/v1 (qwen2.5-coder:3b)"
+  },
+  "arms": {
+    "D": {
+      "arm": "D",
+      "n_runs": 20,
+      "verified_correct_rate": 0.35,
+      "first_attempt_pass_rate": 0.1,
+      "wall_clock_p50_s": 27.19,
+      "wall_clock_p95_s": 70.81,
+      "tool_calls_mean": 8,
+      "error_code_histogram": {
+        "E001": 11,
+        "E060": 1
+      },
+      "unresolved_count": 13,
+      "mean_iterations_to_verified": 2
+    }
+  },
+  "cases_examples_only": {
+    "arm": "D_examples_only",
+    "n_runs": 3,
+    "verified_correct_rate": 0.0,
+    "first_attempt_pass_rate": 0.0,
+    "wall_clock_p50_s": 22.1,
+    "wall_clock_p95_s": 40.64,
+    "tool_calls_mean": 8,
+    "error_code_histogram": {
+      "E001": 3
+    },
+    "unresolved_count": 3
+  },
+  "raw": {
+    "D": [
+      {
+        "case_id": "001",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 8,
+        "wall_clock_s": 7.49,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "scenario"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 8,
+        "wall_clock_s": 13.49,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "platform"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 13.88,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "sensor"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 25.56,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "basic",
+          "route"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": true,
+        "reason": null,
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 36.01,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 27.19,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "context_at"
+        ]
+      },
+      {
+        "case_id": "007",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 70.81,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "008",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 9.65,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "009",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 22.1,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit"
+        ]
+      },
+      {
+        "case_id": "010",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 19.62,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "011",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 40.64,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "012",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 47.64,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "platform_sensor_execute"
+        ]
+      },
+      {
+        "case_id": "013",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 63.86,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "multi_platform"
+        ]
+      },
+      {
+        "case_id": "014",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 68.07,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "route_platform_sensor"
+        ]
+      },
+      {
+        "case_id": "015",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 8,
+        "wall_clock_s": 16.78,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "016",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 8,
+        "wall_clock_s": 15.93,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "017",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 40.29,
+        "error_codes": [
+          "E060"
+        ],
+        "tags": [
+          "repair",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "018",
+        "ok": false,
+        "reason": "trace_mismatch",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 8.11,
+        "error_codes": [],
+        "tags": [
+          "behavioral",
+          "minimal_run"
+        ]
+      },
+      {
+        "case_id": "019",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 41.91,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_halt"
+        ]
+      },
+      {
+        "case_id": "020",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 55.17,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_activate_report"
+        ]
+      }
+    ]
+  }
+}

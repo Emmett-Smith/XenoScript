@@ -1,0 +1,899 @@
+{
+  "git_sha": "90aa5e0b8c541a469a1f7b6761657bb88c08558b",
+  "timestamp": "2026-09-05T08:36:39Z",
+  "corpus": "plinth",
+  "repeat": 3,
+  "model_endpoints": {
+    "D": "http://localhost:11434/v1 (qwen2.5-coder:3b)"
+  },
+  "arms": {
+    "D": {
+      "arm": "D",
+      "n_runs": 60,
+      "verified_correct_rate": 0.35,
+      "first_attempt_pass_rate": 0.1,
+      "wall_clock_p50_s": 25.54,
+      "wall_clock_p95_s": 68.65,
+      "tool_calls_mean": 5.87,
+      "error_code_histogram": {
+        "E001": 33,
+        "E060": 2,
+        "E042": 1
+      },
+      "unresolved_count": 39,
+      "mean_iterations_to_verified": 1.86
+    }
+  },
+  "cases_examples_only": {
+    "arm": "D_examples_only",
+    "n_runs": 9,
+    "verified_correct_rate": 0.0,
+    "first_attempt_pass_rate": 0.0,
+    "wall_clock_p50_s": 22.63,
+    "wall_clock_p95_s": 53.59,
+    "tool_calls_mean": 8,
+    "error_code_histogram": {
+      "E001": 9
+    },
+    "unresolved_count": 9
+  },
+  "raw": {
+    "D": [
+      {
+        "case_id": "001",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 8,
+        "wall_clock_s": 7.35,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "scenario"
+        ]
+      },
+      {
+        "case_id": "001",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 0,
+        "wall_clock_s": 0.13,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "scenario"
+        ]
+      },
+      {
+        "case_id": "001",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 0,
+        "wall_clock_s": 0.13,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "scenario"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 8,
+        "wall_clock_s": 12.39,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "platform"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 0,
+        "wall_clock_s": 0.14,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "platform"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 0,
+        "wall_clock_s": 0.13,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "platform"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 8.43,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "sensor"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 0.13,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "sensor"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 0.13,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "sensor"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 24.15,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "basic",
+          "route"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 25.54,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "basic",
+          "route"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 30.19,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "basic",
+          "route"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": true,
+        "reason": null,
+        "iterations": 3,
+        "tool_calls": 8,
+        "wall_clock_s": 28.83,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": true,
+        "reason": null,
+        "iterations": 3,
+        "tool_calls": 0,
+        "wall_clock_s": 0.13,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": true,
+        "reason": null,
+        "iterations": 3,
+        "tool_calls": 0,
+        "wall_clock_s": 0.13,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 27.99,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "context_at"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 30.71,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "context_at"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 28.84,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "context_at"
+        ]
+      },
+      {
+        "case_id": "007",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 66.2,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "007",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 68.65,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "007",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 95.25,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "008",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 9.96,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "008",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 0.13,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "008",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 0.12,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "009",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 21.01,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit"
+        ]
+      },
+      {
+        "case_id": "009",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 22.63,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit"
+        ]
+      },
+      {
+        "case_id": "009",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 23.29,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit"
+        ]
+      },
+      {
+        "case_id": "010",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 20.21,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "010",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 21.39,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "010",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 21.09,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "011",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 51.26,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "011",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 53.59,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "011",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 42.78,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "012",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 50.59,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "platform_sensor_execute"
+        ]
+      },
+      {
+        "case_id": "012",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 59.04,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "platform_sensor_execute"
+        ]
+      },
+      {
+        "case_id": "012",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 54.66,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "platform_sensor_execute"
+        ]
+      },
+      {
+        "case_id": "013",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 67.94,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "multi_platform"
+        ]
+      },
+      {
+        "case_id": "013",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 64.85,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "multi_platform"
+        ]
+      },
+      {
+        "case_id": "013",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 60.41,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "multi_platform"
+        ]
+      },
+      {
+        "case_id": "014",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 72.12,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "route_platform_sensor"
+        ]
+      },
+      {
+        "case_id": "014",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 63.37,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "route_platform_sensor"
+        ]
+      },
+      {
+        "case_id": "014",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 64.3,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "route_platform_sensor"
+        ]
+      },
+      {
+        "case_id": "015",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 8,
+        "wall_clock_s": 18.19,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "015",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 0,
+        "wall_clock_s": 0.12,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "015",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 0,
+        "wall_clock_s": 0.13,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "016",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 8,
+        "wall_clock_s": 16.35,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "016",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 0,
+        "wall_clock_s": 0.12,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "016",
+        "ok": true,
+        "reason": null,
+        "iterations": 2,
+        "tool_calls": 0,
+        "wall_clock_s": 0.12,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "017",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 41.14,
+        "error_codes": [
+          "E042"
+        ],
+        "tags": [
+          "repair",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "017",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 40.75,
+        "error_codes": [
+          "E060"
+        ],
+        "tags": [
+          "repair",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "017",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 41.33,
+        "error_codes": [
+          "E060"
+        ],
+        "tags": [
+          "repair",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "018",
+        "ok": false,
+        "reason": "trace_mismatch",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 8.14,
+        "error_codes": [],
+        "tags": [
+          "behavioral",
+          "minimal_run"
+        ]
+      },
+      {
+        "case_id": "018",
+        "ok": false,
+        "reason": "trace_mismatch",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 0.19,
+        "error_codes": [],
+        "tags": [
+          "behavioral",
+          "minimal_run"
+        ]
+      },
+      {
+        "case_id": "018",
+        "ok": false,
+        "reason": "trace_mismatch",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 0.19,
+        "error_codes": [],
+        "tags": [
+          "behavioral",
+          "minimal_run"
+        ]
+      },
+      {
+        "case_id": "019",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 39.87,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_halt"
+        ]
+      },
+      {
+        "case_id": "019",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 41.37,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_halt"
+        ]
+      },
+      {
+        "case_id": "019",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 42.55,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_halt"
+        ]
+      },
+      {
+        "case_id": "020",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 53.78,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_activate_report"
+        ]
+      },
+      {
+        "case_id": "020",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 54.56,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_activate_report"
+        ]
+      },
+      {
+        "case_id": "020",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 8,
+        "wall_clock_s": 55.03,
+        "error_codes": [
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_activate_report"
+        ]
+      }
+    ]
+  }
+}

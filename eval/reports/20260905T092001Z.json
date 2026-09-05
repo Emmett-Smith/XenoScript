@@ -1,0 +1,385 @@
+{
+  "git_sha": "c4dbb6c3161acae3774a9b50bbd26fcdf63c24c4",
+  "timestamp": "2026-09-05T09:20:01Z",
+  "corpus": "plinth",
+  "repeat": 1,
+  "model_endpoints": {
+    "D": "http://localhost:11434/v1 (qwen2.5-coder:3b)"
+  },
+  "arms": {
+    "D": {
+      "arm": "D",
+      "n_runs": 20,
+      "verified_correct_rate": 0.25,
+      "first_attempt_pass_rate": 0.2,
+      "wall_clock_p50_s": 28.29,
+      "wall_clock_p95_s": 68.91,
+      "tool_calls_mean": 15,
+      "error_code_histogram": {
+        "E001": 42,
+        "E020": 4,
+        "E052": 4,
+        "E011": 2,
+        "E042": 2,
+        "E060": 2,
+        "E002": 1,
+        "E022": 1
+      },
+      "unresolved_count": 15,
+      "mean_iterations_to_verified": 1.4
+    }
+  },
+  "cases_examples_only": {
+    "arm": "D_examples_only",
+    "n_runs": 3,
+    "verified_correct_rate": 0.0,
+    "first_attempt_pass_rate": 0.0,
+    "wall_clock_p50_s": 17.86,
+    "wall_clock_p95_s": 20.65,
+    "tool_calls_mean": 15,
+    "error_code_histogram": {
+      "E001": 9,
+      "E011": 2,
+      "E002": 1
+    },
+    "unresolved_count": 3
+  },
+  "raw": {
+    "D": [
+      {
+        "case_id": "001",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 15,
+        "wall_clock_s": 3.29,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "scenario"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 15,
+        "wall_clock_s": 3.67,
+        "error_codes": [],
+        "tags": [
+          "basic",
+          "platform"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 36.61,
+        "error_codes": [
+          "E020",
+          "E020",
+          "E020",
+          "E020"
+        ],
+        "tags": [
+          "basic",
+          "sensor"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 22.0,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "basic",
+          "route"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 36.74,
+        "error_codes": [
+          "E052",
+          "E052",
+          "E052",
+          "E052"
+        ],
+        "tags": [
+          "gotcha",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 19.14,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "context_at"
+        ]
+      },
+      {
+        "case_id": "007",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 40.17,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "gotcha",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "008",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 15,
+        "wall_clock_s": 3.95,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "009",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 17.86,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit"
+        ]
+      },
+      {
+        "case_id": "010",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 17.61,
+        "error_codes": [
+          "E002",
+          "E011",
+          "E011",
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "011",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 20.65,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "examples_only",
+          "inherit",
+          "every_for"
+        ]
+      },
+      {
+        "case_id": "012",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 40.6,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "platform_sensor_execute"
+        ]
+      },
+      {
+        "case_id": "013",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 45.38,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "multi_platform"
+        ]
+      },
+      {
+        "case_id": "014",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 68.91,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "composition",
+          "route_platform_sensor"
+        ]
+      },
+      {
+        "case_id": "015",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 15,
+        "wall_clock_s": 9.95,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "no_space_unit"
+        ]
+      },
+      {
+        "case_id": "016",
+        "ok": true,
+        "reason": null,
+        "iterations": 3,
+        "tool_calls": 15,
+        "wall_clock_s": 28.29,
+        "error_codes": [
+          "E001",
+          "E022"
+        ],
+        "tags": [
+          "repair",
+          "set_vs_bind"
+        ]
+      },
+      {
+        "case_id": "017",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 38.89,
+        "error_codes": [
+          "E042",
+          "E060",
+          "E042",
+          "E060"
+        ],
+        "tags": [
+          "repair",
+          "angle_mode"
+        ]
+      },
+      {
+        "case_id": "018",
+        "ok": false,
+        "reason": "trace_mismatch",
+        "iterations": 1,
+        "tool_calls": 15,
+        "wall_clock_s": 7.96,
+        "error_codes": [],
+        "tags": [
+          "behavioral",
+          "minimal_run"
+        ]
+      },
+      {
+        "case_id": "019",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 37.96,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_halt"
+        ]
+      },
+      {
+        "case_id": "020",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 55.07,
+        "error_codes": [
+          "E001",
+          "E001",
+          "E001",
+          "E001"
+        ],
+        "tags": [
+          "behavioral",
+          "spawn_activate_report"
+        ]
+      }
+    ]
+  }
+}
