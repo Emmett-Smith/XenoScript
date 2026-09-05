@@ -163,7 +163,7 @@ def format_manifest(manifest: dict[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m ashlar.ingest")
     parser.add_argument(
-        "--corpus", required=True, help="corpus name or path, e.g. corpora/plinth"
+        "--corpus", required=True, help="corpus name or path, e.g. corpora/<name>"
     )
     args = parser.parse_args(argv)
     manifest = run_ingest(args.corpus)

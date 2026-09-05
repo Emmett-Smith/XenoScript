@@ -19,11 +19,13 @@ def _meta(tmp_path, symbols_cmd, sandbox_mode="subprocess"):
 
 
 def _write_symbols_script(tmp_path, symbols_payload):
+    # Double-encode: json.dumps(symbols_payload) is JSON text; json.dumps of
+    # THAT produces a valid Python string literal containing it verbatim.
+    # (Embedding the JSON text directly as Python source is a trap: JSON's
+    # true/false/null are not valid Python tokens the moment a payload
+    # contains a boolean.)
     script = tmp_path / "symbols_dump.py"
-    script.write_text(
-        "import json, sys\n"
-        f"print(json.dumps({json.dumps(symbols_payload)}))\n"
-    )
+    script.write_text(f"print({json.dumps(json.dumps(symbols_payload))})\n")
     return ["python3", str(script)]
 
 

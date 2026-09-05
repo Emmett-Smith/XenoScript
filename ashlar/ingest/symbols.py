@@ -148,9 +148,11 @@ def collect_example_symbols(meta: CorpusMeta) -> list[dict[str, Any]]:
     """Tier 2. For toolchains with no symbols dump, derive candidate symbols
     from actual usage in the example corpus: the identifier vocabulary,
     with every occurrence recorded as an example_ref. This is a generic
-    heuristic, not a real grammar -- a toolchain like COBOL will eventually
-    want tree-sitter-cobol / ProLeap for this tier; this keeps the code path
-    real and testable in the meantime (specs/02_BACKEND.md #2)."""
+    heuristic, not a real grammar -- a language with a grammar-heavy,
+    non-JSON-dumping toolchain will eventually want a real parser (e.g. a
+    tree-sitter grammar or an ANTLR-based one) for this tier; this keeps
+    the code path real and testable in the meantime (specs/02_BACKEND.md
+    #2)."""
     examples_dir = meta.root / "examples"
     if not examples_dir.is_dir():
         return []
