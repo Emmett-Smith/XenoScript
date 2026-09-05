@@ -288,10 +288,16 @@ def summarize(arm: str, results: list[CaseResult]) -> dict[str, Any]:
     return summary
 
 
-def build_report(arms_results: dict[str, list[CaseResult]], cfg: Config, model_endpoints: dict[str, str], repeat: int) -> dict[str, Any]:
+def build_report(
+    arms_results: dict[str, list[CaseResult]],
+    cfg: Config,
+    model_endpoints: dict[str, str],
+    repeat: int,
+    timestamp: str | None = None,
+) -> dict[str, Any]:
     return {
         "git_sha": _git_sha(),
-        "timestamp": _now_iso(),
+        "timestamp": timestamp or _now_iso(),
         "corpus": cfg.corpus,
         "repeat": repeat,
         "model_endpoints": model_endpoints,
@@ -383,6 +389,13 @@ def main() -> None:
     arms = list(ARMS) if args.all_arms else [args.arm]
     arms_results: dict[str, list[CaseResult]] = {}
     model_endpoints: dict[str, str] = {}
+    # Fixed once, not recomputed per write -- so writing the report after
+    # every arm (below) updates the same file in place instead of creating
+    # a new one each time. A multi-arm sweep can run 10-30+ minutes; a kill
+    # partway through (this happened during this session's own eval runs)
+    # must not lose every already-completed arm's results, only the
+    # in-flight one's.
+    run_timestamp = _now_iso()
 
     with tempfile.TemporaryDirectory() as tmp:
         memory_db = Path(tmp) / "symbols.db"
@@ -415,10 +428,13 @@ def main() -> None:
             n_ok = sum(1 for r in results if r.ok)
             print(f"    {n_ok}/{len(results)} verified-correct, {time.monotonic()-t0:.1f}s total", file=sys.stderr)
 
-    report = build_report(arms_results, cfg, model_endpoints, args.repeat)
-    out_path = write_report(report)
+            # Write/overwrite after every arm, not only at the end -- see
+            # the run_timestamp comment above.
+            partial_report = build_report(arms_results, cfg, model_endpoints, args.repeat, run_timestamp)
+            out_path = write_report(partial_report)
+
     print(f"wrote {out_path.relative_to(REPO_ROOT)}", file=sys.stderr)
-    print(render_markdown(report))
+    print(render_markdown(partial_report))
 
 
 if __name__ == "__main__":
