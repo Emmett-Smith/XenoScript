@@ -22,5 +22,11 @@ dev = [
 [tool.ruff]
 line-length = 100
 
+[tool.ruff.lint.per-file-ignores]
+# Every MCP tool must swallow all exceptions and return {"error": ...}
+# rather than raising to the model (specs/02_BACKEND.md #3) -- the blind
+# except is intentional here, not an oversight.
+"ashlar/mcp/server.py" = ["BLE001"]
+
 [tool.pytest.ini_options]
 testpaths = ["ashlar", "eval"]

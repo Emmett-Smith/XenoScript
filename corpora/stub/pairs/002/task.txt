@@ -1,0 +1,1 @@
+Write a platform block named "task_beta" that inherits from task_alpha.

@@ -1,0 +1,3 @@
+platform demo
+  noise_floor 10
+end_platform

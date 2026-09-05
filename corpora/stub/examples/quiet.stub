@@ -1,0 +1,3 @@
+platform quiet_zone
+  noise_floor 1
+end_platform

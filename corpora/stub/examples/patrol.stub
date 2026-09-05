@@ -1,0 +1,4 @@
+platform patrol_alpha
+  noise_floor 5
+  inherit from patrol_base
+end_platform
