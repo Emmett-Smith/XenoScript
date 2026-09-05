@@ -1,0 +1,5 @@
+# loop: count-controlled FOR
+grade: compile_and_run
+max_iterations: 4
+tags:
+- loop

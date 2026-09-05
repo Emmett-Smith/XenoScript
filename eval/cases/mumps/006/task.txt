@@ -1,0 +1,2 @@
+Write a program that sets a variable to the comma-delimited string
+"red,green,blue" and prints only the third field.

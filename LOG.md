@@ -1,5 +1,145 @@
 # LOG
 
+## MUMPS UPDATE (2026-09-05, ~15:45 local) — read this before the CURRENT HANDOFF below, which predates it
+
+The earlier "MUMPS -- investigated, ruled out" note below is now **wrong**
+and superseded. The human asked to try again ("that does not currently
+have Claude features like COBOL does"), and it turned out the earlier
+finding was real but incomplete: YottaDB specifically is Linux/AIX-only
+at the source level, but that isn't the only real M implementation.
+
+**MUMPS is now a real, working, fourth-ish corpus** (third counting only
+demo-relevant ones: PLINTH, COBOL, MUMPS; `stub` stays dev scaffolding).
+`GET /corpora` already lists it; the UI's corpus dropdown needs no code
+change to show it, since it queries that endpoint live.
+
+### What actually got built
+
+- **Toolchain**: [Reference Standard M (RSM)](https://github.com/Reference-Standard-M/rsm),
+  AGPL, real open-source ANSI/MDC X11.1-1995 M. Explicitly lists "macOS
+  11.0+ on Apple Silicon ARMv8" as supported -- confirmed for real: cloned
+  it, ran plain `make`, got a working `arm64 Mach-O` binary with zero
+  build errors, zero exotic dependencies. Installed to
+  `.toolchains/rsm/bin/rsm` (a project-local prefix, gitignored -- `sudo
+  make install` wasn't available in this sandbox, and a self-contained
+  prefix is arguably the better call anyway, same non-vendored-external-
+  toolchain posture as GnuCOBOL, just not on the system PATH).
+- **Real, verified OS-level constraint that shaped everything else**:
+  macOS's default SysV shared-memory ceiling (`sysctl kern.sysv.shmall`)
+  is only **4 MiB, system-wide**, and RSM's own minimal environment
+  already needs ~3 MiB. There is no room for more than one RSM
+  environment at a time on this machine, and forgetting to tear one down
+  leaks the shared-memory/semaphore segments until a manual `ipcrm` or a
+  reboot -- hit this for real twice while testing (via `ipcs -m`/`ipcs -s`
+  + `ipcrm`, not a reboot). `corpora/mumps/bin/rsm_run.py` uses one
+  persistent, lazily-created environment (`corpora/mumps/env/mumps.dat`,
+  gitignored, a build artifact) reused across every verify() call, sized
+  conservatively (4 KiB blocks, 4 jobs, ~3 MiB measured) specifically to
+  fit that ceiling -- an 8 KiB/8-job config was tried first and rejected
+  outright by the OS.
+- **A real, non-obvious execution-model finding**: RSM's direct-mode
+  (`rsm <dbfile> < script`) has no equivalent to `cobc -fsyntax-only` --
+  checking a line for syntax errors means actually running it, and its
+  own error output (`$ECODE=,Z12,` + a message line) carries no line
+  number at all. `rsm_run.py` recovers real line numbers by instrumenting
+  the candidate with one `WRITE` marker per source line before running
+  it (verified: everything -- both real output and error text -- goes to
+  stdout, never stderr, so ordering is preserved), then re-associates
+  each error with the most recently printed marker and emits it in
+  COBOL's exact `file:line: severity: message` convention, reusing the
+  same generic text-output adapter and error_regex COBOL already uses --
+  zero changes to `ashlar/` core. `verifier.parse` and `verifier.run` are
+  two different scripts here (unlike COBOL, where the split is compile-
+  vs-execute) because instrumenting a candidate that's already been
+  proven clean would just add pointless noise to the real output the
+  terminal panel and 97%-similarity check need.
+- **Two real M language gotchas found live and documented** (both in
+  `corpora/mumps/docs/manual.md`, both demonstrated in
+  `examples/if_else_gotcha.m` and eval case `003`):
+  1. A false `IF` on a line abandons the *entire rest of that line*, not
+     just the commands after the condition -- so `ELSE` chained on the
+     *same* line as its `IF` never runs. `ELSE` needs its own line.
+  2. **M has no `>=` or `<=` operator at all.** "Greater than or equal"
+     is `'<` (leading `'` negates: "not less than"); "less than or
+     equal" is `'>`. Found live when a hand-written eval-case solution
+     using `AGE>=18` failed to parse.
+  3. An argumentless `FOR` loops over *everything else on its own line*
+     -- code meant to run once after the loop needs its own line too
+     (this is what made an earlier one-off manual test look like a
+     broken FOR loop before the real cause -- `HALT` sharing the FOR's
+     line -- was found).
+
+### Corpus contents
+
+`corpora/mumps/`: `meta.yaml`, `docs/manual.md` (the gotchas above plus
+comments/WRITE/SET/operators/FOR/IF-ELSE/string functions, everything in
+it executed for real, not transcribed from memory), 6 `examples/*.m`, 3
+`pairs/` (behavioral checks, `expected.txt` captured from real execution,
+not hand-written). `eval/cases/mumps/001-006/` (basic, arithmetic, 2
+gotcha, loop, examples_only) -- real ingest ran clean: `72 symbols
+(source: examples)` (RSM can't dump its own grammar either, same tier-2
+fallback as COBOL), `10 chunks`, `3 pairs`.
+
+### Real eval numbers (repeat=1; report `eval/reports/20260905T154149Z.json`)
+
+| Arm | verified-correct |
+|---|---|
+| A (cold) | 0% |
+| B (docs pasted) | 0% |
+| C (tools, no loop) | 0% |
+| D (full system) | 0% |
+
+**This 0% across every arm, including D, is real and was cross-checked,
+not accepted at face value** -- same "a suspicious number is a signal to
+check methodology, not a result to report" discipline as everywhere else
+in this log, just pointed at a suspiciously bad number instead of a
+suspiciously good one this time. Checked two ways: (1) two live manual
+`/task` calls against MUMPS (outside the eval sweep entirely) hit the
+exact same failure -- the model hallucinates a `program ... end`
+wrapper (plausibly bleeding in from Python/pseudocode or its COBOL
+exposure) that is not valid M syntax, on every one of 4 repair
+iterations, never adjusting; (2) the eval report's per-case detail shows
+5 of 6 cases failing this same way (`max_iterations`, `error_codes` all
+`None` -- consistent with the text-adapter's code-embedded-in-message
+convention, not a grading bug) and confirmed the verifier itself is
+correct by hand-solving and live-running all 6 cases' real solutions
+through `rsm_run.py` directly beforehand (all 6 parsed and ran correctly
+with hand-captured real output). So the verifier and grading path are
+right; this local 3B model genuinely cannot produce valid direct-mode M
+within a 4-iteration budget for any of these 6 tasks -- which, read
+against COBOL's much higher A-arm baseline (this model has real COBOL
+exposure) and PLINTH's more-forgiving 25% D-arm (an invented language,
+but one whose keyword shapes are closer to what the model already knows
+how to use), is exactly the point the human wanted MUMPS to make: unlike
+COBOL, this model has essentially no real fluency here.
+
+**One honest methodology gap found and left alone, not patched, while
+reviewing case 6's result**: case 006's task text doesn't literally
+match any `pairs/` entry (by design -- it's a fresh eval task, not a
+copy of a demo pair), so `run_task()`'s own internal behavioral check
+(`corpus.expected_for()`) never fires for it -- it only found out its
+answer was semantically wrong (`trace_mismatch:0%_similar`) from eval's
+separate post-hoc `_grade()` call, *after* the repair loop had already
+exited believing it succeeded (source parsed cleanly on iteration 1).
+That case got zero chances to repair against real behavioral feedback,
+unlike cases that share exact task wording with a curated pair. This
+looks like a pre-existing property of `run_case_looped()` that likely
+also affects some COBOL/PLINTH eval cases the same way, not something
+introduced by adding MUMPS -- deliberately not reworded case 006's task
+text to game a better number; flagging it here as a real methodology
+question worth a human look, not fixing it unilaterally.
+
+### What's not done for MUMPS specifically
+
+- `--repeat 3` (same gap as COBOL/PLINTH -- never run for any corpus yet).
+- No live-browser confirmation of the corpus dropdown actually showing
+  "MUMPS" and switching correctly (the API contract is confirmed via curl;
+  the UI itself wasn't opened in a browser this pass).
+- The `run_case_looped()` behavioral-repair-chance gap just above, left
+  as a flagged finding, not a fix.
+
+---
+
 ## CURRENT HANDOFF (2026-09-05, ~14:35 local) — READ THIS ONE, supersedes the "MORNING HANDOFF" below
 
 The human is present and interacting live (browser + this session). The
@@ -124,7 +264,14 @@ to the percentage point).
   agnostic — confirmed a cluster with no real-symbol member resolves to
   nothing, never fabricates a symbol.
 
-### MUMPS — investigated, ruled out for this machine, with real evidence
+### MUMPS — UPDATE: no longer ruled out, see "MUMPS UPDATE" at the very top of this file
+
+Everything below this line was true of *YottaDB specifically* and is
+kept for the record, but MUMPS is no longer blocked overall: Reference
+Standard M (RSM), a different real open-source M implementation, builds
+and runs natively on this machine with no VM. See the "MUMPS UPDATE"
+section at the top of this file for the full, current story — real
+toolchain, real corpus, real (harsh, honest) eval numbers.
 
 User asked about adding MUMPS (healthcare-industry angle) as a 3rd
 corpus. Checked: no Homebrew formula, no Docker, and decisively —
@@ -133,9 +280,9 @@ platform branches; there's no `sr_darwin` directory in the source tree
 at all (unlike `sr_linux`, which holds the OS-specific process/signal/
 shared-memory code the runtime needs). Cloned the real repo and
 confirmed `cmake ..` fails immediately with an explicit `FATAL_ERROR` on
-unsupported OS. **Not "hard," architecturally Linux/AIX-only.** Real
-path forward: a Linux VM — prebuilt packages exist there, trivial.
-Not pursued further; tell the human if a Linux box/VM becomes available.
+unsupported OS. **Not "hard," architecturally Linux/AIX-only** -- this
+finding was correct as far as it went, it just wasn't the only real M
+implementation worth checking.
 
 ### What's NOT done — say this plainly if asked
 

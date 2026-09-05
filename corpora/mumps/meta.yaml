@@ -1,0 +1,51 @@
+language: mumps
+display_name: MUMPS
+extension: .m
+
+# Real M source comments start with a semicolon anywhere a command could
+# start (";" after at least one space, or as a whole line).
+comment_prefix: ";"
+
+verifier:
+  # Reference Standard M (https://github.com/Reference-Standard-M/rsm) --
+  # a real, open-source ANSI/MDC X11.1-1995 M interpreter, confirmed to
+  # build and run natively on this machine (Apple Silicon, no VM/container).
+  # This is a different, working path from YottaDB, which was investigated
+  # first and ruled out: YottaDB's own CMakeLists.txt only implements
+  # Linux/AIX platform branches, with no macOS support at the source level
+  # at all. RSM explicitly lists "macOS 11.0 and newer on 64-bit Apple
+  # Silicon ARMv8" as a supported, tested target, and `make` alone (no
+  # exotic dependencies) produced a real working `rsm` binary here.
+  #
+  # RSM's direct-mode execution has no equivalent to a syntax-check-only
+  # mode -- checking a line for errors means actually running it. See
+  # bin/rsm_run.py's module docstring for the full explanation of why
+  # parse and run are two different scripts here, not the same command
+  # twice, and how real line numbers get recovered from an interpreter
+  # whose own error output carries none.
+  parse: ["python3", "corpora/mumps/bin/rsm_run.py", "parse", "{file}"]
+  run: ["python3", "corpora/mumps/bin/rsm_run.py", "run", "{file}"]
+  # No verifier.symbols: RSM cannot dump its own grammar (00_ARCHITECTURE.md
+  # #4), so the symbol table falls back to tier 2 (parsed examples) per
+  # specs/02_BACKEND.md #2, same as COBOL.
+  output_format: text
+  error_regex: '^(?P<file>[^:\n]+):(?P<line>\d+):\s*(?P<severity>\w+):\s*(?P<message>.*)$'
+
+sandbox:
+  mode: subprocess
+  # Each call launches a real rsm process attaching to an already-running
+  # shared-memory environment (lazily created on first use) -- fast, but
+  # give it real headroom for the very first call on a cold machine.
+  timeout_s: 15
+  memory_mb: 512
+
+retrieval:
+  # M has decades of real idiom (VistA/healthcare M shops in particular)
+  # and dense, real prose worth matching semantically as well as by exact
+  # keyword (commands like SET/WRITE/FOR/QUIT are short, common English
+  # words that benefit less from pure keyword weight than COBOL's more
+  # distinctive verbs like PERFORM/COMPUTE do) -- split the difference
+  # between PLINTH's 0.75 and COBOL's 0.6.
+  bm25_weight: 0.55
+  embedding_weight: 0.45
+  chunk_strategy: heading

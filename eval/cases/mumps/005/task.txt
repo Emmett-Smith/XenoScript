@@ -1,0 +1,2 @@
+Write a program that prints the first four multiples of 10 (10, 20, 30,
+40), one per line, using a counted loop from 1 to 4.

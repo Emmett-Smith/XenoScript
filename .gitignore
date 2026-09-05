@@ -9,3 +9,5 @@ dist/
 .index/
 .DS_Store
 .claude/worktrees/
+.toolchains/
+corpora/mumps/env/

@@ -1,0 +1,3 @@
+Write a program that adds up the numbers 1 through 5 using a loop that
+runs until a counter reaches 5, then prints "TOTAL: " followed
+immediately by the sum. Print the total only once, after the loop ends.

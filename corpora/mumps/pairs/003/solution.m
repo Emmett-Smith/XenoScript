@@ -1,0 +1,3 @@
+SET SCORE=42
+IF SCORE>50 WRITE "high",!
+ELSE  WRITE "low",!

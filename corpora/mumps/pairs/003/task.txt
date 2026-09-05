@@ -1,0 +1,2 @@
+Write a program that sets SCORE to 42, then prints "high" if SCORE is
+greater than 50, and otherwise prints "low".

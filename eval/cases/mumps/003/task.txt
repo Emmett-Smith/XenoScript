@@ -1,0 +1,2 @@
+Write a program that sets a variable AGE to 15, then prints "ADULT" if
+AGE is greater than or equal to 18, and otherwise prints "MINOR".

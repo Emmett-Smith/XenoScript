@@ -1,0 +1,3 @@
+Write a program that computes the area of a rectangle with length 8 and
+width 5, storing the result in a variable, then prints "AREA: " followed
+immediately by the result.
