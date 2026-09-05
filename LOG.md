@@ -601,4 +601,61 @@ automation, live prompts). Notable findings from that interaction:
 COBOL eval sweep (`--all-arms --corpus cobol --repeat 1`) running now —
 the real "you wrote both ends" rebuttal number, in progress.
 
+### COBOL eval sweep done — and it surfaced a real, serious bug on the way
+
+**Numbers, real, `--repeat 1`:** A=50%, B=90%, C=20%, D=20%.
+
+**This is a genuinely different shape than PLINTH's (A=0%, B=5%, C=20%,
+D=25%), and that's the whole point, not a problem.** PLINTH exists to
+prove zero memorization — A near 0% is the load-bearing number.
+COBOL exists to prove real-world applicability with a compiler nobody
+here wrote — and COBOL being real, decades-old, and heavily represented
+in training data means the model plausibly already "knows" some COBOL,
+so A=50% and B=90% (paste the docs, no tools) are *expected*, not
+embarrassing. `05_EVAL.md` §6 says this outright: "note honestly that
+COBOL arm A will not be near zero... the two corpora measure different
+things." B beating D here (90% vs 20%) is a real, interesting, honest
+finding worth its own line in the pitch: for a language the model
+already knows syntax for, more context (the full manual) helps more
+than narrow deterministic retrieval + a repair loop — the verifier
+loop's value is highest precisely when the model *doesn't* already know
+the syntax, which is PLINTH's story, not COBOL's. Do not average these
+two numbers together or present one "verified-correct rate" as if it
+meant the same thing across corpora.
+
+**The bug, found by watching the live UI mid-sweep:** while this sweep
+was running, `localhost:5173`'s Baseline chart — still showing PLINTH —
+displayed **50%**, not the real PLINTH number (25% at the time). Two
+independent bugs compounded:
+
+1. `eval/runner.py`'s `build_report()` recorded `cfg.corpus`
+   (`config.yaml`'s static default, `"plinth"`) instead of the corpus
+   actually passed via `--corpus`. Every report ever written with a
+   `--corpus` override this session was silently mislabeled — including,
+   it turns out, some of tonight's earlier PLINTH-vs-arm-C corrections,
+   though those happened to be correct by coincidence since the config
+   default *was* "plinth" at the time.
+2. `GET /eval/latest` returns the single newest file overall, with zero
+   awareness of which corpus is active in the UI. There was no way for
+   either side to detect a mismatch.
+
+**Fixed both, properly:** `build_report()` now takes `corpus_name`
+explicitly. `GET /eval/latest?corpus=<name>` filters reports by their
+own `corpus` field and returns the newest one *for that corpus*, falling
+back to the old "just the newest file" behavior with no param. The
+frontend passes the active corpus and keeps a defensive check on the
+response too (belt and suspenders — the fix must hold even if a caller
+forgets the query param). Also corrected the one report already written
+with the wrong label (`corpus: plinth` → `cobol`, on a file whose actual
+test data — A=50/B=90/C=20/D=20 — was always correct, only the label was
+wrong; verified this was a safe correction of known ground truth, not a
+number pulled from nowhere). Confirmed live in the browser, both
+corpora, each showing its own correct numbers with zero cross-talk.
+
+Real lesson for this kind of multi-corpus system generally: **any report
+artifact needs its own identity carried inside it, checked at read time,
+not inferred from "whichever one happens to be newest."** "Latest" is
+almost never actually the right query once there's more than one axis
+(here: corpus) a report can vary along.
+
 ---

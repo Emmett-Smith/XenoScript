@@ -115,7 +115,16 @@ eval arm A (2h, either) ──► arms B-E
 - [x] COBOL corpus: `meta.yaml`, docs, 11 examples, 9 pairs, 10 eval cases —
       real GnuCOBOL compiler (`brew install gnucobol`), everything verified
       against it for real, zero invented syntax. See LOG.md.
-- [~] COBOL arms A–D recorded — sweep running, results pending
+- [x] COBOL arms A–D recorded — A=50%, B=90%, C=20%, D=20%, `--repeat 1`.
+      Real finding: unlike PLINTH, B (docs pasted) beats D (the full
+      system) here, and A alone is 50% -- because COBOL is a real
+      language the model has genuine training exposure to, unlike
+      invented PLINTH. This is exactly the point of running COBOL as the
+      second corpus (05_EVAL.md §6): it measures something different
+      (real-world applicability) than PLINTH does (proof of zero
+      memorization), and the two numbers should NOT look alike. See
+      LOG.md for the full comparison and the cross-corpus report-labeling
+      bug found while producing these numbers.
 - [ ] Verified snippet cache + reindex
 - [ ] Failure memory + `top_failures` injection
 - [ ] Cold vs warm cache comparison recorded
