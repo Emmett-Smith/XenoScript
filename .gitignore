@@ -8,3 +8,4 @@ dist/
 *.db
 .index/
 .DS_Store
+.claude/worktrees/

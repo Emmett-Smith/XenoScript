@@ -1,0 +1,3 @@
+define platform uav_01 type air
+  set altitude = 2200 m
+end platform
