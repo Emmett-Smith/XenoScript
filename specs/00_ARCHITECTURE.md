@@ -272,11 +272,14 @@ renders them. Adding fields is fine, renaming is not.
 {"type": "verify_result","iteration": 1, "ok": false, "errors": [...], "ts": 3290}
 {"type": "repair_start", "iteration": 2, "fixing": ["E041@14"], "ts": 3300}
 {"type": "cache_hit",    "key": "...", "ts": 60}
+{"type": "run_output",   "stdout": "...", "stderr": "...", "ok": true, "ts": 8050}
 {"type": "task_done",    "task_id": "t_01", "ok": true, "iterations": 3,
                          "source": "...", "citations": [...], "ts": 8100}
 {"type": "task_failed",  "task_id": "t_01", "reason": "max_iterations",
                          "last_errors": [...], "ts": 21000}
 ```
+
+`run_output` (added after the initial build): once a candidate compiles clean, the harness runs it for real (`verify(source, run=True)`) purely so the UI can show the program's actual execution output, not just "it parsed" — a terminal/output panel showing this is what makes "verified" mean something concrete rather than an abstract pass/fail. Emitted once per successful task, right before `task_done`, whether or not a behavioral pair exists for that prompt (if one does, the same run also drives the existing expected-output diff in §9 step 7 — one call, two purposes, not two calls).
 
 `ts` is milliseconds since `task_start`.
 

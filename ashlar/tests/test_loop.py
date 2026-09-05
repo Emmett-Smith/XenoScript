@@ -19,6 +19,7 @@ EXPECTED_SKELETON = [
     "model_start", "model_done", "verify_start", "verify_result",
     "repair_start",
     "model_start", "model_done", "verify_start", "verify_result",
+    "run_output",
     "task_done",
 ]
 
@@ -296,3 +297,58 @@ def test_prefetch_grep_gives_every_keyword_a_fair_share_not_just_the_first(tmp_p
     assert "examples/special.stub" in all_previewed_files, (
         "the specific keyword's hit was crowded out of every grep_corpus tool_result preview"
     )
+
+
+def test_run_output_event_carries_real_execution_stdout(tmp_path):
+    """00_ARCHITECTURE.md #8: `run_output` exists so the UI can show real
+    program execution output, not just a parse pass/fail. Must fire once
+    per successful task, with the real stdout from actually running the
+    verified source -- not the compile-only verify() result."""
+    meta = load_corpus_meta("stub")
+
+    def verify_fn(source, run, stdin):
+        if "FAIL" in source:
+            return {"ok": False, "errors": [{"code": "E041", "line": 1, "message": "no"}],
+                    "warnings": [], "stdout": "", "stderr": "", "exit_code": 1, "duration_ms": 1}
+        return {"ok": True, "errors": [], "warnings": [], "stdout": "real program output\n" if run else "",
+                "stderr": "", "exit_code": 0, "duration_ms": 1}
+
+    model = FakeModel(responses=["clean source"])
+    tool_client = FakeToolClient(verify_fn=verify_fn)
+    memory = Memory(tmp_path / "symbols.db")
+    corpus = _make_corpus(meta)
+    deps = HarnessDeps(model=model, tool_client=tool_client, memory=memory)
+
+    events: list[dict] = []
+    result = run_task("say hello", corpus, events.append, deps)
+
+    assert result.ok is True
+    run_events = [e for e in events if e["type"] == "run_output"]
+    assert len(run_events) == 1
+    assert run_events[0]["stdout"] == "real program output\n"
+    assert run_events[0]["ok"] is True
+    # run_output must land before task_done, not after
+    types = [e["type"] for e in events]
+    assert types.index("run_output") < types.index("task_done")
+
+
+def test_cache_hit_also_emits_run_output(tmp_path):
+    meta = load_corpus_meta("stub")
+
+    def verify_fn(source, run, stdin):
+        return {"ok": True, "errors": [], "warnings": [], "stdout": "cached run output\n" if run else "",
+                "stderr": "", "exit_code": 0, "duration_ms": 1}
+
+    tool_client = FakeToolClient(verify_fn=verify_fn)
+    memory = Memory(tmp_path / "symbols.db")
+    memory.record_success("say hello", "clean source", 1)
+    corpus = _make_corpus(meta)
+    deps = HarnessDeps(model=FakeModel(responses=[]), tool_client=tool_client, memory=memory)
+
+    events: list[dict] = []
+    result = run_task("say hello", corpus, events.append, deps)
+
+    assert result.cached is True
+    run_events = [e for e in events if e["type"] == "run_output"]
+    assert len(run_events) == 1
+    assert run_events[0]["stdout"] == "cached run output\n"

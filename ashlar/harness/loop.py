@@ -332,6 +332,8 @@ def run_task(
         vr = deps.tool_client.verify(hit.source)
         if vr.get("ok"):
             emitter.cache_hit(hit.key)
+            rr = deps.tool_client.verify(hit.source, run=True)
+            emitter.run_output(rr.get("stdout", ""), rr.get("stderr", ""), rr.get("ok", False))
             citations = [{"file": "verified_cache", "key": hit.key}]
             emitter.task_done(True, hit.iterations, hit.source, citations)
             return TaskResult(ok=True, source=hit.source, iterations=hit.iterations, cached=True, citations=citations)
@@ -384,18 +386,24 @@ def run_task(
                 emitter.repair_start(i + 1, [f"{e.get('code')}@{e.get('line')}" for e in last_errors])
             continue
 
+        # A clean parse only proves the candidate is well-formed, not that
+        # it does anything -- run it for real once, both to drive the
+        # existing pair-diff check below (if a pair exists) and, always,
+        # so the UI has real execution output to show instead of an
+        # abstract pass/fail. One call, two purposes -- never run twice.
+        if budget_exceeded():
+            return bail(last_errors)
+        rr = deps.tool_client.verify(source, run=True)
+        emitter.run_output(rr.get("stdout", ""), rr.get("stderr", ""), rr.get("ok", False))
+
         expected = corpus.expected_for(prompt)
-        if expected is not None:
-            if budget_exceeded():
-                return bail(last_errors)
-            rr = deps.tool_client.verify(source, run=True)
-            if rr.get("stdout", "").strip() != expected.strip():
-                last_errors = [{"code": "EDIFF", "message": "output did not match expected trace"}]
-                turn = diff_turn(i, source, rr, expected)
-                history.append(turn)
-                if i < deps.max_iter:
-                    emitter.repair_start(i + 1, ["EDIFF"])
-                continue
+        if expected is not None and rr.get("stdout", "").strip() != expected.strip():
+            last_errors = [{"code": "EDIFF", "message": "output did not match expected trace"}]
+            turn = diff_turn(i, source, rr, expected)
+            history.append(turn)
+            if i < deps.max_iter:
+                emitter.repair_start(i + 1, ["EDIFF"])
+            continue
 
         deps.memory.record_success(prompt, source, i)
         citations = collect_citations(hits, examples)
