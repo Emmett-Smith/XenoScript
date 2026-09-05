@@ -1,0 +1,4 @@
+Write a COBOL program named ORDERCHECK with a WORKING-STORAGE numeric
+field WS-ORDER-TOTAL, PIC 9(5), set to 250. If WS-ORDER-TOTAL is greater
+than or equal to 200, display "FREE SHIPPING". Otherwise display
+"SHIPPING FEE APPLIES". Use IF/ELSE with END-IF.

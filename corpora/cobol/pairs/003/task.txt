@@ -1,0 +1,4 @@
+Write a COBOL program named SUMTWO that computes the sum of 15 and 27
+using COMPUTE, storing the result in a WORKING-STORAGE field large
+enough to hold it, then displays the line "SUM: " immediately followed
+by the result.

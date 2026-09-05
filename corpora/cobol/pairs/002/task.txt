@@ -1,0 +1,5 @@
+Write a COBOL program named EMPLOYEEID that declares a WORKING-STORAGE
+variable WS-EMPLOYEE-NAME as an alphanumeric field up to 20 characters,
+initially "UNASSIGNED". Move the value "JOHNSON" into it, then display
+the line "EMPLOYEE: " immediately followed by the current value of
+WS-EMPLOYEE-NAME.
