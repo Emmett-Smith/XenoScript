@@ -308,4 +308,84 @@ Full suite green: 113 ashlar/eval tests (112 + 1 new fence-stripping
 test), 225 language tests, ruff clean, corpus-agnostic invariant holds,
 offline check passes.
 
+### Phase 4 — eval runner built, real numbers coming in
+
+`eval/runner.py`: arms A/B/C as single-shot generate+grade, D/E via the
+real `run_task` loop. Grading applies each case's `rubric.yaml` exactly
+(must_contain/must_not_contain, then real `verify()`/`verify(run=True)`).
+Self-tested against `FakeModel` first (`eval/test_runner.py`, zero
+network) — category distribution assertion (4/4/3/3/3/3=20), all runnable
+arms exercised, arm E's missing-credentials guard fails loudly. All green.
+
+**Real numbers, live `qwen2.5-coder:3b`, `--repeat 1` (time-boxed — see
+below), git `25c1ff5`:**
+
+| Arm | verified-correct | p50 | p95 |
+|---|---|---|---|
+| A (cold) | **0%** (0/20) | 5.5s | 10.6s |
+| B (docs pasted) | 5% (1/20) | 32.5s | 90.5s |
+| C (tools, no loop) | 5% (1/20) | 11.5s | 20.3s |
+| D (full system) | *running* | | |
+
+Arm A landing at exactly 0% is the number the whole pitch rests on
+(05_EVAL.md #1) and it's real, not asserted. B being slow (repeat-1 alone
+took 12m15s for 20 tasks) confirms the spec's prediction that long-context
+docs-pasting is a weak, slow competitor on a 3B local model. Arm D
+(the product) is running now — full report + failure analysis in Phase 5.
+
+**Time-boxing note, stated honestly:** `05_EVAL.md` §4 asks for
+`--repeat 3` on arms C/D/E. At B's observed pace (~37s/task average),
+3 full repeats across C/D/E would run into the hour(s) range on this 3B
+CPU/local-GPU model. Running `--repeat 1` first to get real numbers landed
+in this session, then revisiting `--repeat 3` in Phase 5 if time allows;
+if it doesn't, the exact commands are in the morning handoff. This is a
+real constraint, not corner-cutting on the metric itself — every number
+reported is real, single-run numbers are just single-run, honestly labeled.
+
+### Phase 3 — frontend agent: done, merged
+
+Worktree `/Users/owner/XenoScript/.claude/worktrees/agent-a7fcda841d82d3e47`
+branch `worktree-agent-a7fcda841d82d3e47`. Merged clean into master
+(no conflicts — new `frontend/` tree only). `npm run build` re-verified
+from master post-merge: succeeds, 545ms, `dist/` produced.
+
+Vite+React+TS, all 3 panels, verdict block + attempt ledger, built and
+**actually exercised in a real browser** (the agent used the Chrome
+automation tool, not just code review) against all 3 recorded fixtures
+plus the real running API server end-to-end (real `EventSource`, real
+`POST /corpus/switch`, real Ollama answering). Found and fixed 2 real
+rendering bugs this way (verdict text overflow, ledger column too
+narrow) — exactly the value of actually running a UI instead of trusting
+it compiles.
+
+**Fonts:** real IBM Plex Sans/Mono woff2 files, vendored locally under
+`frontend/public/fonts/`. Fetched once from unpkg during the build
+session to obtain the actual files (this machine has outbound network
+access) — the shipped app's CSS references only local `/fonts/...` paths,
+never a CDN URL at runtime, so this doesn't violate the offline-at-runtime
+invariant. Noting this plainly since "no CDN asset" is a hard rule and I
+want the distinction (build-time fetch vs. runtime reference) on record.
+
+**Fixture replay:** real recorded JSONL (byte-identical to
+`eval/fixtures/event_streams/`, copied into `frontend/public/fixtures/`)
+replayed on a fixed per-event-type delay for watchability — event
+*content* untouched, gated behind `?fixtures=1` + `import.meta.env.DEV`,
+never present in a production build. The real `fetch`/`EventSource` path
+against `localhost:8000` is the only path in a shipped build.
+
+**Honest gaps:** not tested on a physical projector (none available).
+`npm run dev` with networking physically disabled wasn't separately
+re-verified (no CDN reference exists in the code, so this is very likely
+fine, but "very likely" isn't "verified" — worth 30 seconds in Phase 5).
+
+**Ambiguities resolved, adopting as-is:** event→verdict-state mapping
+(documented inline in `useTaskStream.ts`); `MAX_ITER=4` hardcoded as a UI
+display default (matches the documented architecture constant, not
+fabricated, since no endpoint exposes it); one internal-only `__reset`
+reducer action for corpus-switch panel clearing (not part of the §8 union).
+
+One process note: shipped as a single commit rather than incremental
+commits (flagged by the agent itself). Not going to unpick that
+retroactively — the code is what matters and it's real, tested work.
+
 ---

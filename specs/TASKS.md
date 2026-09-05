@@ -67,21 +67,29 @@ eval arm A (2h, either) ──► arms B-E
   that's Phase 2. See `LOG.md`.
 
 ### Frontend (Partner, after 5 examples parse)
-- [ ] Vite scaffold, design tokens as CSS custom properties
-- [ ] `useTaskStream` reducer over the event union
-- [ ] Corpus panel — live tool calls
-- [ ] Code panel — streaming + error underline
-- [ ] Verifier panel — verdict block + attempt ledger
-- [ ] Prompt bar
+- [x] Vite scaffold, design tokens as CSS custom properties
+- [x] `useTaskStream` reducer over the event union
+- [x] Corpus panel — live tool calls
+- [x] Code panel — streaming + error underline
+- [x] Verifier panel — verdict block + attempt ledger
+- [x] Prompt bar
+
+  Built and actually exercised in a real browser against real fixtures +
+  the real running API server (not just `npm run build` passing). Real
+  Plex fonts vendored locally. Not verified: physical projector, explicit
+  networking-disabled reload. See LOG.md.
 
 ### Eval (either)
 - [x] 20 cases written (task.txt + rubric.yaml; behavioral expected.txt
       generated for real in Phase 2 by running solutions through the real
       interpreter — no more TODOs)
-- [ ] Runner with `--arm`
-- [ ] **Arm A recorded** — the number the whole pitch rests on
-- [ ] Arm B recorded (long-context competitor)
-- [ ] Arms C, D, E with `--repeat 3`
+- [x] Runner with `--arm` (`--all-arms`, `--repeat`, provenance stamping)
+- [x] **Arm A recorded** — 0% (0/20), live `qwen2.5-coder:3b` — the number
+      the whole pitch rests on, and it's real
+- [x] Arm B recorded (long-context competitor) — 5% (1/20), slow (p50 32.5s)
+- [~] Arms C, D, E with `--repeat 3` — C recorded at `--repeat 1` (5%,
+      1/20); D running; E needs cloud credentials this machine doesn't
+      have. `--repeat 3` not yet done for any arm (time cost — see LOG.md).
 
 ### Demo
 - [ ] Demo script written — **hour 1, before building**
