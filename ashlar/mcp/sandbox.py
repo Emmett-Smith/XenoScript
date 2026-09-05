@@ -122,6 +122,7 @@ def run_verifier(
                 text=True,
                 timeout=meta.sandbox.timeout_s,
                 input=stdin,
+                check=False,
             )
         except subprocess.TimeoutExpired:
             # subprocess.run kills the process for us before re-raising.

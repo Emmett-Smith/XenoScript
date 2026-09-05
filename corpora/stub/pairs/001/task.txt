@@ -1,0 +1,1 @@
+Write a platform block named "task_alpha" with noise_floor set to 3.

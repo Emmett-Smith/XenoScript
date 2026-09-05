@@ -1,0 +1,3 @@
+platform loud_zone
+  noise_floor 99
+end_platform

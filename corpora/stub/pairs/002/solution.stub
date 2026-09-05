@@ -1,0 +1,4 @@
+platform task_beta
+  inherit from task_alpha
+  PAIRSONLY_TOKEN_002 should_never_appear_in_index
+end_platform

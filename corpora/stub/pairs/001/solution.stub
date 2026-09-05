@@ -1,0 +1,4 @@
+platform task_alpha
+  noise_floor 3
+  PAIRSONLY_TOKEN_001 should_never_appear_in_index
+end_platform
