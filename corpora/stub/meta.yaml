@@ -1,0 +1,20 @@
+language: stub
+display_name: Stub
+extension: .stub
+comment_prefix: "#"
+
+verifier:
+  # {file} is substituted with an absolute path inside the sandbox.
+  parse:   ["python3", "corpora/stub/verifier.py", "parse", "{file}"]
+  run:     ["python3", "corpora/stub/verifier.py", "run", "{file}"]
+  symbols: ["python3", "corpora/stub/verifier.py", "symbols"]
+
+sandbox:
+  mode: subprocess    # pre-decided for this session; see 00_ARCHITECTURE.md #12, ORCHESTRATOR.md #2
+  timeout_s: 10
+  memory_mb: 512
+
+retrieval:
+  bm25_weight: 0.75
+  embedding_weight: 0.25
+  chunk_strategy: heading

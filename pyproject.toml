@@ -1,0 +1,26 @@
+[project]
+name = "ashlar"
+version = "0.1.0"
+description = "A coding assistant for languages no model has seen."
+requires-python = ">=3.11"
+dependencies = [
+  "mcp>=1.0.0",
+  "openai>=1.0.0",
+  "fastapi>=0.110.0",
+  "uvicorn>=0.29.0",
+  "rank-bm25>=0.2.2",
+  "pyyaml>=6.0",
+  "sse-starlette>=2.0.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0.0",
+  "ruff>=0.5.0",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["ashlar", "eval"]

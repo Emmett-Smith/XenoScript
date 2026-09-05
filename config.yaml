@@ -1,0 +1,27 @@
+# Ashlar top-level config. Corpus specifics live in corpora/<name>/meta.yaml.
+# This file plus meta.yaml is the whole surface for adding a language.
+
+corpus: stub          # name of a folder under corpora/
+
+model:
+  base_url: http://localhost:11434/v1
+  # Model choice is deliberately not fixed here (00_ARCHITECTURE.md #10).
+  # No model was loaded during this build session. Run:
+  #   curl -s http://localhost:11434/api/tags
+  # and put the winning name:tag here after the bake-off (see TASKS.md).
+  name: "PENDING_BAKEOFF"
+  api_key: ollama
+  temperature: 0.1
+  max_tokens: 2048
+  request_timeout_s: 120
+
+harness:
+  max_iter: 4
+  task_budget_s: 300
+
+sandbox:
+  mode: subprocess    # pre-decided for this session; container path is stubbed, not implemented
+
+api:
+  host: 127.0.0.1
+  port: 8000
