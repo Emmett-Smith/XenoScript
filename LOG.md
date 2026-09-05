@@ -1,5 +1,184 @@
 # LOG
 
+## CURRENT HANDOFF (2026-09-05, ~14:35 local) — READ THIS ONE, supersedes the "MORNING HANDOFF" below
+
+The human is present and interacting live (browser + this session). The
+section below ("MORNING HANDOFF") was written when they were asleep and
+is now stale in several places (COBOL is built, MUMPS was investigated
+and ruled out, several real bugs found and fixed). This section is the
+current, accurate state. Full chronological detail is further down the
+file, in order.
+
+### What Ashlar is, one paragraph
+
+A coding assistant for languages no model has seen: drop in docs +
+examples + a real toolchain, get a verified-output agent for that
+language, fully offline. Three corpora exist right now, all real and
+switchable live in the UI (header dropdown): **PLINTH** (invented
+52-keyword language, proves zero memorization), **COBOL** (real
+GnuCOBOL compiler via `brew install gnucobol`, proves real-world
+applicability), **stub** (Phase-0 dev scaffolding, harmless, not part
+of the demo). A 4th option, **"+ add corpus,"** opens a real form to
+onboard any new corpus with an already-installed toolchain — built and
+tested tonight, not a mockup.
+
+### How to run it right now
+
+```
+ollama serve && curl -s localhost:11434/api/tags   # confirm qwen2.5-coder:3b listed
+cd ~/XenoScript && uv sync
+uv run python -m ashlar.api.server > /tmp/ashlar_api.log 2>&1 &      # :8000
+cd frontend && npm install && npm run dev > /tmp/ashlar_frontend.log 2>&1 &   # :5173
+```
+Open `http://localhost:5173`. **If you edit any backend Python file**,
+you must `pkill -f "ashlar.api.server"` and restart it — it does not
+hot-reload, and this bit both the lead agent and a dispatched subagent
+tonight (silent stale-code bugs until caught).
+
+### Real, live-verified eval numbers (as of commit `ace0b4e`)
+
+| Corpus | A (cold) | B (docs pasted) | C (tools, no loop) | D (full system) |
+|---|---|---|---|---|
+| PLINTH | 0% | 5% | 20% | 25% |
+| COBOL | 50% | 90% | 20% | 20% |
+
+**These are meant to look different, not the same** — PLINTH's low
+numbers prove the model has never seen the language; COBOL's high A/B
+prove it's a real language with real training exposure, which is the
+whole point of running a second corpus (`05_EVAL.md` §6). Do not average
+them or present one "accuracy" figure across corpora. All at `--repeat
+1` — `--repeat 3` still not done for either corpus, real run-to-run
+variance was observed (values above are trustworthy directionally, not
+to the percentage point).
+
+### Every real bug found and fixed this session (chronological, so you can see the pattern: test something live, find it's wrong, fix it, prove the fix)
+
+1. **Markdown-fence stripping** — the live 3B model wrapped output in
+   ` ```plinth ` fences despite being told not to, and repeated the
+   identical unparseable output for all 4 iterations. Fixed in
+   `ashlar/harness/loop.py`'s `strip_markdown_fences`.
+2. **3 retrieval bugs** — a contraction ("I've"/"can't") got misread as
+   a quote delimiter, producing a garbage 90-char pseudo-keyword;
+   `grep_corpus` searched docs before examples, so generic keywords
+   exhausted the hit limit before a single example was ever opened;
+   one combined grep pattern let a generic keyword's matches crowd out
+   a specific one even within the examples tier. Fixed in
+   `ashlar/harness/keywords.py` and `ashlar/mcp/server.py`.
+3. **The big one: arm C's retrieval had silently drifted from arm D's**
+   in `eval/runner.py` (two separate copies of the pre-fetch logic).
+   This inflated the apparent "verifier loop contribution" from a real
+   5 points to a fake-looking 30. Found by noticing arm C's number
+   hadn't moved when arm D's had. Fixed by extracting one shared
+   `deterministic_prefetch()` both arms now call. **This is the most
+   important process lesson from the whole session**: a suspiciously
+   good number is a signal to check the methodology, not a result to
+   report.
+4. **Hyphenated-identifier tokenization** — found via real COBOL:
+   `WS-INDEX` was splitting into two spurious symbols ("WS", "INDEX")
+   because the tokenizer was only built for PLINTH's underscore
+   convention. Fixed in `ashlar/ingest/indexer.py` /
+   `ashlar/ingest/symbols.py`.
+5. **Generic text-output verifier adapter** — GnuCOBOL has no `--json`
+   mode, prints plain `file:line: severity: message` to stderr.
+   `ashlar/mcp/sandbox.py` only understood JSON-emitting toolchains
+   until this session. Added `verifier.output_format`/`error_regex` to
+   the `meta.yaml` contract, corpus-agnostic (the regex lives in the
+   corpus's own `meta.yaml`, never in `ashlar/` code).
+6. **Terminal/output panel showed a real compiler warning as if it were
+   a failure** — stderr was always styled `--fault` (red) regardless of
+   whether the run actually succeeded. Fixed: red only when `ok` is
+   false, dim/gray otherwise.
+7. **Cross-corpus eval-report mislabeling — two compounding bugs.**
+   `build_report()` recorded `config.yaml`'s static default corpus, not
+   the corpus actually passed via `--corpus`; separately, `GET
+   /eval/latest` returned the single newest report file with zero
+   awareness of which corpus was active in the UI. Together: running a
+   COBOL sweep made the **PLINTH** baseline chart briefly show COBOL's
+   (much higher) numbers, live, on screen. Fixed both ends: the report
+   now always carries the real corpus it tested; `GET
+   /eval/latest?corpus=X` filters by it; the frontend passes the active
+   corpus and double-checks the response. **General lesson: any report
+   artifact needs its own identity checked at read time, "latest" is
+   almost never the right query once more than one axis can vary.**
+8. **`eval/runner.py`'s report was only written once, at the very end**
+   — a multi-arm sweep that gets killed partway through used to lose
+   *everything*, including already-completed arms. Now writes/
+   overwrites incrementally after each arm.
+
+### Two feature requests just implemented (both live-verified, both need a decision or FYI)
+
+- **97% output-similarity scoring, replacing exact match** — per direct
+  request: "run until it produces output, then score how close that
+  output is to the source of truth, ≥97%." Implemented in
+  `ashlar/harness/loop.py` (`output_similarity`, stdlib `difflib`,
+  shared with `eval/runner.py`'s grading). An empty/failed run is never
+  accepted regardless of what the ratio math would say. **This changed
+  a normative contract line in `00_ARCHITECTURE.md` §9 step 7** (was
+  exact match) — updated the doc to match, since that's a change that
+  needs explicit human sign-off and this request constitutes it.
+- **Synonym/stem resolution for "not found" symbol lookups** — a prompt
+  using "outputting" against PLINTH now also resolves to the real
+  symbol "report" (PLINTH's actual output-ish keyword), instead of a
+  flat "not found." Fixed vocabulary clusters (output/print/display/...,
+  loop/repeat/..., etc.) in `ashlar/harness/keywords.py`, corpus-
+  agnostic — confirmed a cluster with no real-symbol member resolves to
+  nothing, never fabricates a symbol.
+
+### MUMPS — investigated, ruled out for this machine, with real evidence
+
+User asked about adding MUMPS (healthcare-industry angle) as a 3rd
+corpus. Checked: no Homebrew formula, no Docker, and decisively —
+YottaDB/GT.M's own `CMakeLists.txt` only implements `Linux` and `AIX`
+platform branches; there's no `sr_darwin` directory in the source tree
+at all (unlike `sr_linux`, which holds the OS-specific process/signal/
+shared-memory code the runtime needs). Cloned the real repo and
+confirmed `cmake ..` fails immediately with an explicit `FATAL_ERROR` on
+unsupported OS. **Not "hard," architecturally Linux/AIX-only.** Real
+path forward: a Linux VM — prebuilt packages exist there, trivial.
+Not pursued further; tell the human if a Linux box/VM becomes available.
+
+### What's NOT done — say this plainly if asked
+
+- `--repeat 3` on any arm, either corpus (real variance observed, e.g.
+  arm B swung 5%→0% with zero code change — single runs aren't solid).
+- Model bake-off (`TASKS.md` P1) — only `qwen2.5-coder:3b` was ever
+  available on this machine tonight.
+- Physical projector legibility check (none available).
+- Literal wifi-off reload (code + `eval/offline_check.py` both say
+  clean; not physically tested with the radio off).
+- Composition-category PLINTH tasks (0/3 in eval) — root cause not
+  fully traced (same "identical error every iteration" signature as a
+  case that WAS traced, but not confirmed to be the same underlying
+  cause).
+- `--repeat 3`'s absence means every percentage above should be read as
+  "roughly this," not "exactly this."
+
+### User's stated priority, most recent message
+
+**"Primarily most concerned with backend returning correct results as
+we'll likely migrate over to a fancy ui."** — the current frontend may
+be replaced. Bias further effort toward `ashlar/`, `languages/`,
+`corpora/`, `eval/` correctness over frontend polish. Keep testing live
+prompts against real corpora, comparing actual vs. expected output,
+and fixing whatever's actually wrong — that's the standing instruction
+("keep running examples, compare output, keep iterating until the
+results are working properly"), not a one-time task.
+
+### Immediate next steps, in priority order
+
+1. Keep running varied real prompts against both PLINTH and COBOL,
+   watching for anything that looks wrong (retrieval misses, repair
+   loops that thrash, wrong-looking output) — this is an open-ended,
+   standing instruction, not a checklist to finish.
+2. `--repeat 3` sweeps once there's a quiet stretch (30-90 min each,
+   background-able) — needed before any number here is quote-safe.
+3. If a Linux VM/box ever becomes available: MUMPS via YottaDB's
+   prebuilt packages (trivial there, blocked here).
+4. Trace a composition-category PLINTH failure the way the "inherit
+   from" case was traced earlier, to find its real root cause.
+
+---
+
 ## MORNING HANDOFF (2026-09-05, ~05:20 local)
 
 **State:** the full pipeline works end to end for real — invented
