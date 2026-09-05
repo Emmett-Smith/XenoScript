@@ -1,5 +1,58 @@
 # LOG
 
+## MORNING HANDOFF (2026-09-05, ~05:20 local)
+
+**State:** the full pipeline works end to end for real — invented
+language, real interpreter, real MCP tools, real repair loop, real UI —
+against the live model that appeared mid-session. Eval numbers are
+honest but small-sample; need `--repeat 3` before quoting anywhere.
+
+**NEEDS HUMAN:** (1) `ORCHESTRATOR.md` says dir `xenoscript/`; `00_ARCHITECTURE.md`/`README.md` say `ashlar/`. Went with `ashlar/` — say if wrong. (2) Model bake-off never ran, only `qwen2.5-coder:3b` was ever available.
+
+**Run it:**
+```
+ollama serve && ollama list                       # confirm qwen2.5-coder:3b
+cd ~/XenoScript && uv sync
+uv run python -m ashlar.ingest --corpus corpora/plinth
+uv run python -m ashlar.api.server                # :8000
+cd frontend && npm install && npm run dev          # :5173, open it
+```
+Try: "give a platform an altitude of fifteen hundred meters written the
+way PLINTH expects" — real E043 fail→repair→pass. Corpus switch dropdown
+→ `stub` and back, confirmed live twice, no restart.
+
+**Unverified:** physical projector (none available); literal wifi-off
+reload (code + `eval/offline_check.py` both say clean, not physically
+tested); `--repeat 3` on any arm; COBOL corpus (not built, P1).
+
+**Eval — read `eval/FAILURE_ANALYSIS.md`'s top section first, it
+corrects itself.** `--repeat 1`, same commit: A=0%, B=0-5% (varied on
+*unchanged* code), C=20%, D=25%. D−C=5pp, **not** the 30pp an earlier
+buggy comparison showed (arm C's retrieval had drifted from arm D's —
+found and fixed). Before quoting any number:
+`uv run python -m eval.runner --all-arms --corpus plinth --repeat 3`
+(~60-90 min, writes incrementally, safe to background).
+
+**Pass B, done vs. remaining:** done — fence-stripping (was blocking
+every live task), 3 retrieval bugs, arm-C/D dedup. Remaining — repair
+context should re-check *all* required fields, not just the one named
+in the error (E020/E052 pattern); widen `get_examples` past comments to
+real code; composition tasks (0/3) un-root-caused.
+
+**Next, in order:** (1) `--repeat 3` above, everything rests on it;
+(2) COBOL corpus — strongest rebuttal to "you wrote both ends," nothing
+blocks it; (3) trace a composition failure like case 009 was traced.
+
+**Invariants:** [x] no unverified source reaches the user · [x] no
+language logic under `ashlar/` (asserted in `check.sh`) · [x] full task
+runs with networking disabled (`offline_check.py`; not physically
+re-tested) · [x] corpus swap via config change alone, and live via
+`POST /corpus/switch`, twice in a row.
+
+Full detail below, in build order.
+
+---
+
 ## Session 2026-09-05 — autonomous overnight build (lead agent)
 
 Human asleep. Operating per `specs/ORCHESTRATOR.md`. No questions asked;
