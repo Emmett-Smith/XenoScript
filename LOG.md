@@ -75,3 +75,87 @@ name:tag in TASKS.md "Chosen model" and switch arms A-E / live loop to use it.
 - Write MORNING HANDOFF at top of this file before stopping.
 
 ---
+
+### Phase 0 — done (commit d02dd37)
+
+- `ashlar/` skeleton (config, ingest, mcp, harness, api packages), `ashlar/config.py`
+  loads `config.yaml` + `corpora/<name>/meta.yaml` into dataclasses — this is the
+  shared interface Phase 1's three subagents will import.
+- `corpora/stub/meta.yaml` + `corpora/stub/verifier.py`: 00_ARCHITECTURE §5-compliant,
+  returns ok unless source contains literal `FAIL` (fabricated E041 at line 3).
+- `pyproject.toml` + `uv sync`: mcp, openai, fastapi, uvicorn, rank-bm25, pyyaml,
+  sse-starlette, pytest, ruff. Used `uv` since no venv existed and it was already
+  on the machine (faster than pip).
+- `scripts/check.sh`: ruff + pytest + grep assertion that `ashlar/` never says
+  `plinth`/`cobol` outside tests. All green.
+- Extended `meta.yaml`'s `sandbox:` block with a `mode` field (subprocess|container,
+  optional, overrides `config.yaml`'s top-level `sandbox.mode`) per ORCHESTRATOR
+  Phase 0's explicit instruction to pre-decide subprocess mode in every meta.yaml.
+  Noting this as an intentional, instructed spec extension (00_ARCHITECTURE §4 asks
+  new fields be flagged in TASKS.md — done there too).
+- Container sandbox path intentionally NOT built tonight — backend agent will stub
+  it with `NotImplementedError` so the interface stays honest, per instructions.
+
+Dispatching Phase 1 now: language, backend, harness subagents in parallel,
+disjoint directories. Each in its own git worktree (avoids concurrent
+`git commit` lock races on the shared repo since all three run at once).
+
+**Model server update:** a model appeared mid-session —
+`qwen2.5-coder:3b` (3.1B, Q4_K_M, 32k ctx, tools-capable). Confirmed via
+`curl localhost:11434/api/tags` at the time the harness agent reported.
+Recorded in `config.yaml` and `specs/TASKS.md` "Chosen model" by the
+harness agent. **This is a re-probe finding, not a real bake-off** — only
+one model was ever available tonight, so the "benchmark 2-3 models" item
+in `00_ARCHITECTURE.md` #10 / TASKS.md P1 remains unrun. Left in handoff.
+
+### Phase 1 — harness agent: done
+
+Worktree `/Users/owner/XenoScript/.claude/worktrees/agent-a0dc2128f296264cd`
+branch `worktree-agent-a0dc2128f296264cd`, 11 commits, 59/59 tests passing,
+`./scripts/check.sh` green in that worktree.
+
+Built: `ashlar/harness/{model,prompts,tool_client,subprocess_verify,keywords,
+repair,events,memory,loop}.py`, `ashlar/api/server.py`, `prompts/{system,repair}.md`,
+`eval/offline_check.py`. Full event contract sequence verified against a
+fail-then-succeed `FakeModel` fixture — matches `00_ARCHITECTURE.md` §8
+exactly. Cache-hit re-verify, history-not-accumulated-verbatim, MAX_ITER,
+task budget, and offline (zero non-loopback socket connects) all tested green.
+
+**ToolClient interface** (the plug point for backend's real MCP client in
+Phase 2):
+```python
+class ToolClient(Protocol):
+    def lookup_symbol(self, name: str) -> dict: ...
+    def grep_corpus(self, pattern: str, limit: int = 20, kind: str = "all") -> list[dict]: ...
+    def get_examples(self, symbol: str, n: int = 3) -> list[dict]: ...
+    def read_file(self, path: str, start: int = 1, end: int = -1) -> dict: ...
+    def verify(self, source: str, run: bool = False, stdin: str = "") -> dict: ...
+```
+`HarnessDeps.tool_client` is the single field to swap; `ashlar/api/server.py`'s
+`_build_tool_client(meta)` is the single server-side function to change.
+
+**Notable live-model finding, not a bug, flagging for eval/Phase 5:** with
+`qwen2.5-coder:3b` and no `tools` param wired, the model emitted a
+hallucinated tool-call-shaped string as its "source" on the one live smoke
+test, and it happened to pass only because the stub verifier merely checks
+for the literal `FAIL`. This is exactly the weak multi-turn-tool-orchestration
+failure mode the deterministic-pre-fetch design exists to route around
+(00_ARCHITECTURE §9) — once the real PLINTH verifier is wired in Phase 2,
+confirm this kind of malformed "source" gets a real parse error (E001/E003),
+not a false pass. Worth an explicit test.
+
+**Spec ambiguities resolved by the harness agent** (my read: all reasonable,
+adopting as-is): repair context window read as 3-before+3-after (7 lines)
+rather than "line + 3" total; added a `{current_source}` placeholder to
+`repair.md` since the loop narrative requires resending current source but
+the §3 skeleton had no slot for it; `run_task` takes an explicit `HarnessDeps`
+param instead of implicit globals (testability, no behavior change).
+
+**Known gap, honest:** no real MCP server to integrate against yet (backend
+still running) — stood in with `FakeToolClient` + a subprocess helper that
+shells out to the real `corpora/stub/verifier.py`. Corpus-switch logic is
+generic but only exercised against one corpus so far.
+
+Still waiting on `language` and `backend` agents before Phase 2 integration.
+
+---

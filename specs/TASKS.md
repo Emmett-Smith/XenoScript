@@ -37,20 +37,24 @@ eval arm A (2h, either) ──► arms B-E
 - [ ] Dockerfile → `ashlar/plinth:latest`
 
 ### Backend (Emmett)
-- [ ] Stub verifier + `corpora/stub/meta.yaml` — **do this first, hour 1**
-- [ ] Config loader (`config.yaml` + `meta.yaml`)
+- [x] Stub verifier + `corpora/stub/meta.yaml` — **do this first, hour 1**
+- [x] Config loader (`config.yaml` + `meta.yaml`)
 - [ ] Ingest: chunker, BM25 index
 - [ ] Symbol table with source precedence
 - [ ] MCP server, all 5 tools
 - [ ] Sandbox with `--network=none` + subprocess fallback
 
 ### Harness (Emmett)
-- [ ] Model client, OpenAI-compatible, streaming
-- [ ] Deterministic pre-fetch
-- [ ] Generate → verify → repair loop, MAX_ITER=4
-- [ ] `prompts/system.md` + `prompts/repair.md`
-- [ ] Event emitter matching contract §8
-- [ ] FastAPI + SSE
+- [x] Model client, OpenAI-compatible, streaming
+- [x] Deterministic pre-fetch
+- [x] Generate → verify → repair loop, MAX_ITER=4
+- [x] `prompts/system.md` + `prompts/repair.md`
+- [x] Event emitter matching contract §8
+- [x] FastAPI + SSE
+
+  Built against `FakeToolClient`/`FakeModel` in an isolated worktree (no
+  real MCP server yet). 59/59 tests green. Not yet merged/integrated —
+  that's Phase 2. See `LOG.md`.
 
 ### Frontend (Partner, after 5 examples parse)
 - [ ] Vite scaffold, design tokens as CSS custom properties
@@ -61,7 +65,8 @@ eval arm A (2h, either) ──► arms B-E
 - [ ] Prompt bar
 
 ### Eval (either)
-- [ ] 20 cases written
+- [x] 20 cases written (task.txt + rubric.yaml; 3 behavioral expected.txt left
+      as TODO pending real interpreter — see Notes)
 - [ ] Runner with `--arm`
 - [ ] **Arm A recorded** — the number the whole pitch rests on
 - [ ] Arm B recorded (long-context competitor)
@@ -112,7 +117,12 @@ Record choices here so agents stop re-litigating them.
 | — | No fine-tuning | Cannot demo a curve in 36h; cache + failure memory is the honest version |
 | — | Model name lives only in `config.yaml` | Bake-off pending; keeps us vendor-neutral |
 
-**Chosen model:** _pending bake-off — record name, tag, and eval score here_
+**Chosen model:** `qwen2.5-coder:3b` (3.1B, Q4_K_M, 32k ctx) — appeared on
+`localhost:11434/api/tags` partway through the session (was empty at start).
+**This is a re-probe finding, not a bake-off** — it's the only model that was
+ever available tonight, so "benchmark 2-3 models" (P1) is still unrun. One
+live smoke test passed end-to-end against `corpora/stub`. No eval score yet
+(Phase 4).
 
 ---
 
@@ -120,4 +130,11 @@ Record choices here so agents stop re-litigating them.
 
 Append freely. Format: `- [component] what the spec got wrong, what you did.`
 
-- 
+- [orchestrator] `ORCHESTRATOR.md`'s Phase 1 table names the package dir
+  `xenoscript/`, but `00_ARCHITECTURE.md` #3 and `README.md` both specify
+  `ashlar/`. Went with `ashlar/` (binding-contract doc wins). See `LOG.md`
+  NEEDS HUMAN.
+- [architecture] `meta.yaml`'s `sandbox:` block gained an optional `mode`
+  field (`subprocess|container`), overriding `config.yaml`'s top-level
+  `sandbox.mode`. Not in the #4 example, but explicitly requested by
+  `ORCHESTRATOR.md` Phase 0 ("set it in config.yaml and in every meta.yaml").
