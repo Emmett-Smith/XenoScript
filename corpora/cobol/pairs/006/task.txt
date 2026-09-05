@@ -1,0 +1,5 @@
+Write a COBOL program named SUMRANGE that adds up the whole numbers from
+1 through 5 using a PERFORM VARYING loop and ADD, displays the line
+"TOTAL: " followed by the sum, then checks with IF/ELSE whether the
+total is greater than 10: if so display "TOTAL EXCEEDS TEN", otherwise
+display "TOTAL IS TEN OR LESS".
