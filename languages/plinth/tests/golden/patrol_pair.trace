@@ -1,0 +1,4 @@
+[t=0.000] scenario patrol start step=1.000 duration=30.000
+[t=1.000] spawn uav_01 pos=45.2000,-100.1000 alt=1500.000
+[t=1.000] spawn uav_02 pos=45.2000,-100.1000 alt=2200.000
+[t=30.000] scenario end status=ok

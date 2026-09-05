@@ -1,0 +1,3 @@
+[t=0.000] scenario emitter_test start step=1.000 duration=20.000
+[t=1.000] trace "signal beacon_1 configured"
+[t=20.000] scenario end status=ok

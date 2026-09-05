@@ -1,0 +1,5 @@
+[t=0.000] scenario space_track start step=5.000 duration=120.000
+[t=5.000] spawn sat_1 pos=0.0000,0.0000 alt=20000.000
+[t=5.000] activate esm_c on sat_1
+[t=60.000] report esm_c range_max=500000.000 detections=0
+[t=120.000] scenario end status=ok

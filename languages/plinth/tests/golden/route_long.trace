@@ -1,0 +1,3 @@
+[t=0.000] scenario transit start step=1.000 duration=40.000
+[t=1.000] spawn uav_05 pos=0.0000,0.0000 alt=1200.000
+[t=40.000] scenario end status=ok

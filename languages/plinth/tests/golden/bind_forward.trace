@@ -1,0 +1,4 @@
+[t=0.000] scenario fwd_bind start step=1.000 duration=20.000
+[t=2.000] spawn uav_09 pos=10.0000,20.0000 alt=900.000
+[t=2.000] activate radar_b on uav_09
+[t=20.000] scenario end status=ok

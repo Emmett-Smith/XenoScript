@@ -1,0 +1,6 @@
+[t=0.000] scenario ground_net start step=1.000 duration=30.000
+[t=1.000] spawn station_1 pos=40.0000,-105.0000 alt=1600.000
+[t=1.000] spawn buoy_1 pos=40.1000,-105.1000 alt=0.000
+[t=3.000] activate acoustic_a on buoy_1
+[t=10.000] report acoustic_a range_max=8000.000 detections=0
+[t=30.000] scenario end status=ok

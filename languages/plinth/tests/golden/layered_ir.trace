@@ -1,0 +1,8 @@
+[t=0.000] scenario layered start step=1.000 duration=45.000
+[t=1.000] spawn uav_10 pos=12.5000,-30.0000 alt=3000.000
+[t=1.000] spawn uav_11 pos=12.5000,-30.0000 alt=3500.000
+[t=2.000] activate ir_a on uav_10
+[t=2.000] activate eo_a on uav_11
+[t=20.000] report ir_a range_max=20000.000 detections=0
+[t=20.000] report eo_a range_max=15000.000 detections=0
+[t=45.000] scenario end status=ok
