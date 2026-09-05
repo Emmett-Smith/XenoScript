@@ -9,7 +9,16 @@ from ashlar.config import REPO_ROOT, load_corpus_meta
 from ashlar.harness.loop import Corpus
 from ashlar.harness.model import FakeModel
 from ashlar.mcp import server as mcp_server
-from eval.runner import ARMS, build_report, cases_dir_for, load_cases, run_arm, summarize
+from eval.runner import (
+    ARMS,
+    CaseSpec,
+    _grade,
+    build_report,
+    cases_dir_for,
+    load_cases,
+    run_arm,
+    summarize,
+)
 
 
 def test_build_report_records_the_corpus_actually_tested_not_configs_default():
@@ -98,6 +107,40 @@ def test_runner_offline_self_test_against_fake_model(tmp_path):
         summary = summarize(arm, results)
         assert 0.0 <= summary["verified_correct_rate"] <= 1.0
         assert summary["n_runs"] == len(cases)
+
+
+def _behavioral_case(expected: str) -> CaseSpec:
+    return CaseSpec(
+        id="test", task="run it", expected=expected, grade="compile_and_run",
+        max_iterations=4, tags=[], must_contain=[], must_not_contain=[],
+    )
+
+
+def test_grade_accepts_near_miss_output_above_97_percent_similar():
+    from ashlar.harness.tool_client import FakeToolClient
+
+    expected = "[t=0.000] scenario demo start step=1.000 duration=10.000\n[t=10.000] scenario end status=ok\n"
+    almost = expected.replace("duration=10.000", "duration=10.00 ")
+    tool_client = FakeToolClient(verify_fn=lambda source, run, stdin: {
+        "ok": True, "errors": [], "warnings": [],
+        "stdout": almost if run else "", "stderr": "", "exit_code": 0, "duration_ms": 1,
+    })
+    ok, reason, _ = _grade("some source", tool_client, _behavioral_case(expected))
+    assert ok is True, reason
+
+
+def test_grade_rejects_genuinely_different_output_below_97_percent():
+    from ashlar.harness.tool_client import FakeToolClient
+
+    expected = "[t=0.000] scenario demo start step=1.000 duration=10.000\n[t=10.000] scenario end status=ok\n"
+    wrong = "completely different trace content that shares almost nothing with the real one\n"
+    tool_client = FakeToolClient(verify_fn=lambda source, run, stdin: {
+        "ok": True, "errors": [], "warnings": [],
+        "stdout": wrong if run else "", "stderr": "", "exit_code": 0, "duration_ms": 1,
+    })
+    ok, reason, _ = _grade("some source", tool_client, _behavioral_case(expected))
+    assert ok is False
+    assert reason is not None and reason.startswith("trace_mismatch")
 
 
 def test_arm_e_without_cloud_credentials_fails_loudly_not_silently():

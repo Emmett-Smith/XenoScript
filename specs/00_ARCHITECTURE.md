@@ -293,11 +293,20 @@ renders them. Adding fields is fine, renaming is not.
 5. verify(candidate)
 6. if not ok and iteration < MAX_ITER (4):
      append errors + relevant symbol lookups, goto 4
-7. if ok and a pair exists: verify(run=True), diff against expected
-     mismatch → goto 4 with the diff
+7. if ok and a pair exists: verify(run=True), compare against expected
+     empty/failed run, or < 97% similar (difflib ratio) → goto 4 with the diff
 8. write verified source to cache + failure log
 9. return with citations
 ```
+
+Step 7's comparison was originally an exact string match. Changed to a 97%
+similarity threshold (Python's `difflib.SequenceMatcher` ratio) per explicit
+human direction: minor formatting variance in a generated trace (whitespace,
+a trailing-zero difference) shouldn't force a repair the way a genuinely
+wrong trace should, but the run must still actually execute and produce
+real output first — an empty or failed run is never "close enough" to
+compare, no matter what the ratio math says for a short expected string.
+97% is deliberately a very high bar, not "roughly similar."
 
 **Steps 2, 3, 5 and 7 are harness-driven, not model-driven.** Local
 open-weight models are unreliable at multi-turn tool selection; taking that

@@ -22,6 +22,7 @@ the code is self-documenting):
 
 from __future__ import annotations
 
+import difflib
 import re
 import time
 import uuid
@@ -182,6 +183,21 @@ def collect_citations(hits: list[dict[str, Any]], examples: list[dict[str, Any]]
 
 def _elapsed(start: float) -> float:
     return time.monotonic() - start
+
+
+# 00_ARCHITECTURE.md #9 step 7 originally compared actual vs. expected
+# output with an exact string match. Per explicit human direction, this is
+# now a similarity threshold instead: minor formatting variance shouldn't
+# force a repair the way a genuinely wrong trace should, but 97% is a very
+# high bar -- deliberately close to "identical," not "roughly similar."
+OUTPUT_SIMILARITY_THRESHOLD = 0.97
+
+
+def output_similarity(actual: str, expected: str) -> float:
+    """difflib's ratio (0.0-1.0): twice the number of matching characters
+    over the total length of both strings. Stdlib, no new dependency,
+    same tool Python's own difflib.get_close_matches uses."""
+    return difflib.SequenceMatcher(None, actual, expected).ratio()
 
 
 _FENCE_RE = re.compile(r"^\s*```[^\n]*\n(.*?)\n?```\s*$", re.DOTALL)
@@ -397,13 +413,29 @@ def run_task(
         emitter.run_output(rr.get("stdout", ""), rr.get("stderr", ""), rr.get("ok", False), rr.get("errors", []))
 
         expected = corpus.expected_for(prompt)
-        if expected is not None and rr.get("stdout", "").strip() != expected.strip():
-            last_errors = [{"code": "EDIFF", "message": "output did not match expected trace"}]
-            turn = diff_turn(i, source, rr, expected)
-            history.append(turn)
-            if i < deps.max_iter:
-                emitter.repair_start(i + 1, ["EDIFF"])
-            continue
+        if expected is not None:
+            actual = rr.get("stdout", "").strip()
+            expected_stripped = expected.strip()
+            # "Keep running until it produces an output": a run that
+            # didn't even execute (rr.ok False -- e.g. PLINTH's real "no
+            # scenario defined; nothing to run" for a program with
+            # nothing to execute) or produced nothing at all is never
+            # close enough to compare, regardless of similarity -- don't
+            # let an empty string vs. a short expected string score a
+            # misleadingly high ratio.
+            ran_something = bool(rr.get("ok")) and bool(actual)
+            sim = output_similarity(actual, expected_stripped) if ran_something else 0.0
+            if sim < OUTPUT_SIMILARITY_THRESHOLD:
+                last_errors = [{
+                    "code": "EDIFF",
+                    "message": f"output {sim * 100:.0f}% similar to expected trace, need >= "
+                               f"{OUTPUT_SIMILARITY_THRESHOLD * 100:.0f}%",
+                }]
+                turn = diff_turn(i, source, rr, expected)
+                history.append(turn)
+                if i < deps.max_iter:
+                    emitter.repair_start(i + 1, ["EDIFF"])
+                continue
 
         deps.memory.record_success(prompt, source, i)
         citations = collect_citations(hits, examples)

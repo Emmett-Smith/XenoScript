@@ -37,10 +37,12 @@ import yaml
 
 from ashlar.config import REPO_ROOT, Config, load_config, load_corpus_meta
 from ashlar.harness.loop import (
+    OUTPUT_SIMILARITY_THRESHOLD,
     Corpus,
     HarnessDeps,
     assemble,
     deterministic_prefetch,
+    output_similarity,
     run_task,
     strip_markdown_fences,
 )
@@ -143,8 +145,11 @@ def _grade(source: str | None, tool_client: RealToolClient, case: CaseSpec) -> t
         if not rr.get("ok"):
             codes = [e.get("code") for e in rr.get("errors", [])]
             return False, "run_failed", codes
-        if case.expected is not None and rr.get("stdout", "").strip() != case.expected.strip():
-            return False, "trace_mismatch", []
+        if case.expected is not None:
+            actual = rr.get("stdout", "").strip()
+            sim = output_similarity(actual, case.expected.strip()) if actual else 0.0
+            if sim < OUTPUT_SIMILARITY_THRESHOLD:
+                return False, f"trace_mismatch:{sim * 100:.0f}%_similar", []
 
     return True, None, []
 

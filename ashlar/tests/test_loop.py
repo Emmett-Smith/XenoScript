@@ -386,3 +386,99 @@ def test_run_output_carries_the_reason_when_compile_passes_but_run_cannot(tmp_pa
     assert len(run_events) == 1
     assert run_events[0]["ok"] is False
     assert run_events[0]["errors"][0]["message"] == "no scenario defined; nothing to run"
+
+
+# ---------------------------------------------------------------------------
+# Behavioral check (00_ARCHITECTURE.md #9 step 7): a 97% similarity
+# threshold, not exact match, per explicit human direction.
+# ---------------------------------------------------------------------------
+
+
+def _make_corpus_with_pair(meta, prompt: str, expected: str) -> Corpus:
+    from ashlar.harness.memory import normalize_task
+
+    return Corpus(meta=meta, symbol_names=[], pairs={normalize_task(prompt): expected})
+
+
+def test_behavioral_check_accepts_near_miss_output_above_97_percent_similar(tmp_path):
+    meta = load_corpus_meta("stub")
+    expected = "[t=0.000] scenario demo start step=1.000 duration=10.000\n[t=10.000] scenario end status=ok\n"
+    # A trailing-zero formatting difference in the middle of the string
+    # (survives .strip(), so this is a genuine near-miss, not an
+    # accidentally-exact match) -- 98.9% similar by difflib ratio,
+    # above the 97% threshold. Must be accepted without a repair round.
+    almost = expected.replace("duration=10.000", "duration=10.00 ")
+
+    def verify_fn(source, run, stdin):
+        if not run:
+            return {"ok": True, "errors": [], "warnings": [], "stdout": "",
+                     "stderr": "", "exit_code": 0, "duration_ms": 1}
+        return {"ok": True, "errors": [], "warnings": [], "stdout": almost,
+                "stderr": "", "exit_code": 0, "duration_ms": 1}
+
+    model = FakeModel(responses=["clean source"])
+    tool_client = FakeToolClient(verify_fn=verify_fn)
+    memory = Memory(tmp_path / "symbols.db")
+    prompt = "run the demo scenario"
+    corpus = _make_corpus_with_pair(meta, prompt, expected)
+    deps = HarnessDeps(model=model, tool_client=tool_client, memory=memory)
+
+    events: list[dict] = []
+    result = run_task(prompt, corpus, events.append, deps)
+
+    assert result.ok is True
+    assert result.iterations == 1  # accepted first try, no repair triggered
+
+
+def test_behavioral_check_rejects_genuinely_different_output_below_97_percent(tmp_path):
+    meta = load_corpus_meta("stub")
+    expected = "[t=0.000] scenario demo start step=1.000 duration=10.000\n[t=10.000] scenario end status=ok\n"
+    wrong = "completely different trace content that shares almost nothing with the real one\n"
+
+    def verify_fn(source, run, stdin):
+        if not run:
+            return {"ok": True, "errors": [], "warnings": [], "stdout": "",
+                     "stderr": "", "exit_code": 0, "duration_ms": 1}
+        return {"ok": True, "errors": [], "warnings": [], "stdout": wrong,
+                "stderr": "", "exit_code": 0, "duration_ms": 1}
+
+    model = FakeModel(responses=["clean source"])
+    tool_client = FakeToolClient(verify_fn=verify_fn)
+    memory = Memory(tmp_path / "symbols.db")
+    prompt = "run the demo scenario"
+    corpus = _make_corpus_with_pair(meta, prompt, expected)
+    deps = HarnessDeps(model=model, tool_client=tool_client, memory=memory)
+
+    events: list[dict] = []
+    result = run_task(prompt, corpus, events.append, deps)
+
+    assert result.ok is False
+    assert result.reason == "max_iterations"
+    verify_results = [e for e in events if e["type"] == "verify_result"]
+    assert all(v["ok"] for v in verify_results)  # compiled fine every time
+    # ...but never accepted, because the run output never matched closely enough
+
+
+def test_behavioral_check_never_accepts_empty_output_regardless_of_similarity_math(tmp_path):
+    """Guards against a degenerate case: an empty actual output vs. a
+    short expected string can score a misleadingly high difflib ratio.
+    "Keep running until it produces an output" means empty must never
+    pass, full stop, regardless of what the ratio math says."""
+    meta = load_corpus_meta("stub")
+    expected = "ok\n"
+
+    def verify_fn(source, run, stdin):
+        return {"ok": True, "errors": [], "warnings": [], "stdout": "",
+                "stderr": "", "exit_code": 0, "duration_ms": 1}
+
+    model = FakeModel(responses=["clean source"] * 4)
+    tool_client = FakeToolClient(verify_fn=verify_fn)
+    memory = Memory(tmp_path / "symbols.db")
+    prompt = "run the demo scenario"
+    corpus = _make_corpus_with_pair(meta, prompt, expected)
+    deps = HarnessDeps(model=model, tool_client=tool_client, memory=memory)
+
+    events: list[dict] = []
+    result = run_task(prompt, corpus, events.append, deps)
+
+    assert result.ok is False
