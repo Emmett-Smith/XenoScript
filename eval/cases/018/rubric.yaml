@@ -1,0 +1,6 @@
+# behavioral: minimal scenario runs clean
+grade: compile_and_run
+max_iterations: 4
+tags:
+- behavioral
+- minimal_run

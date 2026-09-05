@@ -1,0 +1,3 @@
+Write a scenario that declares angle_mode rad at the top, and then use that
+same radians convention consistently for every angle value anywhere else in
+the file (headings, positions, anything angular).

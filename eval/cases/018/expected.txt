@@ -1,0 +1,1 @@
+TODO: golden trace not yet generated -- no PLINTH interpreter was available when this eval case was authored (Phase 1 language agent was still in progress). Fill in by running the accepted solution through `plinth run --json` once the interpreter lands, per specs/05_EVAL.md #2. See LOG.md Phase 4 notes.

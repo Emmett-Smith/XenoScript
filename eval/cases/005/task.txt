@@ -1,0 +1,3 @@
+Set up a platform uav_b with a primary_sensor. The sensor itself, radar_b,
+is defined further down in the file. Wire the platform's primary_sensor to
+point at radar_b.

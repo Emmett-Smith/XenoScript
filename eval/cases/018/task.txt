@@ -1,0 +1,3 @@
+Write the smallest possible complete scenario: duration 10s, step 1s, no
+platforms, no sensors, nothing else. Just confirm it runs to completion
+cleanly.

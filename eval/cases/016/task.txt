@@ -1,0 +1,14 @@
+This scenario fails to compile. Fix it so it compiles clean, changing as
+little as possible:
+
+    define platform uav_g type air
+      set position at 40.0deg 120.0deg
+      set primary_sensor = radar_g
+    end_platform
+
+    define sensor radar_g type radar
+      mount uav_g
+      range_max 60000m
+    end_sensor
+
+(Hint: primary_sensor is a reference to another block, not a value.)

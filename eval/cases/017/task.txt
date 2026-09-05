@@ -1,0 +1,16 @@
+This scenario fails to compile. Fix it so it compiles clean, changing as
+little as possible:
+
+    define scenario mixed_angles
+      set duration = 60s
+      set step = 0.5s
+      set angle_mode = rad
+    end_scenario
+
+    define platform uav_h type air
+      set position at 40.0deg 120.0deg
+      set heading = 1.2rad
+    end_platform
+
+(Hint: the scenario declares one angle convention. Every angle value in the
+file has to agree with it.)

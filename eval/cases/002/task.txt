@@ -1,0 +1,2 @@
+I need a single air platform named uav_a. Give it a position at
+40.0deg 120.0deg and an altitude of 1000m.

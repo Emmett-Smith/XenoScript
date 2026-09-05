@@ -1,0 +1,2 @@
+Create a route called patrol_loop with two waypoints. The first is at
+40.0deg 120.0deg, the second at 40.1deg 120.1deg.

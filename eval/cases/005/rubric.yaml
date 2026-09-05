@@ -1,0 +1,10 @@
+# gotcha: set vs bind
+grade: compile_only
+max_iterations: 4
+tags:
+- gotcha
+- set_vs_bind
+must_contain:
+- bind
+must_not_contain:
+- set primary_sensor

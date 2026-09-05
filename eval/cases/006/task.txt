@@ -1,0 +1,3 @@
+Inside a route, add a waypoint whose position is given as coordinates.
+Separately, inside the execute block, activate a sensor called radar_c at
+the 30 second mark of the scenario.

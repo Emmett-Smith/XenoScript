@@ -1,0 +1,8 @@
+# repair: angle_mode conflict (E042)
+grade: compile_only
+max_iterations: 4
+tags:
+- repair
+- angle_mode
+must_not_contain:
+- 40.0deg

@@ -1,0 +1,4 @@
+Write a scenario (duration 30s, step 1s) with platform uav_j (air, position
+40.0deg 120.0deg) carrying sensor radar_j (mount uav_j, range_max 40000m).
+In execute: spawn uav_j at t=0, activate radar_j at t=5s, report radar_j at
+t=10s.

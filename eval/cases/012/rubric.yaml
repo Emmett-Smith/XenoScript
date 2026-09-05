@@ -1,0 +1,6 @@
+# multi-block: platform+sensor+execute
+grade: compile_only
+max_iterations: 4
+tags:
+- composition
+- platform_sensor_execute

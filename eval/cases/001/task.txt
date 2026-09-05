@@ -1,0 +1,2 @@
+Write a PLINTH scenario called basic_watch that runs for 30 seconds with a
+0.5 second time step. That's all it needs to do.

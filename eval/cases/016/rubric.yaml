@@ -1,0 +1,10 @@
+# repair: set used on a reference (E022)
+grade: compile_only
+max_iterations: 4
+tags:
+- repair
+- set_vs_bind
+must_contain:
+- bind
+must_not_contain:
+- set primary_sensor

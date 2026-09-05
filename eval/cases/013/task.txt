@@ -1,0 +1,3 @@
+I want two platforms: uav_x (air) and ship_y (surface). Give uav_x a radar
+sensor and ship_y an acoustic sensor. In the execute block, activate both
+sensors at the 5 second mark.

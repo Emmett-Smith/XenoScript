@@ -1,0 +1,10 @@
+# examples-only: inherit + every...for combined
+grade: compile_only
+max_iterations: 4
+tags:
+- examples_only
+- inherit
+- every_for
+must_contain:
+- inherit
+- every

@@ -1,0 +1,3 @@
+Build a scenario with one air platform carrying a radar sensor, and an
+execute block that activates the sensor 10 seconds in and has it report
+20 seconds in.

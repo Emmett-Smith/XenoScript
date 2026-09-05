@@ -1,0 +1,3 @@
+In the execute block, activate sensor radar_e repeatedly: every 10 seconds,
+for a total duration of 60 seconds. I believe I saw a repeat modifier for
+this in one of the example scenarios.

@@ -1,0 +1,6 @@
+# basic structure
+grade: compile_only
+max_iterations: 4
+tags:
+- basic
+- scenario

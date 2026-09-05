@@ -1,0 +1,6 @@
+# behavioral: spawn then halt produces exact trace
+grade: compile_and_run
+max_iterations: 4
+tags:
+- behavioral
+- spawn_halt

@@ -1,0 +1,3 @@
+Set up a platform with a route it follows (at least two waypoints) and a
+sensor mounted on it. In the execute block, spawn the platform onto that
+route at time zero, then activate its sensor 15 seconds later.

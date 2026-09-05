@@ -1,0 +1,2 @@
+Define a radar sensor called radar_a. It should be mounted on a platform
+called uav_a, with a range_max of 50000m.

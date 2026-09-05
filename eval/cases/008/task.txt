@@ -1,0 +1,3 @@
+Give platform uav_d an altitude of exactly fifteen hundred meters. Write the
+value the way PLINTH expects a quantity to be written -- check the docs
+before you guess the formatting.
