@@ -168,6 +168,67 @@ WRITE $EXTRACT(S,1,3),!   ; one -- substring, 1-indexed, inclusive
 WRITE $PIECE(S,",",2),!   ; two -- 2nd field when split on ","
 ```
 
+## Multi-level (nested) globals
+
+A global can have more than one subscript -- the standard M way to store
+a structured record, e.g. a patient's vitals grouped under that patient's
+ID rather than packed into one delimited string:
+
+```m
+SET ^PATIENT(10,"NAME")="GARCIA,MARIA"
+SET ^PATIENT(10,"VITALS","HR")=88
+WRITE ^PATIENT(10,"VITALS","HR"),!   ; 88
+
+; FOR/$ORDER works at any subscript level, not just the first:
+SET FIELD=""
+FOR  SET FIELD=$ORDER(^PATIENT(10,"VITALS",FIELD)) QUIT:FIELD=""  WRITE FIELD,!
+```
+
+## Deleting data: KILL, and checking existence: $DATA
+
+`KILL` removes a global (or local) node entirely. `$DATA` returns `0` if
+a node doesn't exist, `1` if it does (and has no children), or `11` if it
+exists AND has child subscripts -- checking for exactly `0` is the real
+idiom for "does this record exist":
+
+```m
+SET ^PATIENT(5)="TEMP,PATIENT^40^M"
+WRITE $DATA(^PATIENT(5)),!   ; 1
+KILL ^PATIENT(5)
+WRITE $DATA(^PATIENT(5)),!   ; 0
+
+IF $DATA(^PATIENT(99))=0 WRITE "not found",!
+ELSE  WRITE "found",!
+```
+
+## Multi-way branching: $SELECT
+
+M has no `ELSEIF`. `$SELECT(cond1:val1,cond2:val2,...)` evaluates each
+`condition:value` pair in order and returns the value of the first true
+one -- `1:value` as the last pair is the conventional "else" case, since
+`1` is always true:
+
+```m
+SET GLUCOSE=145
+WRITE $SELECT(GLUCOSE<70:"LOW",GLUCOSE>140:"HIGH",1:"NORMAL"),!   ; HIGH
+```
+
+## More string functions: $JUSTIFY, $TRANSLATE, $FIND
+
+```m
+; $JUSTIFY(value,width[,decimals]) -- right-justify and/or fix decimal places
+WRITE $JUSTIFY(42,6),!         ; "    42"
+WRITE $JUSTIFY(3.5,0,2),!      ; "3.50"
+
+; $TRANSLATE(string,fromChars,toChars) -- swap characters one-for-one
+WRITE $TRANSLATE("2024-01-15","-","/"),!   ; 2024/01/15
+
+; $FIND(string,substring) -- position right AFTER the match (0 if not found)
+SET FULLNAME="GARCIA,MARIA"
+SET COMMAPOS=$FIND(FULLNAME,",")           ; 8 (comma is the 7th char)
+WRITE $EXTRACT(FULLNAME,1,COMMAPOS-2),!    ; GARCIA -- text before the comma
+```
+
 ## Ending a program
 
 `QUIT` with no argument ends a `FOR` loop early (see above). `HALT` ends the
