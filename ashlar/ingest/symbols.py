@@ -164,10 +164,20 @@ def collect_example_symbols(meta: CorpusMeta) -> list[dict[str, Any]]:
         return []
     counts: dict[str, int] = {}
     refs: dict[str, list[dict[str, Any]]] = {}
+    comment_prefix = meta.comment_prefix
     for f in sorted(p for p in examples_dir.glob("*") if p.is_file()):
         rel = f.relative_to(meta.root).as_posix()
         for lineno, line in enumerate(f.read_text().splitlines(), start=1):
-            for m in IDENT_RE.finditer(line):
+            # Real bug, found live: this used to tokenize the whole raw
+            # line, comments included -- English prose in a comment
+            # ("the real M way to delete a record") was indistinguishable
+            # from real code identifiers, so plain words like "delete"
+            # became first-class "symbols" that then shadowed genuine
+            # synonym-cluster resolution (e.g. delete -> KILL) by matching
+            # themselves instead. meta.comment_prefix already exists for
+            # exactly this and was simply never used here.
+            code_part = line.split(comment_prefix, 1)[0] if comment_prefix else line
+            for m in IDENT_RE.finditer(code_part):
                 tok = m.group(0)
                 if tok.lower() in _STOPWORDS:
                     continue

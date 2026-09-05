@@ -66,6 +66,12 @@ _SYNONYM_CLUSTERS: tuple[frozenset[str], ...] = (
                "construct", "new"}),
     frozenset({"add", "sum", "increment", "subtract", "decrement",
                "compute", "calculate", "total"}),
+    frozenset({"delete", "remove", "kill", "discharge", "erase", "clear",
+               "purge", "drop"}),
+    frozenset({"exists", "found", "present", "has", "contains",
+               "available"}),
+    frozenset({"categorize", "classify", "select", "choose", "pick",
+               "match", "case", "switch"}),
 )
 
 # Cheap suffix-stripping, not a real stemmer -- just enough to turn common
