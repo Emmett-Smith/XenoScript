@@ -5,11 +5,25 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ashlar.config import load_corpus_meta
+from ashlar.config import REPO_ROOT, load_corpus_meta
 from ashlar.harness.loop import Corpus
 from ashlar.harness.model import FakeModel
 from ashlar.mcp import server as mcp_server
-from eval.runner import ARMS, load_cases, run_arm, summarize
+from eval.runner import ARMS, cases_dir_for, load_cases, run_arm, summarize
+
+
+def test_cases_dir_for_falls_back_to_flat_dir_when_no_per_corpus_set_exists():
+    # PLINTH has no eval/cases/plinth/ subdirectory -- it's the original
+    # flat set, and must keep resolving there unchanged.
+    assert cases_dir_for("plinth") == REPO_ROOT / "eval" / "cases"
+    assert cases_dir_for(None) == REPO_ROOT / "eval" / "cases"
+    assert cases_dir_for("nonexistent_corpus") == REPO_ROOT / "eval" / "cases"
+
+
+def test_cases_dir_for_prefers_a_real_per_corpus_set_when_present():
+    cobol_dir = REPO_ROOT / "eval" / "cases" / "cobol"
+    if cobol_dir.is_dir() and any(cobol_dir.iterdir()):
+        assert cases_dir_for("cobol") == cobol_dir
 
 
 def test_load_cases_matches_the_prescribed_category_distribution():

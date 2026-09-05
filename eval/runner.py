@@ -67,6 +67,20 @@ class CaseSpec:
     must_not_contain: list[str]
 
 
+def cases_dir_for(corpus: str | None) -> Path:
+    """A per-corpus case set at eval/cases/<corpus>/ is used if it exists
+    (e.g. eval/cases/cobol/001/, added alongside -- never replacing --
+    the original flat eval/cases/001../020/ set, which stays exactly
+    where it was and is what PLINTH still uses). Falls back to the flat
+    directory for any corpus without its own set, so this is purely
+    additive and never requires moving existing cases."""
+    if corpus:
+        candidate = CASES_DIR / corpus
+        if candidate.is_dir() and any(candidate.iterdir()):
+            return candidate
+    return CASES_DIR
+
+
 def load_cases(cases_dir: Path = CASES_DIR) -> list[CaseSpec]:
     cases = []
     for d in sorted(p for p in cases_dir.iterdir() if p.is_dir()):
@@ -384,7 +398,7 @@ def main() -> None:
     meta = load_corpus_meta(corpus_name)
     mcp_server.set_active_corpus(corpus_name)
     corpus = Corpus.from_disk(meta)
-    cases = load_cases()
+    cases = load_cases(cases_dir_for(corpus_name))
 
     arms = list(ARMS) if args.all_arms else [args.arm]
     arms_results: dict[str, list[CaseResult]] = {}
