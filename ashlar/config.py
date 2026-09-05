@@ -106,6 +106,14 @@ class CorpusMeta:
     sandbox: CorpusSandbox
     retrieval: RetrievalConfig
     root: Path
+    # Excluded from the public /corpora listing (and so from the UI's
+    # corpus dropdown) but otherwise fully real and functional -- load_
+    # corpus_meta/corpus switch/the verifier all still work by name.
+    # "stub" is Phase-0 dev scaffolding, never part of the actual demo;
+    # this keeps it hidden from users without deleting it, since a wide
+    # swath of the backend's own test suite uses it as a minimal fixture
+    # corpus that needs no real toolchain installed.
+    hidden: bool = False
 
 
 def corpus_dir(name: str, repo_root: Path = REPO_ROOT) -> Path:
@@ -142,6 +150,7 @@ def load_corpus_meta(name: str, repo_root: Path = REPO_ROOT) -> CorpusMeta:
             chunk_strategy=r.get("chunk_strategy", "heading"),
         ),
         root=root,
+        hidden=bool(data.get("hidden", False)),
     )
 
 

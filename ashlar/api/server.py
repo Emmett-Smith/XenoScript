@@ -134,8 +134,13 @@ class AppState:
         self.switch_corpus(cfg.corpus)
 
     def switch_corpus(self, name: str) -> dict[str, Any]:
-        available = list_corpora()
-        if name not in {c["name"] for c in available}:
+        # Checks real existence on disk directly, not the public listing
+        # -- "hidden" (see CorpusMeta.hidden) means "not advertised in the
+        # dropdown," not "cannot be switched to." A hidden corpus like
+        # "stub" must stay explicitly switchable by name, both because
+        # the backend test suite relies on it and because that's the
+        # whole point of a debug-only corpus.
+        if not (CORPORA_DIR / name / "meta.yaml").exists():
             raise HTTPException(status_code=404, detail=f"unknown corpus: {name}")
         with self._lock:
             self.corpus_name = name
@@ -163,6 +168,8 @@ def list_corpora() -> list[dict[str, Any]]:
     for entry in sorted(CORPORA_DIR.iterdir()):
         if (entry / "meta.yaml").exists():
             meta = load_corpus_meta(entry.name)
+            if meta.hidden:
+                continue
             out.append(_manifest_for(entry.name, meta))
     return out
 

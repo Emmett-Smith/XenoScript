@@ -3,6 +3,11 @@ display_name: Stub
 extension: .stub
 comment_prefix: "#"
 
+# Phase-0 dev scaffolding, used as a minimal fixture corpus by a wide
+# swath of the backend test suite -- fully real and functional, just
+# never meant to appear in the demo-facing corpus dropdown.
+hidden: true
+
 verifier:
   # {file} is substituted with an absolute path inside the sandbox.
   parse:   ["python3", "corpora/stub/verifier.py", "parse", "{file}"]

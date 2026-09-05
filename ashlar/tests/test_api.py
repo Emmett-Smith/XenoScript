@@ -9,12 +9,19 @@ def _client() -> TestClient:
     return TestClient(app)
 
 
-def test_corpora_lists_stub():
+def test_corpora_hides_stub_but_it_stays_directly_switchable():
+    # "stub" is real, dev-only Phase-0 scaffolding -- CorpusMeta.hidden
+    # keeps it out of the public listing (so it never shows up in the
+    # demo's corpus dropdown) without making it any less real: it must
+    # still be directly switchable by name, which the second half of
+    # this test (and test_corpus_switch_is_idempotent_and_returns_
+    # manifest below) both depend on.
     client = _client()
     resp = client.get("/corpora")
     assert resp.status_code == 200
     names = [c["name"] for c in resp.json()]
-    assert "stub" in names
+    assert "stub" not in names
+    assert "plinth" in names  # a real, non-hidden corpus is still listed
 
 
 def test_corpus_switch_is_idempotent_and_returns_manifest():
