@@ -1,0 +1,8 @@
+[t=0.000] scenario toggle_sensor start step=1.000 duration=20.000
+[t=1.000] spawn uav_e pos=9.0000,9.0000 alt=1300.000
+[t=2.000] activate eo_toggle on uav_e
+[t=6.000] report eo_toggle range_max=9000.000 detections=0
+[t=8.000] deactivate eo_toggle
+[t=12.000] activate eo_toggle on uav_e
+[t=15.000] report eo_toggle range_max=9000.000 detections=0
+[t=20.000] scenario end status=ok

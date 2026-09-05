@@ -1,0 +1,7 @@
+[t=0.000] scenario combined_small start step=1.000 duration=20.000
+[t=1.000] spawn uav_h pos=18.0000,-18.0000 alt=1700.000
+[t=1.000] spawn uav_i pos=18.0000,-18.0000 alt=2100.000
+[t=2.000] activate radar_h on uav_h
+[t=6.000] report radar_h range_max=55000.000 detections=0
+[t=12.000] report radar_h range_max=55000.000 detections=0
+[t=20.000] scenario end status=ok

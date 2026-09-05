@@ -1,0 +1,4 @@
+[t=0.000] scenario cross_ref start step=1.000 duration=14.000
+[t=1.000] spawn uav_g pos=22.0000,22.0000 alt=1600.000
+[t=1.000] spawn station_g pos=22.0500,22.0500 alt=5.000
+[t=14.000] scenario end status=ok

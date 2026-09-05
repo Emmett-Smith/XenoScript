@@ -1,0 +1,29 @@
+define scenario stacked_sensors
+  set duration = 20s
+  set step = 1s
+end_scenario
+
+define platform uav_c type air
+  position at 15.00deg 15.00deg
+  set altitude = 2000m
+end_platform
+
+define sensor radar_p1 type radar
+  bind mount <- uav_c
+  set range_max = 60000m
+  set priority = 1
+end_sensor
+
+define sensor eo_p2 type eo
+  bind mount <- uav_c
+  set range_max = 10000m
+  set priority = 2
+end_sensor
+
+execute
+  at 1s spawn uav_c
+  at 2s activate radar_p1
+  at 2s activate eo_p2
+  at 10s report radar_p1
+  at 10s report eo_p2
+end_execute

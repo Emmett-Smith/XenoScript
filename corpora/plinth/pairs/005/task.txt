@@ -1,0 +1,4 @@
+Create scenario rad_run, 10 seconds, 1 second step, using radians for
+all angles instead of degrees. One air platform uav_r positioned at
+0.5 rad latitude, 0.6 rad longitude, altitude 1500m, heading 1.0 rad.
+Spawn it at 1 second.

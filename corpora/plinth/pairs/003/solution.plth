@@ -1,0 +1,20 @@
+define scenario twin_flight
+  set duration = 12s
+  set step = 1s
+end_scenario
+
+define platform lead_1 type air
+  position at 8.00deg 8.00deg
+  set altitude = 1200m
+  set speed = 40mps
+end_platform
+
+define platform wing_1 type air
+  inherit from lead_1
+  set altitude = 1400m
+end_platform
+
+execute
+  at 1s spawn lead_1
+  at 1s spawn wing_1
+end_execute

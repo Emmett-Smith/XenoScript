@@ -1,0 +1,6 @@
+I need a scenario named fwd_link, 15 seconds long, 1 second step. One
+air platform uav_b at 5,5 degrees, altitude 800m. It should have a bind
+called primary_sensor pointing at a radar sensor named radar_y, even
+though radar_y is defined further down in the file. radar_y is mounted
+on uav_b with a 30000m max range. At 1 second, spawn uav_b and activate
+radar_y.

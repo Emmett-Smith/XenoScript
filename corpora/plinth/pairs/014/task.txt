@@ -1,0 +1,4 @@
+Scenario orbit_watch, 30 seconds, 5 second step. A space platform sat_a
+at 0,0 degrees, 25000m altitude, moving at 7600 m/s, with an esm sensor
+esm_sat that has a 400000m range. Spawn and activate at 5 seconds,
+report at 20 seconds.

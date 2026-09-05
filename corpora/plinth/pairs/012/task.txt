@@ -1,0 +1,4 @@
+Scenario annotated_run, 15 seconds, 1 second step, one air platform
+uav_f at 3,3 degrees, 900m altitude. Spawn it at 1 second, then add two
+trace messages: "midpoint check" at 5 seconds and "approaching end of
+window" at 10 seconds.

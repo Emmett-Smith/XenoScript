@@ -1,0 +1,23 @@
+define scenario toggle_sensor
+  set duration = 20s
+  set step = 1s
+end_scenario
+
+define platform uav_e type air
+  position at 9.00deg 9.00deg
+  set altitude = 1300m
+end_platform
+
+define sensor eo_toggle type eo
+  bind mount <- uav_e
+  set range_max = 9000m
+end_sensor
+
+execute
+  at 1s spawn uav_e
+  at 2s activate eo_toggle
+  at 6s report eo_toggle
+  at 8s deactivate eo_toggle
+  at 12s activate eo_toggle
+  at 15s report eo_toggle
+end_execute

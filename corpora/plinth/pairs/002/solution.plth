@@ -1,0 +1,20 @@
+define scenario fwd_link
+  set duration = 15s
+  set step = 1s
+end_scenario
+
+define platform uav_b type air
+  position at 5.00deg 5.00deg
+  set altitude = 800m
+  bind primary_sensor <- radar_y
+end_platform
+
+define sensor radar_y type radar
+  bind mount <- uav_b
+  set range_max = 30000m
+end_sensor
+
+execute
+  at 1s spawn uav_b
+  at 1s activate radar_y
+end_execute

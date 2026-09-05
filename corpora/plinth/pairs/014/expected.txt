@@ -1,0 +1,5 @@
+[t=0.000] scenario orbit_watch start step=5.000 duration=30.000
+[t=5.000] spawn sat_a pos=0.0000,0.0000 alt=25000.000
+[t=5.000] activate esm_sat on sat_a
+[t=20.000] report esm_sat range_max=400000.000 detections=0
+[t=30.000] scenario end status=ok

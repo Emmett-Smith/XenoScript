@@ -1,0 +1,9 @@
+define scenario clean_stop
+  set duration = 12s
+  set step = 1s
+end_scenario
+
+execute
+  at 1s trace "starting run"
+  at 12s halt
+end_execute

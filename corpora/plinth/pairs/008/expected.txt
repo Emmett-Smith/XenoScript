@@ -1,0 +1,4 @@
+[t=0.000] scenario shore_watch start step=1.000 duration=18.000
+[t=1.000] spawn post_1 pos=41.0000,-70.0000 alt=20.000
+[t=1.000] spawn float_1 pos=41.0500,-70.0500 alt=0.000
+[t=18.000] scenario end status=ok

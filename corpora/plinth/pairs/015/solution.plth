@@ -1,0 +1,29 @@
+define scenario combined_small
+  set duration = 20s
+  set step = 1s
+  set label = "small combined demo"
+end_scenario
+
+define platform uav_h type air
+  position at 18.00deg -18.00deg
+  set altitude = 1700m
+  set speed = 45mps
+end_platform
+
+define platform uav_i type air
+  inherit from uav_h
+  set altitude = 2100m
+end_platform
+
+define sensor radar_h type radar
+  bind mount <- uav_h
+  set range_max = 55000m
+  set priority = 1
+end_sensor
+
+execute
+  at 1s spawn uav_h
+  at 1s spawn uav_i
+  at 2s activate radar_h
+  every 6s for 12s report radar_h
+end_execute

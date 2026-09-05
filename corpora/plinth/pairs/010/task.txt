@@ -1,0 +1,3 @@
+Just a bare scenario clean_stop, 12 seconds long, 1 second step, no
+platforms. Trace the message "starting run" at 1 second, and halt right
+at the very end (12 seconds).

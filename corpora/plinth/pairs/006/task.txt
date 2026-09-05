@@ -1,0 +1,5 @@
+Scenario stacked_sensors, 20 seconds, 1 second step. One air platform
+uav_c at 15,15 degrees, 2000m altitude. Put two sensors on it: radar_p1
+(radar, range 60000m, priority 1) and eo_p2 (eo, range 10000m, priority
+2). Spawn the platform at 1s, activate both sensors at 2s, and have both
+report at 10s.

@@ -1,0 +1,15 @@
+define scenario annotated_run
+  set duration = 15s
+  set step = 1s
+end_scenario
+
+define platform uav_f type air
+  position at 3.00deg 3.00deg
+  set altitude = 900m
+end_platform
+
+execute
+  at 1s spawn uav_f
+  at 5s trace "midpoint check"
+  at 10s trace "approaching end of window"
+end_execute

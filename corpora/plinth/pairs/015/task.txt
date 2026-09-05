@@ -1,0 +1,6 @@
+Scenario combined_small, 20 seconds, 1 second step, labeled "small
+combined demo". One air platform uav_h at 18,-18 degrees, 1700m
+altitude, 45 m/s speed, with a radar sensor radar_h (range 55000m,
+priority 1). A second platform uav_i that inherits from uav_h but flies
+at 2100m. Spawn both at 1 second, activate radar_h at 2 seconds, and
+have it report every 6 seconds for a 12 second window.

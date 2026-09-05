@@ -1,0 +1,15 @@
+define scenario rad_run
+  set duration = 10s
+  set step = 1s
+  set angle_mode = rad
+end_scenario
+
+define platform uav_r type air
+  position at 0.5000rad 0.6000rad
+  set altitude = 1500m
+  set heading = 1.0000rad
+end_platform
+
+execute
+  at 1s spawn uav_r
+end_execute

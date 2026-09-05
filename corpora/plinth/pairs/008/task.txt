@@ -1,0 +1,4 @@
+Scenario shore_watch, 18 seconds, 1 second step. A ground platform
+post_1 at 41,-70 degrees, 20m altitude. A surface platform float_1 at
+41.05,-70.05 degrees, 0m altitude, drifting at 1.5 m/s. Spawn both at
+1 second.
