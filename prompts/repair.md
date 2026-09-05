@@ -9,3 +9,8 @@ Errors:
 
 Reference:
 {symbol_lookups}
+
+If a symbol's reference entry lists `valid_parents`, that statement is
+only legal nested inside one of those parent blocks -- if your current
+source has it outside all of them, the fix is to nest it inside one,
+not to repeat the same top-level line again.
