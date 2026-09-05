@@ -50,6 +50,15 @@ function attemptSummary(errors: VerifyError[], verified: boolean | null): string
   return `${first.code ?? "error"} line ${first.line}${rest}`;
 }
 
+// A glanceable state marker ahead of every step's summary -- filled dot
+// while something is actively happening, check/cross once it lands.
+// Plain characters, not an icon font: this has to render correctly
+// inside a VS Code webview with no bundled assets and no network.
+function StateMark({ state }: { state: "pending" | "ok" | "fail" }) {
+  const glyph = state === "ok" ? "✓" : state === "fail" ? "✗" : "●";
+  return <span className={`state-mark ${state}`}>{glyph}</span>;
+}
+
 function AttemptStep({
   step,
   expanded,
@@ -62,15 +71,23 @@ function AttemptStep({
   corpusExtension?: string;
 }) {
   const embeddedInVsCode = useVsCodeEmbed();
-  const label = step.iteration === 1 ? "Generating" : `Repair attempt ${step.iteration}`;
-  const summary = step.streaming ? "writing…" : attemptSummary(step.errors, step.verified);
-  const stateClass =
+  const stateClass: "ok" | "fail" | "pending" =
     step.verified === true ? "ok" : step.verified === false ? "fail" : "pending";
+  const label = step.streaming
+    ? step.iteration === 1
+      ? "Generating"
+      : `Repairing (attempt ${step.iteration})`
+    : step.iteration === 1
+      ? "Attempt 1"
+      : `Repair attempt ${step.iteration}`;
+  const summary = step.streaming ? "writing…" : attemptSummary(step.errors, step.verified);
 
   if (!expanded) {
     return (
       <button type="button" className={`timeline-step collapsed ${stateClass}`} onClick={onToggle}>
-        <span className="timeline-step-label">{label}</span>
+        <span className="timeline-step-label">
+          <StateMark state={stateClass} /> {label}
+        </span>
         <span className="timeline-step-summary">{summary}</span>
       </button>
     );
@@ -79,7 +96,9 @@ function AttemptStep({
   return (
     <div className={`timeline-step expanded ${stateClass}`}>
       <button type="button" className="timeline-step-header" onClick={onToggle}>
-        <span className="timeline-step-label">{label}</span>
+        <span className="timeline-step-label">
+          <StateMark state={stateClass} /> {label}
+        </span>
         <span className="timeline-step-summary">{summary}</span>
       </button>
       <CodeBlock code={step.code} errors={step.errors} streaming={step.streaming} />
@@ -136,8 +155,8 @@ function RetrievalStep({
       </button>
       {step.cacheHit && (
         <div className="tool-call">
-          <div className="tool-name">cache_hit</div>
-          <div className="tool-args">"{step.cacheHit}"</div>
+          <div className="tool-name">Matched a previously verified answer</div>
+          <div className="tool-args">cache key {step.cacheHit.slice(0, 10)}…</div>
         </div>
       )}
       {step.toolCalls.length === 0 && !step.cacheHit && (
@@ -158,12 +177,18 @@ function RunOutputStep({ step }: { step: Extract<TimelineStep, { kind: "run_outp
   return (
     <div className="timeline-step expanded">
       <div className="timeline-step-header static">
-        <span className="timeline-step-label">Output</span>
+        <span className="timeline-step-label">
+          <StateMark state={step.ok ? "ok" : "fail"} /> Ran it
+        </span>
       </div>
       <div className={`terminal-body ${step.ok ? "ok" : "fault"}`}>
         {hasStdout && <pre className="terminal-stdout">{step.stdout}</pre>}
         {hasStderr && <pre className={`terminal-stderr ${step.ok ? "ok" : "fault"}`}>{step.stderr}</pre>}
-        {!hasStdout && !hasStderr && <div className="terminal-empty">{reason || "(no stdout)"}</div>}
+        {!hasStdout && !hasStderr && (
+          <div className="terminal-empty">
+            {reason || "Ran successfully, no output printed (expected for code that only stores data)"}
+          </div>
+        )}
       </div>
     </div>
   );

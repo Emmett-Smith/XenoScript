@@ -102,6 +102,38 @@
   color: var(--dim);
 }
 
+/* Give each expanded step a quiet card feel -- a subtle background and
+   soft corners, matching how VS Code's own hover widgets/peek panels
+   look, instead of everything blending into one flat page of text. */
+:root[data-embed="vscode"] .timeline-step.expanded {
+  background: var(--vscode-editorWidget-background, transparent);
+  border-radius: 4px;
+  padding: 10px 12px 14px;
+  margin-bottom: 10px;
+  border-bottom: none;
+}
+:root[data-embed="vscode"] .timeline-step.expanded .timeline-step-header {
+  padding: 0 0 8px;
+}
+:root[data-embed="vscode"] .timeline-step.collapsed {
+  border-radius: 4px;
+  padding: 6px 10px;
+  border-bottom: none;
+  margin-bottom: 4px;
+}
+:root[data-embed="vscode"] .timeline-step.collapsed:hover {
+  background: var(--vscode-editorWidget-background, transparent);
+}
+:root[data-embed="vscode"] .code-panel {
+  background: var(--vscode-textCodeBlock-background, transparent);
+  border-radius: 3px;
+  padding: 8px 10px;
+}
+:root[data-embed="vscode"] .timeline-prompt {
+  border-bottom: none;
+  padding-bottom: 8px;
+}
+
 :root[data-embed="vscode"] .header select,
 :root[data-embed="vscode"] .insert-code-button {
   background: var(--vscode-input-background, var(--paper));
@@ -340,6 +372,16 @@ hr, .rule {
 .timeline-step.ok .timeline-step-summary { color: var(--verified); }
 .timeline-step.fail .timeline-step-summary { color: var(--fault); }
 .timeline-step.pending .timeline-step-summary { color: var(--pending); }
+
+.state-mark {
+  display: inline-block;
+  font-family: var(--mono);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.state-mark.ok { color: var(--verified); }
+.state-mark.fail { color: var(--fault); }
+.state-mark.pending { color: var(--pending); }
 
 .timeline-final {
   font-size: var(--size-2);
