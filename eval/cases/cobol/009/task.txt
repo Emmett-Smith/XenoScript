@@ -1,0 +1,4 @@
+Write a COBOL program named SQUARETABLE that uses PERFORM VARYING to
+compute and display the squares of 1 through 4, one per line, each
+preceded by "SQUARE: ". Remember PERFORM VARYING checks its UNTIL
+condition before each iteration, including the first.

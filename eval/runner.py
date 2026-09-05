@@ -84,6 +84,13 @@ def cases_dir_for(corpus: str | None) -> Path:
 def load_cases(cases_dir: Path = CASES_DIR) -> list[CaseSpec]:
     cases = []
     for d in sorted(p for p in cases_dir.iterdir() if p.is_dir()):
+        # A per-corpus case set (e.g. eval/cases/cobol/) lives *inside* the
+        # flat directory as a container, not a case itself -- it has no
+        # rubric.yaml of its own, only case subdirectories one level
+        # deeper. Skip anything that isn't actually a case rather than
+        # crashing on a container found via the flat-directory fallback.
+        if not (d / "rubric.yaml").is_file():
+            continue
         rubric = yaml.safe_load((d / "rubric.yaml").read_text())
         expected_file = d / "expected.txt"
         cases.append(

@@ -1,0 +1,3 @@
+Write a COBOL program named LABELCOUNT with a WORKING-STORAGE field
+WS-COUNT, PIC 9(3), set to 7. Display the line "COUNT: " immediately
+followed by its value.

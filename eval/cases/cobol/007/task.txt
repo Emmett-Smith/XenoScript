@@ -1,0 +1,3 @@
+Write a COBOL program named AGECHECK with a WORKING-STORAGE field
+WS-AGE (PIC 9(3), value 15). If WS-AGE is greater than or equal to 18,
+display "ADULT", otherwise display "MINOR". Use IF/ELSE with END-IF.

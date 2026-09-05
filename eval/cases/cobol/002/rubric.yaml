@@ -1,0 +1,5 @@
+# basic: variable + display
+grade: compile_and_run
+max_iterations: 4
+tags:
+- basic

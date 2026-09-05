@@ -1,0 +1,8 @@
+# loop: PERFORM VARYING
+grade: compile_and_run
+max_iterations: 4
+tags:
+- loop
+- perform_varying
+must_contain:
+- VARYING

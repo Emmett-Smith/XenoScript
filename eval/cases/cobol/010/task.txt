@@ -1,0 +1,13 @@
+This COBOL program fails to compile. Fix it so it compiles clean,
+changing as little as possible:
+
+    IDENTIFICATION DIVISION.
+    PROGRAM-ID. FIXME
+
+    PROCEDURE DIVISION.
+        DISPLAY "FIXED IT".
+        STOP RUN.
+
+(Hint: every clause and statement in COBOL ends with a period. A
+missing one often surfaces as a confusing syntax error on the
+*following* line, not the line that's actually missing it.)

@@ -1,0 +1,2 @@
+Write a COBOL program named SIGNON that displays exactly one line:
+"WELCOME TO ASHLAR."

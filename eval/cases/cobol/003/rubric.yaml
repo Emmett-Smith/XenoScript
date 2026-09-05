@@ -1,0 +1,6 @@
+# gotcha: silent truncation on MOVE into a shorter PIC X field
+grade: compile_and_run
+max_iterations: 4
+tags:
+- gotcha
+- truncation

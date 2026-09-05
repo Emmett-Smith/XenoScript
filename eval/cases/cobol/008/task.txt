@@ -1,0 +1,3 @@
+Write a COBOL program named REPEATGREET that uses PERFORM ... TIMES to
+display the line "HELLO" exactly 4 times, one per line, then displays
+the line "DONE".

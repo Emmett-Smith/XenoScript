@@ -1,0 +1,8 @@
+# arithmetic: ADD ... GIVING
+grade: compile_and_run
+max_iterations: 4
+tags:
+- arithmetic
+- add_giving
+must_contain:
+- GIVING

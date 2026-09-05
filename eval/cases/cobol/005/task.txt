@@ -1,0 +1,5 @@
+Write a COBOL program named COMBINEDTOTAL with two WORKING-STORAGE
+fields WS-PART-A (PIC 9(4), value 120) and WS-PART-B (PIC 9(4), value
+45). Add them together using ADD ... GIVING into a third field
+WS-GRAND-TOTAL (PIC 9(5)), leaving WS-PART-A and WS-PART-B unchanged,
+then display "GRAND TOTAL: " immediately followed by the result.

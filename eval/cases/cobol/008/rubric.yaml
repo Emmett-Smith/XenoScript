@@ -1,0 +1,8 @@
+# loop: PERFORM ... TIMES
+grade: compile_and_run
+max_iterations: 4
+tags:
+- loop
+- perform_times
+must_contain:
+- TIMES

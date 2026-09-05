@@ -1,0 +1,3 @@
+Write a COBOL program named SHORTNAME with a WORKING-STORAGE field
+WS-CODE declared as PIC X(3). Move the value "TOOLONG" into it, then
+display the line "CODE: " immediately followed by its value.

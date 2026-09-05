@@ -1,0 +1,4 @@
+Write a COBOL program named AREACALC that computes the area of a
+rectangle. Use WORKING-STORAGE fields WS-LENGTH (PIC 9(3), value 8) and
+WS-WIDTH (PIC 9(3), value 5), store the result in WS-AREA (PIC 9(5))
+using COMPUTE, then display "AREA: " immediately followed by the result.

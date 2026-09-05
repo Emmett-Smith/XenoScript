@@ -1,0 +1,8 @@
+# arithmetic: SUBTRACT
+grade: compile_and_run
+max_iterations: 4
+tags:
+- arithmetic
+- subtract
+must_not_contain:
+- GIVING
