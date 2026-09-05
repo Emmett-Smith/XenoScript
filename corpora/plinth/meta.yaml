@@ -3,6 +3,11 @@ display_name: PLINTH
 extension: .plth
 comment_prefix: "#"
 
+# Last in the demo dropdown, on purpose -- not part of the primary
+# pitch, but kept as the answer to "how do you know this isn't just
+# memorization?" (see LOG.md). Not something to lead a demo with.
+order: 2
+
 verifier:
   parse:   ["python3", "languages/plinth/plinth/cli.py", "parse", "--json", "{file}"]
   run:     ["python3", "languages/plinth/plinth/cli.py", "run", "--json", "{file}"]

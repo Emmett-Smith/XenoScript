@@ -162,16 +162,19 @@ class AppState:
 
 
 def list_corpora() -> list[dict[str, Any]]:
-    out = []
+    metas: list[CorpusMeta] = []
     if not CORPORA_DIR.is_dir():
-        return out
+        return []
     for entry in sorted(CORPORA_DIR.iterdir()):
         if (entry / "meta.yaml").exists():
             meta = load_corpus_meta(entry.name)
-            if meta.hidden:
-                continue
-            out.append(_manifest_for(entry.name, meta))
-    return out
+            if not meta.hidden:
+                metas.append(meta)
+    # Demo priority order (CorpusMeta.order, set per corpus in its own
+    # meta.yaml), name as a tiebreaker -- never hardcoded here, so this
+    # stays corpus-agnostic regardless of which corpus should lead.
+    metas.sort(key=lambda m: (m.order, m.language))
+    return [_manifest_for(m.language, m) for m in metas]
 
 
 app = FastAPI(title="ashlar")

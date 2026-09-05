@@ -2,6 +2,11 @@ language: mumps
 display_name: MUMPS
 extension: .m
 
+# Lead demo corpus -- the primary "AI coding assistant for MUMPS,
+# for healthcare" pitch. See COBOL/PLINTH's meta.yaml for the rest of
+# the intended dropdown order.
+order: 0
+
 # Real M source comments start with a semicolon anywhere a command could
 # start (";" after at least one space, or as a whole line).
 comment_prefix: ";"

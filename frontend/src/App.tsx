@@ -46,8 +46,10 @@ export default function App() {
       .then((r) => r.json())
       .then((list: CorpusManifest[]) => {
         setCorpora(list);
-        const preferred = list.find((c) => c.name === "plinth") ?? list[0];
-        if (preferred) setActive(preferred);
+        // The backend already returns corpora in demo priority order
+        // (CorpusMeta.order, per corpus's own meta.yaml) -- default to
+        // whichever is first there rather than hardcoding a name here.
+        if (list[0]) setActive(list[0]);
       })
       .catch(() => {
         /* API not up yet — header renders the "offline" empty state below */

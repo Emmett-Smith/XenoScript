@@ -114,6 +114,10 @@ class CorpusMeta:
     # swath of the backend's own test suite uses it as a minimal fixture
     # corpus that needs no real toolchain installed.
     hidden: bool = False
+    # Sort key for the public /corpora listing (ascending; ties broken by
+    # name). Default is high so a corpus that never sets this sorts last,
+    # after everything that explicitly claims a demo position.
+    order: int = 100
 
 
 def corpus_dir(name: str, repo_root: Path = REPO_ROOT) -> Path:
@@ -151,6 +155,7 @@ def load_corpus_meta(name: str, repo_root: Path = REPO_ROOT) -> CorpusMeta:
         ),
         root=root,
         hidden=bool(data.get("hidden", False)),
+        order=int(data.get("order", 100)),
     )
 
 

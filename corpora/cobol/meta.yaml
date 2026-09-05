@@ -2,6 +2,10 @@ language: cobol
 display_name: COBOL
 extension: .cbl
 
+# Second in the demo dropdown, after MUMPS -- "and it also works for a
+# real language the model already partially knows."
+order: 1
+
 # GnuCOBOL free-form source (-free, which every command below uses) treats
 # "*>" as its comment marker, both as a standalone line and trailing after
 # code on the same line -- confirmed for real: `cobc -fsyntax-only -free`
