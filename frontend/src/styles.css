@@ -1,0 +1,471 @@
+/* Ashlar frontend — design tokens per specs/04_FRONTEND.md §2.
+   Palette, type, layout and motion rules are specified there and are not
+   open to reinterpretation here. */
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/fonts/IBMPlexSans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/fonts/IBMPlexSans-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/fonts/IBMPlexSans-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/IBMPlexMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/IBMPlexMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Palette — exactly six values, exactly this meaning. */
+  --paper: #F2F4F5;
+  --ink: #131A2B;
+  --dim: #5A6472;
+  --rule: #BFC6CF;
+  --pending: #B26B00;
+  --verified: #1F5D45;
+  --fault: #93241F;
+
+  /* Type scale: 13 / 15 / 18 / 24 / 34 */
+  --size-1: 13px;
+  --size-2: 15px;
+  --size-3: 18px;
+  --size-4: 24px;
+  --size-5: 34px;
+
+  --sans: "IBM Plex Sans", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", "Menlo", "Consolas", monospace;
+
+  --motion-verdict: 400ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-verdict: 0ms;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--size-2);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+code, pre, .mono {
+  font-family: var(--mono);
+  font-size: var(--size-1);
+  line-height: 1.45;
+}
+
+button, input {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Visible keyboard focus everywhere interactive — explicit DoD item. */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+hr, .rule {
+  border: none;
+  border-top: 1px solid var(--rule);
+}
+
+/* ---------- App shell: header, three columns, prompt bar. No scroll on
+   the outer frame — each column scrolls internally if it has to. ---------- */
+
+.app {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.header .brand {
+  font-size: var(--size-4);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.header .manifest {
+  color: var(--dim);
+  font-size: var(--size-2);
+}
+
+.header .switcher {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header select {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 4px 8px;
+  font-size: var(--size-2);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 26% 42% 32%;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+  border-right: 1px solid var(--rule);
+}
+
+.column:last-child {
+  border-right: none;
+}
+
+.column h2 {
+  font-size: var(--size-3);
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: var(--ink);
+}
+
+/* ---------- Corpus panel ---------- */
+
+.tool-call {
+  margin-bottom: 16px;
+}
+
+.tool-call .tool-name {
+  font-family: var(--mono);
+  font-size: var(--size-1);
+  color: var(--ink);
+}
+
+.tool-call .tool-args {
+  font-family: var(--mono);
+  font-size: var(--size-1);
+  color: var(--dim);
+  word-break: break-word;
+}
+
+.tool-call .tool-count {
+  font-size: var(--size-1);
+  color: var(--dim);
+  margin: 2px 0 4px;
+}
+
+.tool-call .tool-hit {
+  font-family: var(--mono);
+  font-size: var(--size-1);
+  color: var(--ink);
+  margin: 2px 0;
+  padding-left: 4px;
+  border-left: 2px solid var(--rule);
+}
+
+.tool-call.collapsed {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  color: var(--dim);
+  font-size: var(--size-1);
+  font-family: var(--mono);
+}
+
+.corpus-empty {
+  color: var(--dim);
+}
+
+/* ---------- Code panel ---------- */
+
+.code-panel {
+  font-family: var(--mono);
+  font-size: var(--size-1);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.code-line {
+  display: flex;
+  white-space: pre;
+}
+
+.code-line .gutter {
+  color: var(--dim);
+  width: 2.5em;
+  text-align: right;
+  padding-right: 12px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.code-line .text {
+  position: relative;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.code-line.error-line .text {
+  text-decoration: underline;
+  text-decoration-color: var(--fault);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.code-line .badge {
+  margin-left: 12px;
+  color: var(--fault);
+  font-size: var(--size-1);
+  flex-shrink: 0;
+}
+
+.generating-cursor {
+  color: var(--pending);
+}
+
+.code-empty {
+  color: var(--dim);
+}
+
+/* ---------- Verifier panel ---------- */
+
+.verdict-block {
+  border: 1px solid var(--rule);
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: border-color var(--motion-verdict) ease, color var(--motion-verdict) ease;
+}
+
+.verdict-block .word {
+  font-size: var(--size-5);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--dim);
+  overflow-wrap: anywhere;
+  transition: color var(--motion-verdict) ease;
+}
+
+.verdict-block .iter {
+  margin-top: 8px;
+  font-size: var(--size-2);
+  color: var(--dim);
+}
+
+.verdict-block.state-idle { border-color: var(--rule); }
+.verdict-block.state-idle .word { color: var(--dim); }
+
+.verdict-block.state-generating,
+.verdict-block.state-unverified,
+.verdict-block.state-repairing {
+  border-color: var(--pending);
+}
+.verdict-block.state-generating .word,
+.verdict-block.state-unverified .word,
+.verdict-block.state-repairing .word {
+  color: var(--pending);
+}
+
+.verdict-block.state-verified { border-color: var(--verified); }
+.verdict-block.state-verified .word { color: var(--verified); }
+
+.verdict-block.state-failed { border-color: var(--fault); }
+.verdict-block.state-failed .word { color: var(--fault); }
+
+.current-error {
+  margin-bottom: 16px;
+}
+
+.current-error .code {
+  font-family: var(--mono);
+  color: var(--fault);
+  font-size: var(--size-2);
+}
+
+.current-error .loc {
+  font-family: var(--mono);
+  color: var(--dim);
+  font-size: var(--size-1);
+  margin-left: 8px;
+}
+
+.current-error .message {
+  margin-top: 4px;
+  color: var(--ink);
+}
+
+.ledger {
+  border-top: 1px solid var(--rule);
+  padding-top: 12px;
+}
+
+.ledger-line {
+  display: flex;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: var(--size-1);
+  padding: 4px 0;
+  color: var(--ink);
+}
+
+.ledger-line .n {
+  color: var(--dim);
+  width: 6em;
+  flex-shrink: 0;
+}
+
+.ledger-line.ok .status { color: var(--verified); }
+.ledger-line.fail .status { color: var(--fault); }
+
+.failed-banner {
+  margin-top: 16px;
+  color: var(--fault);
+  font-size: var(--size-2);
+}
+
+/* ---------- Baseline chart ---------- */
+
+.baseline-chart {
+  margin-top: 24px;
+  border-top: 1px solid var(--rule);
+  padding-top: 12px;
+}
+
+.baseline-chart h3 {
+  font-size: var(--size-2);
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.baseline-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: var(--size-1);
+}
+
+.baseline-row .label {
+  width: 11em;
+  flex-shrink: 0;
+  color: var(--dim);
+}
+
+.baseline-row .bar-track {
+  flex: 1;
+  height: 10px;
+  background: transparent;
+  position: relative;
+}
+
+.baseline-row .bar-fill {
+  height: 100%;
+  background: var(--ink);
+}
+
+.baseline-row .value {
+  width: 3.5em;
+  text-align: right;
+  color: var(--ink);
+}
+
+.baseline-empty {
+  color: var(--dim);
+  font-size: var(--size-1);
+}
+
+/* ---------- Prompt bar ---------- */
+
+.prompt-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--rule);
+}
+
+.prompt-bar input {
+  flex: 1;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 2px;
+  font-size: var(--size-2);
+  background: transparent;
+}
+
+.prompt-bar input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--ink);
+}
+
+.prompt-bar button {
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  border-radius: 2px;
+  padding: 6px 16px;
+  font-size: var(--size-2);
+  cursor: pointer;
+}
+
+.prompt-bar button:disabled {
+  color: var(--dim);
+  border-color: var(--rule);
+  cursor: default;
+}
+
+.dev-fixture-note {
+  color: var(--pending);
+  font-size: var(--size-1);
+  padding: 4px 20px;
+  border-bottom: 1px solid var(--rule);
+}

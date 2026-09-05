@@ -1,0 +1,53 @@
+{"type": "task_start", "task_id": "max_iterations_exhausted", "prompt": "Write something that will never compile, on purpose, for a fixture.", "ts": 0}
+{"type": "tool_call", "tool": "grep_corpus", "args": {"pattern": "on|for|something|will|never|compile|purpose|fixture", "limit": 12}, "ts": 0}
+{"type": "tool_result", "tool": "grep_corpus", "hits": 12, "preview": [{"file": "docs/errors.md", "line": 4, "text": "column, and a message that names the fix where one is nameable. This", "context_before": ["`plinth parse` and `plinth run` report errors with a code, a line and"], "context_after": ["page documents the codes you're most likely to run into while writing a"], "kind": "doc"}, {"file": "docs/errors.md", "line": 6, "text": "file. (Codes in the 070+ range, raised only while a scenario is actually", "context_before": ["page documents the codes you're most likely to run into while writing a"], "context_after": ["executing, aren't covered on this page.)"], "kind": "doc"}, {"file": "docs/errors.md", "line": 7, "text": "executing, aren't covered on this page.)", "context_before": ["file. (Codes in the 070+ range, raised only while a scenario is actually"], "context_after": [""], "kind": "doc"}, {"file": "docs/errors.md", "line": 13, "text": "  that doesn't belong in the current block.", "context_before": ["  didn't expect it: a misplaced keyword, a missing value, or a statement"], "context_after": ["- **E002** -- unterminated block. A block was opened (`define platform"], "kind": "doc"}, {"file": "docs/errors.md", "line": 14, "text": "- **E002** -- unterminated block. A block was opened (`define platform", "context_before": ["  that doesn't belong in the current block."], "context_after": ["  ...`, `execute`, ...) but the file ended, or another top-level"], "kind": "doc"}], "ts": 1}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "on"}, "ts": 1}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 1, "preview": [{"found": true, "name": "on", "kind": "statement", "valid_parents": ["execute"], "valid_children": [], "arg_shape": "(part of spawn)", "dimension": null, "required": false, "doc_anchor": "docs/quickref.md#statements-and-actions", "example_refs": [], "source": "verifier"}], "ts": 1}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "for"}, "ts": 1}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 1, "preview": [{"found": true, "name": "for", "kind": "statement", "valid_parents": ["execute"], "valid_children": [], "arg_shape": "(part of every)", "dimension": null, "required": false, "doc_anchor": null, "example_refs": [], "source": "verifier"}], "ts": 1}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "something"}, "ts": 1}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 0, "preview": [{"found": false, "name": "something"}], "ts": 1}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "will"}, "ts": 1}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 0, "preview": [{"found": false, "name": "will"}], "ts": 2}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "never"}, "ts": 2}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 0, "preview": [{"found": false, "name": "never"}], "ts": 2}
+{"type": "tool_call", "tool": "lookup_symbol", "args": {"name": "compile"}, "ts": 2}
+{"type": "tool_result", "tool": "lookup_symbol", "hits": 0, "preview": [{"found": false, "name": "compile"}], "ts": 2}
+{"type": "tool_call", "tool": "get_examples", "args": {"symbol": "on", "n": 3}, "ts": 2}
+{"type": "tool_result", "tool": "get_examples", "hits": 0, "preview": [], "ts": 2}
+{"type": "model_start", "iteration": 1, "ts": 3}
+{"type": "model_token", "text": "definitely ", "ts": 3}
+{"type": "model_token", "text": "not ", "ts": 3}
+{"type": "model_token", "text": "plinth ", "ts": 3}
+{"type": "model_token", "text": "source\n", "ts": 3}
+{"type": "model_done", "iteration": 1, "source": "definitely not plinth source\n", "ts": 3}
+{"type": "verify_start", "iteration": 1, "ts": 3}
+{"type": "verify_result", "iteration": 1, "ok": false, "errors": [{"file": "/var/folders/rv/9gpjtm0501q3_k60hn0cgy9c0000gn/T/tmpevmv_ou1/candidate.plth", "line": 1, "col": 1, "code": "E001", "message": "unexpected identifier 'definitely' at top level", "severity": "error"}], "ts": 64}
+{"type": "repair_start", "iteration": 2, "fixing": ["E001@1"], "ts": 64}
+{"type": "model_start", "iteration": 2, "ts": 65}
+{"type": "model_token", "text": "definitely ", "ts": 65}
+{"type": "model_token", "text": "not ", "ts": 65}
+{"type": "model_token", "text": "plinth ", "ts": 65}
+{"type": "model_token", "text": "source\n", "ts": 65}
+{"type": "model_done", "iteration": 2, "source": "definitely not plinth source\n", "ts": 65}
+{"type": "verify_start", "iteration": 2, "ts": 65}
+{"type": "verify_result", "iteration": 2, "ok": false, "errors": [{"file": "/var/folders/rv/9gpjtm0501q3_k60hn0cgy9c0000gn/T/tmpya2q9vic/candidate.plth", "line": 1, "col": 1, "code": "E001", "message": "unexpected identifier 'definitely' at top level", "severity": "error"}], "ts": 128}
+{"type": "repair_start", "iteration": 3, "fixing": ["E001@1"], "ts": 129}
+{"type": "model_start", "iteration": 3, "ts": 129}
+{"type": "model_token", "text": "definitely ", "ts": 129}
+{"type": "model_token", "text": "not ", "ts": 129}
+{"type": "model_token", "text": "plinth ", "ts": 129}
+{"type": "model_token", "text": "source\n", "ts": 129}
+{"type": "model_done", "iteration": 3, "source": "definitely not plinth source\n", "ts": 129}
+{"type": "verify_start", "iteration": 3, "ts": 129}
+{"type": "verify_result", "iteration": 3, "ok": false, "errors": [{"file": "/var/folders/rv/9gpjtm0501q3_k60hn0cgy9c0000gn/T/tmpvi7ngdeh/candidate.plth", "line": 1, "col": 1, "code": "E001", "message": "unexpected identifier 'definitely' at top level", "severity": "error"}], "ts": 191}
+{"type": "repair_start", "iteration": 4, "fixing": ["E001@1"], "ts": 192}
+{"type": "model_start", "iteration": 4, "ts": 192}
+{"type": "model_token", "text": "definitely ", "ts": 192}
+{"type": "model_token", "text": "not ", "ts": 192}
+{"type": "model_token", "text": "plinth ", "ts": 192}
+{"type": "model_token", "text": "source\n", "ts": 192}
+{"type": "model_done", "iteration": 4, "source": "definitely not plinth source\n", "ts": 192}
+{"type": "verify_start", "iteration": 4, "ts": 192}
+{"type": "verify_result", "iteration": 4, "ok": false, "errors": [{"file": "/var/folders/rv/9gpjtm0501q3_k60hn0cgy9c0000gn/T/tmpql7wv2uj/candidate.plth", "line": 1, "col": 1, "code": "E001", "message": "unexpected identifier 'definitely' at top level", "severity": "error"}], "ts": 253}
+{"type": "task_failed", "task_id": "max_iterations_exhausted", "reason": "max_iterations", "last_errors": [{"file": "/var/folders/rv/9gpjtm0501q3_k60hn0cgy9c0000gn/T/tmpql7wv2uj/candidate.plth", "line": 1, "col": 1, "code": "E001", "message": "unexpected identifier 'definitely' at top level", "severity": "error"}], "ts": 255}
