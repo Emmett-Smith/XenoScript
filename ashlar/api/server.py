@@ -26,13 +26,17 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
+import shutil
 import threading
 import uuid
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+import yaml
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
@@ -41,6 +45,7 @@ from ashlar.harness.loop import Corpus, HarnessDeps, run_task
 from ashlar.harness.memory import Memory
 from ashlar.harness.model import FakeModel, ModelClient
 from ashlar.harness.tool_client import ToolClient
+from ashlar.ingest.pipeline import run_ingest
 from ashlar.mcp import server as mcp_server
 from ashlar.mcp.client import RealToolClient
 
@@ -227,6 +232,209 @@ def get_corpora() -> list[dict[str, Any]]:
 @app.post("/corpus/switch")
 def post_corpus_switch(req: CorpusSwitchRequest) -> dict[str, Any]:
     return state.switch_corpus(req.name)
+
+
+# ---------------------------------------------------------------------------
+# POST /corpus/create -- onboard a brand new corpus through the UI.
+#
+# The one hard constraint (see the task brief this endpoint was written
+# against): uploaded docs/examples alone can never make `verify()` mean
+# anything. This endpoint therefore *requires* the caller to supply real
+# verifier commands for a toolchain that already exists on this machine --
+# exactly the `meta.yaml` `verifier` block shape from
+# 00_ARCHITECTURE.md #4 -- and only treats docs/examples as the retrieval-
+# seeding half of onboarding. It never auto-detects or guesses a toolchain;
+# it only ever runs the commands the caller explicitly typed, substituted
+# into a subprocess the same way every other corpus's verifier already runs
+# (`ashlar/mcp/sandbox.py`, unmodified by this endpoint).
+# ---------------------------------------------------------------------------
+
+_CORPUS_NAME_RE = re.compile(r"^[a-z0-9_-]+$")
+_VALID_OUTPUT_FORMATS = ("json", "text")
+_VALID_CHUNK_STRATEGIES = ("heading", "fixed", "blank_line")
+
+
+class _CorpusCreateError(Exception):
+    """Any validation failure in POST /corpus/create. Caught at the route
+    boundary and turned into a 4xx `{"error": ...}` body -- never a raw
+    500/stack trace to the client, and always raised *before* anything is
+    written to disk so a rejected request leaves zero trace under
+    `corpora/`."""
+
+
+def _validate_corpus_name(name: str) -> str:
+    name = (name or "").strip()
+    if not name or not _CORPUS_NAME_RE.match(name) or len(name) > 64:
+        raise _CorpusCreateError(
+            "name must be lowercase alphanumeric plus underscore/hyphen only "
+            "(no '/', no '..', no spaces) -- got " + repr(name)
+        )
+    # Defense in depth, same suspicion ashlar/mcp/server.py's read_file
+    # traversal check applies to a path argument: confirm the resolved
+    # target still lands inside corpora/ before anything is written, even
+    # though the regex above should already make escaping impossible.
+    target = (CORPORA_DIR / name).resolve()
+    try:
+        target.relative_to(CORPORA_DIR.resolve())
+    except ValueError:
+        raise _CorpusCreateError(f"name {name!r} escapes the corpora/ directory")
+    return name
+
+
+def _parse_cmd_field(raw: str | None, field: str, *, required: bool) -> list[str] | None:
+    if raw is None or raw.strip() == "":
+        if required:
+            raise _CorpusCreateError(f"{field} is required")
+        return None
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise _CorpusCreateError(f"{field} is not valid JSON: {exc}")
+    if not isinstance(value, list) or not value or not all(isinstance(x, str) for x in value):
+        raise _CorpusCreateError(f"{field} must be a JSON array of one or more strings")
+    return value
+
+
+def _sanitized_upload_name(filename: str | None, fallback: str) -> str:
+    # Path(...).name strips any directory component (including "..") from
+    # an uploaded filename, so a crafted multipart filename can't write
+    # outside corpora/<name>/docs|examples/.
+    name = Path(filename or "").name
+    return name or fallback
+
+
+@app.post("/corpus/create")
+async def post_corpus_create(
+    name: str = Form(...),
+    display_name: str = Form(...),
+    extension: str = Form(...),
+    comment_prefix: str = Form("#"),
+    parse_cmd: str = Form(...),
+    run_cmd: str = Form(...),
+    symbols_cmd: str | None = Form(None),
+    output_format: str = Form("json"),
+    error_regex: str | None = Form(None),
+    timeout_s: int = Form(10),
+    bm25_weight: float = Form(0.75),
+    embedding_weight: float = Form(0.25),
+    chunk_strategy: str = Form("heading"),
+    docs: list[UploadFile] = File(default=[]),
+    examples: list[UploadFile] = File(default=[]),
+) -> JSONResponse:
+    try:
+        clean_name = _validate_corpus_name(name)
+        target_dir = CORPORA_DIR / clean_name
+        if target_dir.exists():
+            raise _CorpusCreateError(f"corpus {clean_name!r} already exists")
+
+        clean_display_name = (display_name or "").strip()
+        if not clean_display_name:
+            raise _CorpusCreateError("display_name is required")
+
+        clean_extension = (extension or "").strip()
+        if not clean_extension.startswith("."):
+            raise _CorpusCreateError("extension must start with '.' e.g. '.foo'")
+
+        clean_comment_prefix = comment_prefix if comment_prefix else "#"
+
+        parse_list = _parse_cmd_field(parse_cmd, "parse_cmd", required=True)
+        run_list = _parse_cmd_field(run_cmd, "run_cmd", required=True)
+        symbols_list = _parse_cmd_field(symbols_cmd, "symbols_cmd", required=False)
+
+        if output_format not in _VALID_OUTPUT_FORMATS:
+            raise _CorpusCreateError(f"output_format must be one of {_VALID_OUTPUT_FORMATS}")
+        clean_error_regex: str | None = None
+        if output_format == "text":
+            # Same defensive validation ashlar/mcp/sandbox.py's run_verifier
+            # already performs on this exact field -- consistent rejection
+            # shape, checked here instead of at first-verify time.
+            if not error_regex or not error_regex.strip():
+                raise _CorpusCreateError(
+                    "error_regex is required when output_format is 'text'"
+                )
+            try:
+                re.compile(error_regex)
+            except re.error as exc:
+                raise _CorpusCreateError(f"error_regex is not a valid regex: {exc}")
+            clean_error_regex = error_regex
+
+        if timeout_s <= 0:
+            raise _CorpusCreateError("timeout_s must be a positive integer")
+        if bm25_weight < 0 or embedding_weight < 0:
+            raise _CorpusCreateError("bm25_weight and embedding_weight must be >= 0")
+        if chunk_strategy not in _VALID_CHUNK_STRATEGIES:
+            raise _CorpusCreateError(f"chunk_strategy must be one of {_VALID_CHUNK_STRATEGIES}")
+
+        # Read every upload's bytes now, before any write to disk, so a
+        # failure partway through reading never leaves a half-written
+        # corpus directory behind.
+        doc_uploads = [
+            (_sanitized_upload_name(f.filename, f"doc_{i}"), await f.read())
+            for i, f in enumerate(docs)
+            if f.filename
+        ]
+        example_uploads = [
+            (_sanitized_upload_name(f.filename, f"example_{i}"), await f.read())
+            for i, f in enumerate(examples)
+            if f.filename
+        ]
+    except _CorpusCreateError as exc:
+        return JSONResponse(status_code=400, content={"error": str(exc)})
+
+    # --- Validation is complete. Nothing below this line may reject the
+    # request; everything from here on either succeeds or rolls back. ---
+
+    warnings: list[str] = []
+    if not doc_uploads and not example_uploads:
+        warnings.append(
+            "no docs or examples uploaded -- verification against the real "
+            "toolchain will still work, but retrieval has nothing to search "
+            "yet and will perform badly until some are added"
+        )
+
+    meta_dict: dict[str, Any] = {
+        "language": clean_name,
+        "display_name": clean_display_name,
+        "extension": clean_extension,
+        "comment_prefix": clean_comment_prefix,
+        "verifier": {"parse": parse_list, "run": run_list},
+        "sandbox": {"mode": "subprocess", "timeout_s": timeout_s, "memory_mb": 512},
+        "retrieval": {
+            "bm25_weight": bm25_weight,
+            "embedding_weight": embedding_weight,
+            "chunk_strategy": chunk_strategy,
+        },
+    }
+    if symbols_list:
+        meta_dict["verifier"]["symbols"] = symbols_list
+    if output_format != "json":
+        meta_dict["verifier"]["output_format"] = output_format
+    if clean_error_regex:
+        meta_dict["verifier"]["error_regex"] = clean_error_regex
+
+    created = False
+    try:
+        target_dir.mkdir(parents=True, exist_ok=False)
+        created = True
+        (target_dir / "docs").mkdir()
+        (target_dir / "examples").mkdir()
+        for fname, content in doc_uploads:
+            (target_dir / "docs" / fname).write_bytes(content)
+        for fname, content in example_uploads:
+            (target_dir / "examples" / fname).write_bytes(content)
+        (target_dir / "meta.yaml").write_text(yaml.safe_dump(meta_dict, sort_keys=False))
+
+        run_ingest(clean_name)
+        result = _manifest_for(clean_name, load_corpus_meta(clean_name))
+    except Exception as exc:
+        if created:
+            shutil.rmtree(target_dir, ignore_errors=True)
+        return JSONResponse(
+            status_code=400, content={"error": f"failed to create corpus: {exc}"}
+        )
+
+    result["warnings"] = warnings
+    return JSONResponse(status_code=200, content=result)
 
 
 @app.get("/eval/latest")
