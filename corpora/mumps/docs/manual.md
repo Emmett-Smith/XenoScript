@@ -22,6 +22,31 @@ Two real consequences of this:
   needs.
 - `READ` is not usable here either -- standard input is the program's own
   source text, not a separate interactive channel. Don't use it.
+- Multi-line dotted-DO blocks (`DO` followed by lines indented with a
+  leading `.`) **do not work** either, for the same reason as labels --
+  verified live: a dotted-DO block fed this way produces `M13 Invalid
+  line reference`. Keep a `FOR`/`IF` loop body entirely on its own
+  single line instead (see the `FOR` section below).
+
+## Globals (`^name`) -- persistent, and wiped clean before every check
+
+A name starting with `^` is a *global* -- M's built-in, disk-backed
+database (this is the feature that made M the dominant EHR language:
+VistA, Epic, and Meditech are all built on it). Unlike local variables,
+globals in this corpus persist in one shared environment across
+different runs, so this corpus wipes every global back to empty before
+each check -- a program can freely set and read its own globals within
+one run, but should never depend on a global that some *other*, earlier
+task might have left behind.
+
+```m
+SET ^PATIENT(1)="DOE,JANE^34^F"
+WRITE $PIECE(^PATIENT(1),"^",1),!   ; DOE,JANE
+
+; Iterating every record in a global array, oldest pattern in M:
+SET IDX=""
+FOR  SET IDX=$ORDER(^PATIENT(IDX)) QUIT:IDX=""  WRITE IDX,": ",^PATIENT(IDX),!
+```
 
 ## Comments
 

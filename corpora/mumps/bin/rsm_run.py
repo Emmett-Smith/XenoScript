@@ -45,6 +45,24 @@ ENV_DB = Path(__file__).resolve().parent.parent / "env" / "mumps.dat"
 _MARKER_RE = re.compile(r"^@@ASHLARLINE(\d+)@@$")
 _ECODE_RE = re.compile(r"^\$ECODE=,([A-Za-z0-9]+),$")
 
+# Real, verified isolation fix: globals (^name) live in the shared,
+# persistent environment's database file, not in per-process local memory
+# -- unlike locals, they survive across separate verify() calls by design
+# (that IS what a global is). Confirmed live: SET ^TEST=1 in one call,
+# then $DATA(^TEST) in a completely separate, later call returned 1.
+# Left unfixed, one task's leftover global data could silently change
+# whether a LATER, unrelated task passes or fails. This preamble runs
+# before every execution and wipes every real global back to empty,
+# using the real, documented ^$GLOBAL enumeration idiom (RSM's own
+# language reference, Structured System Variables / ^$GLOBAL) -- "$GLOBAL"
+# itself is skipped because it's the read-only SSVN doing the enumerating,
+# not a real global, and RSM correctly refuses to KILL it (M29).
+_WIPE_GLOBALS_PREAMBLE = (
+    'SET GVN=""\n'
+    'FOR  SET GVN=$ORDER(^$GLOBAL(GVN)) QUIT:GVN=""  '
+    'IF $EXTRACT(GVN,1)\'="$" KILL @("^"_GVN)\n'
+)
+
 
 class EnvSetupError(RuntimeError):
     pass
@@ -92,7 +110,7 @@ def instrument(source: str) -> str:
 
 def run_instrumented(source: str, timeout_s: float) -> str:
     ensure_env()
-    instrumented = instrument(source)
+    instrumented = _WIPE_GLOBALS_PREAMBLE + instrument(source)
     proc = subprocess.run(
         [str(RSM), str(ENV_DB)], input=instrumented, capture_output=True, text=True, timeout=timeout_s,
     )
@@ -102,7 +120,7 @@ def run_instrumented(source: str, timeout_s: float) -> str:
 def run_raw(source: str, timeout_s: float) -> subprocess.CompletedProcess[str]:
     ensure_env()
     return subprocess.run(
-        [str(RSM), str(ENV_DB)], input=source, capture_output=True, text=True, timeout=timeout_s,
+        [str(RSM), str(ENV_DB)], input=_WIPE_GLOBALS_PREAMBLE + source, capture_output=True, text=True, timeout=timeout_s,
     )
 
 
