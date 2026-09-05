@@ -31,7 +31,7 @@ from typing import Any
 
 from ashlar.config import CorpusMeta
 from ashlar.harness.events import EventEmitter
-from ashlar.harness.keywords import build_pattern, extract_keywords
+from ashlar.harness.keywords import extract_keywords
 from ashlar.harness.memory import Memory, normalize_task
 from ashlar.harness.model import ModelClient
 from ashlar.harness.prompts import system_prompt
@@ -242,11 +242,35 @@ def run_task(
 
     # 1-2. DETERMINISTIC pre-fetch -- not model-chosen.
     keywords = extract_keywords(prompt, corpus.symbol_names)
-    pattern = build_pattern(keywords)
 
-    emitter.tool_call("grep_corpus", {"pattern": pattern, "limit": PREFETCH_GREP_LIMIT})
-    hits = deps.tool_client.grep_corpus(pattern, limit=PREFETCH_GREP_LIMIT) if pattern else []
-    emitter.tool_result("grep_corpus", len(hits), hits[:5])
+    # One grep_corpus call per keyword, each capped to a fair share of the
+    # total budget, rather than one combined alternation with one shared
+    # limit. Phase 2 live-model diagnosis: extract_keywords legitimately
+    # ranks symbol-table matches first (03_HARNESS.md #1's own algorithm),
+    # but structural keywords ("define", "platform") are symbols too and
+    # appear in nearly every file -- a combined pattern let them exhaust
+    # the limit on the very first file(s) touched, before a rarer,
+    # genuinely diagnostic keyword (a specific identifier name) ever got a
+    # single hit. This does not change what grep_corpus does (still a dumb
+    # regex primitive, 00_ARCHITECTURE.md #7) -- it changes how the
+    # harness *calls* it, which is exactly the kind of tuning §1 assigns
+    # to this file, not to the MCP server.
+    hits: list[dict[str, Any]] = []
+    if keywords:
+        per_kw_limit = max(1, PREFETCH_GREP_LIMIT // len(keywords))
+        seen_hit_keys: set[tuple[Any, Any]] = set()
+        for kw in keywords:
+            if len(hits) >= PREFETCH_GREP_LIMIT:
+                break
+            emitter.tool_call("grep_corpus", {"pattern": kw, "limit": per_kw_limit})
+            kw_hits = deps.tool_client.grep_corpus(re.escape(kw), limit=per_kw_limit)
+            clean = [h for h in kw_hits if "error" not in h]
+            emitter.tool_result("grep_corpus", len(clean), clean[:5])
+            for h in clean:
+                key = (h.get("file"), h.get("line"))
+                if key not in seen_hit_keys:
+                    seen_hit_keys.add(key)
+                    hits.append(h)
 
     symbols: list[dict[str, Any]] = []
     for k in keywords[:PREFETCH_SYMBOL_LIMIT]:
@@ -255,10 +279,21 @@ def run_task(
         emitter.tool_result("lookup_symbol", 1 if res.get("found") else 0, [res])
         symbols.append(res)
 
+    # Prefer a non-structural keyword (attribute/statement, not a bare
+    # block opener like "define"/"platform") as the anchor for
+    # get_examples -- a block keyword appears in every example file
+    # equally, so it carries no discriminative signal about *which*
+    # example is relevant to this specific prompt.
+    example_symbol = keywords[0] if keywords else None
+    for k, res in zip(keywords[:PREFETCH_SYMBOL_LIMIT], symbols):
+        if res.get("found") and res.get("kind") not in ("block", None):
+            example_symbol = k
+            break
+
     examples: list[dict[str, Any]] = []
-    if keywords:
-        emitter.tool_call("get_examples", {"symbol": keywords[0], "n": PREFETCH_EXAMPLE_N})
-        examples = deps.tool_client.get_examples(keywords[0], n=PREFETCH_EXAMPLE_N)
+    if example_symbol:
+        emitter.tool_call("get_examples", {"symbol": example_symbol, "n": PREFETCH_EXAMPLE_N})
+        examples = deps.tool_client.get_examples(example_symbol, n=PREFETCH_EXAMPLE_N)
         emitter.tool_result("get_examples", len(examples), examples[:PREFETCH_EXAMPLE_N])
 
     top_failures = deps.memory.top_failures(deps.top_failures_n)

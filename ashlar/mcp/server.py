@@ -135,17 +135,30 @@ def lookup_symbol(name: str) -> dict[str, Any]:
 
 
 def _iter_searchable_files(kind: str) -> list[tuple[str, Path]]:
-    """(kind, path) pairs for regex search: docs recursively, examples
-    flat (specs/02_BACKEND.md #1). Never includes pairs/."""
+    """(kind, path) pairs for regex search: examples flat, then docs
+    recursively (specs/02_BACKEND.md #1). Never includes pairs/.
+
+    Examples come first deliberately, not alphabetically: `grep_corpus`
+    stops as soon as it hits `limit`, and a broad keyword alternation
+    (common structural words like "define"/"platform" are legal keywords
+    too, so they end up in almost every prompt's pattern) can produce many
+    matches in docs alone -- easily enough to exhaust a limit of 12 before
+    a single example file is even opened. Found via Phase 2 live-model
+    diagnosis: a real task's pre-fetch returned 12/12 hits from
+    docs/errors.md and zero from examples/, even though the relevant
+    example file matched on other keywords in the same query. That
+    inverts `prompts/system.md`'s own instruction ("prefer imitating a
+    real example over reasoning from prose documentation") at the
+    retrieval layer, before the model ever sees anything."""
     out: list[tuple[str, Path]] = []
-    if kind in ("all", "doc"):
-        docs_dir = _corpus_root() / "docs"
-        if docs_dir.is_dir():
-            out.extend(("doc", p) for p in sorted(docs_dir.glob("**/*")) if p.is_file())
     if kind in ("all", "example"):
         examples_dir = _corpus_root() / "examples"
         if examples_dir.is_dir():
             out.extend(("example", p) for p in sorted(examples_dir.glob("*")) if p.is_file())
+    if kind in ("all", "doc"):
+        docs_dir = _corpus_root() / "docs"
+        if docs_dir.is_dir():
+            out.extend(("doc", p) for p in sorted(docs_dir.glob("**/*")) if p.is_file())
     return out
 
 

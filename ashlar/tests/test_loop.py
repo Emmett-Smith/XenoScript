@@ -255,3 +255,44 @@ def test_markdown_fenced_output_is_stripped_before_verify(tmp_path):
     assert result.source == "this is clean source with no errors"
     model_done = next(e for e in events if e["type"] == "model_done")
     assert model_done["source"] == "this is clean source with no errors"
+
+
+def test_prefetch_grep_gives_every_keyword_a_fair_share_not_just_the_first(tmp_path):
+    """Phase 2 live-model diagnosis: a single combined grep_corpus call
+    (one alternation pattern, one shared limit) let a generic, ubiquitous
+    keyword ("platform" appears in nearly every file) exhaust the limit
+    entirely before a rarer, far more diagnostic keyword (a specific
+    identifier the file actually turned out to hinge on) ever got a
+    single hit. The pre-fetch must query per keyword with a fair-share
+    limit each, so a specific identifier's hit survives alongside a
+    generic keyword's many hits, not instead of them."""
+    meta = load_corpus_meta("stub")
+    model = FakeModel(responses=["clean output, no FAIL literal here"])
+    tool_client = FakeToolClient(
+        grep_hits={
+            "platform": [
+                {"file": "examples/a.stub", "line": i, "text": f"platform line {i}", "kind": "example"}
+                for i in range(1, 7)
+            ],
+            "uav_01": [
+                {"file": "examples/special.stub", "line": 1, "text": "uav_01 the specific one", "kind": "example"}
+            ],
+        }
+    )
+    memory = Memory(tmp_path / "symbols.db")
+    corpus = Corpus(meta=meta, symbol_names=["platform"], pairs={})
+    deps = HarnessDeps(model=model, tool_client=tool_client, memory=memory)
+
+    events: list[dict] = []
+    run_task("configure platform uav_01", corpus, events.append, deps)
+
+    grep_calls = [kwargs for name, kwargs in tool_client.calls if name == "grep_corpus"]
+    patterns_queried = {c["pattern"] for c in grep_calls}
+    assert len(grep_calls) > 1, "expected one grep_corpus call per keyword, not one combined call"
+    assert "uav_01" in patterns_queried
+
+    tool_results = [e for e in events if e["type"] == "tool_result" and e["tool"] == "grep_corpus"]
+    all_previewed_files = {p.get("file") for r in tool_results for p in r["preview"]}
+    assert "examples/special.stub" in all_previewed_files, (
+        "the specific keyword's hit was crowded out of every grep_corpus tool_result preview"
+    )

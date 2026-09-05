@@ -140,6 +140,21 @@ def test_grep_corpus_respects_limit():
     assert len(results) <= 1
 
 
+def test_grep_corpus_searches_examples_before_docs_when_limit_bound():
+    """Phase 2 live-model diagnosis: a broad keyword alternation (common
+    structural words are legal PLINTH keywords too) can match enough lines
+    in docs/ alone to exhaust a small limit before examples/ is ever
+    searched -- inverting prompts/system.md's own "prefer a real example
+    over prose documentation" instruction at the retrieval layer. Assert
+    examples are search targets first, not docs, when kind="all"."""
+    import ashlar.mcp.server as server_module
+
+    files = server_module._iter_searchable_files("all")
+    kinds_in_order = [k for k, _ in files]
+    if "doc" in kinds_in_order and "example" in kinds_in_order:
+        assert kinds_in_order.index("example") < kinds_in_order.index("doc")
+
+
 # ---------------------------------------------------------------------------
 # get_examples
 # ---------------------------------------------------------------------------

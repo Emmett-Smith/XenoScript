@@ -20,7 +20,15 @@ import re
 from collections.abc import Callable, Iterable
 
 _WORD_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
-_QUOTED_RE = re.compile(r"'([^']+)'|\"([^\"]+)\"")
+# Deliberately excludes a bare `'` immediately touching a letter on either
+# side -- otherwise a contraction anywhere in the prompt ("I've", "can't",
+# "it's") gets read as an opening or closing quote, and the "quoted string"
+# captured is everything between two unrelated apostrophes, potentially a
+# whole multi-sentence span. Found via Phase 2 live-model diagnosis: a real
+# task phrased with "I've seen ... even though I can't find it" produced a
+# single ~90-character garbage "keyword" spanning both contractions, which
+# then dominated the grep_corpus pattern instead of the task's real content.
+_QUOTED_RE = re.compile(r"(?<![A-Za-z])'([^'\n]{1,60})'(?![A-Za-z])|\"([^\"\n]{1,60})\"")
 # Generic identifier pattern: underscore-joined or otherwise word-shaped
 # tokens of length >= 3. Corpus-agnostic on purpose -- no language-specific
 # specifics live here.
