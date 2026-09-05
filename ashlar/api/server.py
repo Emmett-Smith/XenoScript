@@ -440,13 +440,28 @@ async def post_corpus_create(
 
 
 @app.get("/eval/latest")
-def get_eval_latest() -> dict[str, Any]:
+def get_eval_latest(corpus: str | None = None) -> dict[str, Any]:
+    """Without ``corpus``: the single most recent report overall (back-
+    compat). With it: the most recent report *for that corpus specifically*.
+
+    The two are not the same thing, and conflating them is a real bug
+    found live: running an eval sweep on one corpus made its report
+    briefly the newest file overall, and the frontend's baseline chart
+    displayed that corpus's numbers under a different corpus's header,
+    with no way for either side to know they'd mismatched -- the plain
+    "latest file" query has no awareness of which corpus is on screen."""
     if not EVAL_REPORTS_DIR.is_dir():
         return {"error": "no report yet"}
     reports = sorted(EVAL_REPORTS_DIR.glob("*.json"))
     if not reports:
         return {"error": "no report yet"}
-    return json.loads(reports[-1].read_text())
+    if corpus is None:
+        return json.loads(reports[-1].read_text())
+    for path in reversed(reports):
+        report = json.loads(path.read_text())
+        if report.get("corpus") == corpus:
+            return report
+    return {"error": f"no report yet for corpus {corpus!r}"}
 
 
 if __name__ == "__main__":

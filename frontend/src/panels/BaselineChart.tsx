@@ -36,13 +36,27 @@ function extractRate(arm: unknown): number | null {
   return null;
 }
 
-export function BaselineChart() {
+export function BaselineChart({ corpusName }: { corpusName: string | null }) {
   const [rows, setRows] = useState<ArmRow[] | null>(null);
   const [empty, setEmpty] = useState(false);
 
   useEffect(() => {
+    if (!corpusName) {
+      setRows(null);
+      setEmpty(true);
+      return;
+    }
     let cancelled = false;
-    fetch(`${API_BASE}/eval/latest`)
+    setRows(null);
+    setEmpty(false);
+    // ?corpus=<name> asks the server for the latest report *for this
+    // corpus specifically*, not just the latest file overall -- found
+    // live: those are genuinely different queries, and conflating them
+    // let one corpus's sweep make its numbers appear under a different
+    // corpus's header on screen (server-side fix in GET /eval/latest;
+    // the corpus.corpus double-check below is defense in depth, not the
+    // primary fix).
+    fetch(`${API_BASE}/eval/latest?corpus=${encodeURIComponent(corpusName)}`)
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return;
@@ -50,7 +64,12 @@ export function BaselineChart() {
           setEmpty(true);
           return;
         }
-        const arms = (data as Record<string, unknown>).arms;
+        const record = data as Record<string, unknown>;
+        if (record.corpus && record.corpus !== corpusName) {
+          setEmpty(true);
+          return;
+        }
+        const arms = record.arms;
         if (typeof arms !== "object" || arms === null) {
           setEmpty(true);
           return;
@@ -69,7 +88,7 @@ export function BaselineChart() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [corpusName]);
 
   return (
     <div className="baseline-chart">

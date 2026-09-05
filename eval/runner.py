@@ -315,11 +315,19 @@ def build_report(
     model_endpoints: dict[str, str],
     repeat: int,
     timestamp: str | None = None,
+    corpus_name: str | None = None,
 ) -> dict[str, Any]:
     return {
         "git_sha": _git_sha(),
         "timestamp": timestamp or _now_iso(),
-        "corpus": cfg.corpus,
+        # The corpus actually tested (--corpus), not config.yaml's static
+        # default (cfg.corpus) -- those differ any time --corpus overrides
+        # the config, which is exactly when getting this right matters
+        # most (a mislabeled report is worse than no report: found live,
+        # a COBOL sweep got stamped "plinth" and the frontend's baseline
+        # chart displayed COBOL's much-higher score under the PLINTH
+        # header on a real screen).
+        "corpus": corpus_name or cfg.corpus,
         "repeat": repeat,
         "model_endpoints": model_endpoints,
         "arms": {arm: summarize(arm, results) for arm, results in arms_results.items()},
@@ -451,7 +459,9 @@ def main() -> None:
 
             # Write/overwrite after every arm, not only at the end -- see
             # the run_timestamp comment above.
-            partial_report = build_report(arms_results, cfg, model_endpoints, args.repeat, run_timestamp)
+            partial_report = build_report(
+                arms_results, cfg, model_endpoints, args.repeat, run_timestamp, corpus_name
+            )
             out_path = write_report(partial_report)
 
     print(f"wrote {out_path.relative_to(REPO_ROOT)}", file=sys.stderr)

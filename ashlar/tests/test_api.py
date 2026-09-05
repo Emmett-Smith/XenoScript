@@ -45,6 +45,40 @@ def test_eval_latest_reports_real_state_not_a_hardcoded_stub():
     assert body == {"error": "no report yet"} or {"git_sha", "arms", "model_endpoints"} <= body.keys()
 
 
+def test_eval_latest_with_corpus_param_returns_that_corpus_not_just_newest_file(tmp_path, monkeypatch):
+    """Real bug found live: GET /eval/latest with no filter returns the
+    single newest report file regardless of which corpus it's for. A
+    COBOL sweep briefly became "the latest report" while PLINTH was the
+    active corpus in the UI, and the frontend rendered COBOL's numbers
+    under the PLINTH header with no way to detect the mismatch. ?corpus=
+    must return the newest report *for that corpus specifically*."""
+    import ashlar.api.server as server_module
+
+    monkeypatch.setattr(server_module, "EVAL_REPORTS_DIR", tmp_path)
+    (tmp_path / "20260101T000000Z.json").write_text(
+        json.dumps({"corpus": "plinth", "arms": {"D": {"verified_correct_rate": 0.25}}})
+    )
+    # Written later (sorts after by filename) but for a *different* corpus.
+    (tmp_path / "20260102T000000Z.json").write_text(
+        json.dumps({"corpus": "cobol", "arms": {"D": {"verified_correct_rate": 0.9}}})
+    )
+
+    client = _client()
+
+    no_filter = client.get("/eval/latest").json()
+    assert no_filter["corpus"] == "cobol"  # unfiltered: still the newest file overall
+
+    plinth_only = client.get("/eval/latest", params={"corpus": "plinth"}).json()
+    assert plinth_only["corpus"] == "plinth"
+    assert plinth_only["arms"]["D"]["verified_correct_rate"] == 0.25
+
+    cobol_only = client.get("/eval/latest", params={"corpus": "cobol"}).json()
+    assert cobol_only["corpus"] == "cobol"
+
+    missing = client.get("/eval/latest", params={"corpus": "nonexistent"}).json()
+    assert "error" in missing
+
+
 def test_post_task_returns_task_id_and_stream_emits_full_event_sequence():
     client = _client()
     resp = client.post("/task", json={"prompt": "define a platform", "corpus": "stub"})

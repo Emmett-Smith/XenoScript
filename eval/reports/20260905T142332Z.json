@@ -1,0 +1,709 @@
+{
+  "git_sha": "50eb86d23957ea7f76f9edd6313c240c28f5880e",
+  "timestamp": "2026-09-05T14:23:32Z",
+  "corpus": "cobol",
+  "repeat": 1,
+  "model_endpoints": {
+    "A": "http://localhost:11434/v1 (qwen2.5-coder:3b)",
+    "B": "http://localhost:11434/v1 (qwen2.5-coder:3b)",
+    "C": "http://localhost:11434/v1 (qwen2.5-coder:3b)",
+    "D": "http://localhost:11434/v1 (qwen2.5-coder:3b)"
+  },
+  "arms": {
+    "A": {
+      "arm": "A",
+      "n_runs": 10,
+      "verified_correct_rate": 0.5,
+      "first_attempt_pass_rate": 0.5,
+      "wall_clock_p50_s": 9.22,
+      "wall_clock_p95_s": 13.61,
+      "tool_calls_mean": 0,
+      "error_code_histogram": {},
+      "unresolved_count": 5
+    },
+    "B": {
+      "arm": "B",
+      "n_runs": 10,
+      "verified_correct_rate": 0.9,
+      "first_attempt_pass_rate": 0.9,
+      "wall_clock_p50_s": 9.81,
+      "wall_clock_p95_s": 38.69,
+      "tool_calls_mean": 0,
+      "error_code_histogram": {},
+      "unresolved_count": 1
+    },
+    "C": {
+      "arm": "C",
+      "n_runs": 10,
+      "verified_correct_rate": 0.2,
+      "first_attempt_pass_rate": 0.2,
+      "wall_clock_p50_s": 7.93,
+      "wall_clock_p95_s": 10.94,
+      "tool_calls_mean": 8,
+      "error_code_histogram": {},
+      "unresolved_count": 8
+    },
+    "D": {
+      "arm": "D",
+      "n_runs": 10,
+      "verified_correct_rate": 0.2,
+      "first_attempt_pass_rate": 0.2,
+      "wall_clock_p50_s": 53.93,
+      "wall_clock_p95_s": 85.49,
+      "tool_calls_mean": 15,
+      "error_code_histogram": {},
+      "unresolved_count": 8,
+      "mean_iterations_to_verified": 1
+    }
+  },
+  "cases_examples_only": {
+    "arm": "D_examples_only",
+    "n_runs": 0,
+    "verified_correct_rate": 0.0,
+    "first_attempt_pass_rate": 0.0,
+    "wall_clock_p50_s": 0.0,
+    "wall_clock_p95_s": 0.0,
+    "tool_calls_mean": 0.0,
+    "error_code_histogram": {},
+    "unresolved_count": 0
+  },
+  "raw": {
+    "A": [
+      {
+        "case_id": "001",
+        "ok": false,
+        "reason": "trace_mismatch",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 10.18,
+        "error_codes": [],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 7.45,
+        "error_codes": [],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 7.6,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "truncation"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 13.45,
+        "error_codes": [],
+        "tags": [
+          "arithmetic",
+          "compute"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 13.61,
+        "error_codes": [],
+        "tags": [
+          "arithmetic",
+          "add_giving"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "trace_mismatch",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 9.19,
+        "error_codes": [],
+        "tags": [
+          "arithmetic",
+          "subtract"
+        ]
+      },
+      {
+        "case_id": "007",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 9.22,
+        "error_codes": [
+          null,
+          null
+        ],
+        "tags": [
+          "conditional"
+        ]
+      },
+      {
+        "case_id": "008",
+        "ok": false,
+        "reason": "missing_required_text:'TIMES'",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 7.31,
+        "error_codes": [],
+        "tags": [
+          "loop",
+          "perform_times"
+        ]
+      },
+      {
+        "case_id": "009",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 12.18,
+        "error_codes": [
+          null,
+          null
+        ],
+        "tags": [
+          "loop",
+          "perform_varying"
+        ]
+      },
+      {
+        "case_id": "010",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 5.15,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "missing_period"
+        ]
+      }
+    ],
+    "B": [
+      {
+        "case_id": "001",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 38.69,
+        "error_codes": [],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 6.85,
+        "error_codes": [],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 7.78,
+        "error_codes": [],
+        "tags": [
+          "gotcha",
+          "truncation"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 12.53,
+        "error_codes": [],
+        "tags": [
+          "arithmetic",
+          "compute"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 15.52,
+        "error_codes": [],
+        "tags": [
+          "arithmetic",
+          "add_giving"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 9.65,
+        "error_codes": [],
+        "tags": [
+          "arithmetic",
+          "subtract"
+        ]
+      },
+      {
+        "case_id": "007",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 9.81,
+        "error_codes": [],
+        "tags": [
+          "conditional"
+        ]
+      },
+      {
+        "case_id": "008",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 6.44,
+        "error_codes": [],
+        "tags": [
+          "loop",
+          "perform_times"
+        ]
+      },
+      {
+        "case_id": "009",
+        "ok": false,
+        "reason": "trace_mismatch",
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 13.25,
+        "error_codes": [],
+        "tags": [
+          "loop",
+          "perform_varying"
+        ]
+      },
+      {
+        "case_id": "010",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 0,
+        "wall_clock_s": 4.28,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "missing_period"
+        ]
+      }
+    ],
+    "C": [
+      {
+        "case_id": "001",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 7.93,
+        "error_codes": [],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 6.21,
+        "error_codes": [
+          null
+        ],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 4.5,
+        "error_codes": [
+          null
+        ],
+        "tags": [
+          "gotcha",
+          "truncation"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 7.8,
+        "error_codes": [
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "arithmetic",
+          "compute"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 9.14,
+        "error_codes": [
+          null,
+          null
+        ],
+        "tags": [
+          "arithmetic",
+          "add_giving"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 6.74,
+        "error_codes": [
+          null
+        ],
+        "tags": [
+          "arithmetic",
+          "subtract"
+        ]
+      },
+      {
+        "case_id": "007",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 7.73,
+        "error_codes": [
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "conditional"
+        ]
+      },
+      {
+        "case_id": "008",
+        "ok": false,
+        "reason": "missing_required_text:'TIMES'",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 9.05,
+        "error_codes": [],
+        "tags": [
+          "loop",
+          "perform_times"
+        ]
+      },
+      {
+        "case_id": "009",
+        "ok": false,
+        "reason": "compile_failed",
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 10.94,
+        "error_codes": [
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "loop",
+          "perform_varying"
+        ]
+      },
+      {
+        "case_id": "010",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 8,
+        "wall_clock_s": 10.73,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "missing_period"
+        ]
+      }
+    ],
+    "D": [
+      {
+        "case_id": "001",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 15,
+        "wall_clock_s": 10.49,
+        "error_codes": [],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "002",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 45.59,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "basic"
+        ]
+      },
+      {
+        "case_id": "003",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 33.91,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "gotcha",
+          "truncation"
+        ]
+      },
+      {
+        "case_id": "004",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 85.49,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "arithmetic",
+          "compute"
+        ]
+      },
+      {
+        "case_id": "005",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 78.43,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "arithmetic",
+          "add_giving"
+        ]
+      },
+      {
+        "case_id": "006",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 57.68,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "arithmetic",
+          "subtract"
+        ]
+      },
+      {
+        "case_id": "007",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 53.93,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "conditional"
+        ]
+      },
+      {
+        "case_id": "008",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 34.95,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "loop",
+          "perform_times"
+        ]
+      },
+      {
+        "case_id": "009",
+        "ok": false,
+        "reason": "max_iterations",
+        "iterations": 4,
+        "tool_calls": 15,
+        "wall_clock_s": 54.91,
+        "error_codes": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "tags": [
+          "loop",
+          "perform_varying"
+        ]
+      },
+      {
+        "case_id": "010",
+        "ok": true,
+        "reason": null,
+        "iterations": 1,
+        "tool_calls": 15,
+        "wall_clock_s": 6.07,
+        "error_codes": [],
+        "tags": [
+          "repair",
+          "missing_period"
+        ]
+      }
+    ]
+  }
+}

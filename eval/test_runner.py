@@ -9,7 +9,31 @@ from ashlar.config import REPO_ROOT, load_corpus_meta
 from ashlar.harness.loop import Corpus
 from ashlar.harness.model import FakeModel
 from ashlar.mcp import server as mcp_server
-from eval.runner import ARMS, cases_dir_for, load_cases, run_arm, summarize
+from eval.runner import ARMS, build_report, cases_dir_for, load_cases, run_arm, summarize
+
+
+def test_build_report_records_the_corpus_actually_tested_not_configs_default():
+    """Real bug found live: build_report recorded cfg.corpus (config.yaml's
+    static default, "plinth") instead of the corpus --corpus actually
+    tested. Ran a COBOL sweep on a machine still configured to default to
+    plinth, and the report came back labeled "plinth" -- the frontend's
+    baseline chart then rendered COBOL's real numbers under the PLINTH
+    header on screen. cfg.corpus stays "plinth" here on purpose, to prove
+    corpus_name (not cfg) is what ends up in the report."""
+    from ashlar.config import load_config
+
+    cfg = load_config()
+    assert cfg.corpus == "plinth"  # the actual default this bug depended on
+    report = build_report({}, cfg, {}, repeat=1, corpus_name="cobol")
+    assert report["corpus"] == "cobol"
+
+
+def test_build_report_falls_back_to_cfg_corpus_when_none_given():
+    from ashlar.config import load_config
+
+    cfg = load_config()
+    report = build_report({}, cfg, {}, repeat=1)
+    assert report["corpus"] == cfg.corpus
 
 
 def test_cases_dir_for_falls_back_to_flat_dir_when_no_per_corpus_set_exists():

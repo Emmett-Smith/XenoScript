@@ -162,6 +162,7 @@ export default function App() {
           failedReason={state.failedReason}
           citations={state.citations}
           runOutput={state.runOutput}
+          corpusName={active?.name ?? null}
         />
       </div>
 

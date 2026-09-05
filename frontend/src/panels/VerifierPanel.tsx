@@ -46,6 +46,7 @@ export function VerifierPanel({
   failedReason,
   citations,
   runOutput,
+  corpusName,
 }: {
   verdict: VerdictState;
   iteration: number;
@@ -56,6 +57,7 @@ export function VerifierPanel({
   failedReason: string | null;
   citations: Citation[];
   runOutput: { stdout: string; stderr: string; ok: boolean; errors: VerifyError[] } | null;
+  corpusName: string | null;
 }) {
   const showCurrentError = errors.length > 0 && verdict !== "verified";
 
@@ -98,7 +100,7 @@ export function VerifierPanel({
 
       <TerminalPanel runOutput={runOutput} />
 
-      <BaselineChart />
+      <BaselineChart corpusName={corpusName} />
     </div>
   );
 }
