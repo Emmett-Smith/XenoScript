@@ -1,0 +1,5 @@
+# E041: dimensional mismatch -- altitude expects length, not time.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+  set altitude = 5s
+end_platform

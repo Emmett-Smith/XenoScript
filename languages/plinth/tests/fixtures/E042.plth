@@ -1,0 +1,10 @@
+# E042: angle unit conflicts with the scenario's angle_mode (rad).
+define scenario s1
+  set duration = 10s
+  set step = 1s
+  set angle_mode = rad
+end_scenario
+
+define platform uav_01 type air
+  position at 1.00deg 2.00deg
+end_platform

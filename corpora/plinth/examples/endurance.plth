@@ -1,0 +1,23 @@
+# endurance.plth -- demonstrates: every ... for + a long-duration
+# scenario.
+define scenario endurance_flight
+  set duration = 3600s
+  set step = 5s
+end_scenario
+
+define platform uav_30 type air
+  position at 0.00deg 0.00deg
+  set altitude = 5000m
+  set speed = 45mps
+end_platform
+
+define sensor radar_d type radar
+  bind mount <- uav_30
+  set range_max = 90000m
+end_sensor
+
+execute
+  at 10s spawn uav_30
+  at 10s activate radar_d
+  every 600s for 3600s report radar_d
+end_execute

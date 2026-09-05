@@ -1,0 +1,17 @@
+# emitter.plth -- demonstrates: the signal block (semantics undocumented
+# in the manual on purpose, 01_LANGUAGE.md Sec 9).
+define scenario emitter_test
+  set duration = 20s
+  set step = 1s
+end_scenario
+
+define signal beacon_1
+  set frequency = 2400mhz
+  set bandwidth = 20mhz
+  set power = 5w
+  set modulation = "QPSK"
+end_signal
+
+execute
+  at 1s trace "signal beacon_1 configured"
+end_execute

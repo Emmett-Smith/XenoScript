@@ -1,0 +1,4 @@
+Make a scenario called ferry_run, 25 seconds, 1 second step, with one
+air platform cargo_1 starting at 0,0 degrees, 1000m altitude, 50 m/s.
+Define a route ferry_path with two waypoints: (1,1 degrees, 1000m) and
+(2,2 degrees, 1100m). At 1 second, spawn cargo_1 onto that route.

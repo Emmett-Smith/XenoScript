@@ -1,0 +1,4 @@
+Scenario repeated_sweep, 25 seconds, 1 second step. Air platform uav_d
+at 6,6 degrees, 1500m altitude, with radar sensor radar_sweep (range
+40000m). Spawn and activate at 1 second, then have it report every 5
+seconds for a 20 second window.

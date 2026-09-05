@@ -1,0 +1,9 @@
+# E030: spatial 'at' used inside execute (only temporal 'at' is legal there).
+define scenario s1
+  set duration = 10s
+  set step = 1s
+end_scenario
+
+execute
+  position at 1.00deg 1.00deg
+end_execute

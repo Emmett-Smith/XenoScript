@@ -1,0 +1,47 @@
+# multi_sensor.plth -- demonstrates: 4 sensors on one platform, priority.
+define scenario multi
+  set duration = 30s
+  set step = 1s
+end_scenario
+
+define platform uav_60 type air
+  position at 20.00deg 20.00deg
+  set altitude = 4000m
+  set speed = 70mps
+end_platform
+
+define sensor radar_e type radar
+  bind mount <- uav_60
+  set range_max = 100000m
+  set priority = 1
+end_sensor
+
+define sensor eo_b type eo
+  bind mount <- uav_60
+  set range_max = 12000m
+  set priority = 2
+end_sensor
+
+define sensor ir_b type ir
+  bind mount <- uav_60
+  set range_max = 18000m
+  set priority = 3
+end_sensor
+
+define sensor esm_b type esm
+  bind mount <- uav_60
+  set range_max = 60000m
+  set priority = 4
+end_sensor
+
+execute
+  at 1s spawn uav_60
+  at 2s activate radar_e
+  at 2s activate eo_b
+  at 2s activate ir_b
+  at 2s activate esm_b
+  at 15s report radar_e
+  at 15s report eo_b
+  at 15s report ir_b
+  at 15s report esm_b
+end_execute

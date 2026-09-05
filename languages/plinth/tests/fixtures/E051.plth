@@ -1,0 +1,6 @@
+# E051: attribute not permitted in this block -- 'frequency' is real, but
+# only legal on a signal block, not a platform.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+  set frequency = 100mhz
+end_platform

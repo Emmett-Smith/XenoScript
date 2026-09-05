@@ -1,0 +1,4 @@
+Set up a scenario twin_flight, 12 seconds, 1 second step. Platform
+lead_1 is an air platform at 8,8 degrees, 1200m altitude, 40 m/s speed.
+I want a second platform wing_1 that inherits everything from lead_1 but
+flies 200m higher (1400m). Spawn both at 1 second.

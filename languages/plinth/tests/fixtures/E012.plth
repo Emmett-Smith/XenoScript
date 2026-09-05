@@ -1,0 +1,14 @@
+# E012: forward reference not permitted -- uav_02 inherits from uav_03,
+# which is defined later in the file. Reorder or use bind instead.
+define scenario s1
+  set duration = 10s
+  set step = 1s
+end_scenario
+
+define platform uav_02 type air
+  inherit from uav_03
+end_platform
+
+define platform uav_03 type air
+  position at 1.00deg 1.00deg
+end_platform

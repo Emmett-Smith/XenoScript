@@ -1,0 +1,4 @@
+[t=0.000] scenario clean_stop start step=1.000 duration=12.000
+[t=1.000] trace "starting run"
+[t=12.000] halt
+[t=12.000] scenario end status=ok

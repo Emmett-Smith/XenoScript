@@ -1,0 +1,28 @@
+# ground_net.plth -- demonstrates: ground + surface platforms together.
+define scenario ground_net
+  set duration = 30s
+  set step = 1s
+end_scenario
+
+define platform station_1 type ground
+  position at 40.00deg -105.00deg
+  set altitude = 1600m
+end_platform
+
+define platform buoy_1 type surface
+  position at 40.10deg -105.10deg
+  set altitude = 0m
+  set speed = 2mps
+end_platform
+
+define sensor acoustic_a type acoustic
+  bind mount <- buoy_1
+  set range_max = 8000m
+end_sensor
+
+execute
+  at 1s spawn station_1
+  at 1s spawn buoy_1
+  at 3s activate acoustic_a
+  at 10s report acoustic_a
+end_execute

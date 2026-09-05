@@ -1,0 +1,5 @@
+# E022: 'set' used on a reference -- should use 'bind' instead.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+  set primary_sensor = radar_b
+end_platform

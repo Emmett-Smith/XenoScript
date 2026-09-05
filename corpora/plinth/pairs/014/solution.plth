@@ -1,0 +1,21 @@
+define scenario orbit_watch
+  set duration = 30s
+  set step = 5s
+end_scenario
+
+define platform sat_a type space
+  position at 0.00deg 0.00deg
+  set altitude = 25000m
+  set speed = 7600mps
+end_platform
+
+define sensor esm_sat type esm
+  bind mount <- sat_a
+  set range_max = 400000m
+end_sensor
+
+execute
+  at 5s spawn sat_a
+  at 5s activate esm_sat
+  at 20s report esm_sat
+end_execute

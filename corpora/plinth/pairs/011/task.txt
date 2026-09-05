@@ -1,0 +1,4 @@
+Scenario toggle_sensor, 20 seconds, 1 second step. Air platform uav_e
+at 9,9 degrees, 1300m altitude, with an eo sensor eo_toggle (range
+9000m). Spawn at 1s. Activate the sensor at 2s and report at 6s, then
+deactivate it at 8s, reactivate it at 12s, and report again at 15s.

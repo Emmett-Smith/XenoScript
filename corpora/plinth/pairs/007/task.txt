@@ -1,0 +1,4 @@
+I just need a signal definition for now: scenario beacon_test, 10
+seconds, 1 second step. A signal called nav_beacon at 1200mhz, 10mhz
+bandwidth, 8w power, FSK modulation. In the execute block just trace the
+message "nav_beacon online" at 1 second.

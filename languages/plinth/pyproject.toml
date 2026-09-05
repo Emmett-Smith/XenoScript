@@ -1,0 +1,15 @@
+[project]
+name = "plinth"
+version = "0.1.0"
+description = "PLINTH: a synthetic simulation-scenario input-deck language and interpreter."
+requires-python = ">=3.11"
+# Deliberately stdlib-only (01_LANGUAGE.md Sec 7). No runtime dependencies.
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

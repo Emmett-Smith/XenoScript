@@ -1,0 +1,20 @@
+define scenario repeated_sweep
+  set duration = 25s
+  set step = 1s
+end_scenario
+
+define platform uav_d type air
+  position at 6.00deg 6.00deg
+  set altitude = 1500m
+end_platform
+
+define sensor radar_sweep type radar
+  bind mount <- uav_d
+  set range_max = 40000m
+end_sensor
+
+execute
+  at 1s spawn uav_d
+  at 1s activate radar_sweep
+  every 5s for 20s report radar_sweep
+end_execute

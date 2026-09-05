@@ -1,0 +1,5 @@
+# minimal.plth -- demonstrates: the smallest valid scenario.
+define scenario tiny
+  set duration = 10s
+  set step = 1s
+end_scenario

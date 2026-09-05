@@ -1,0 +1,23 @@
+# patrol_pair.plth -- demonstrates: inherit from (examples-only feature,
+# 01_LANGUAGE.md Sec 8). uav_02 copies uav_01's attributes, then overrides
+# altitude.
+define scenario patrol
+  set duration = 30s
+  set step = 1s
+end_scenario
+
+define platform uav_01 type air
+  position at 45.20deg -100.10deg
+  set altitude = 1500m
+  set speed = 35mps
+end_platform
+
+define platform uav_02 type air
+  inherit from uav_01
+  set altitude = 2200m
+end_platform
+
+execute
+  at 1s spawn uav_01
+  at 1s spawn uav_02
+end_execute

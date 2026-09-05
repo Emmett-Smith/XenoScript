@@ -1,0 +1,6 @@
+Write a PLINTH scenario called watch_01 that runs for 20 seconds with a
+1 second step. Add one air platform (uav_a) sitting at 10 degrees
+latitude, 10 degrees longitude, 1000 meters altitude. Give it a radar
+sensor called radar_x with a 50000 meter max range, mounted on uav_a.
+In the execute timeline: spawn uav_a and activate radar_x at 2 seconds,
+then have radar_x report at 8 seconds.

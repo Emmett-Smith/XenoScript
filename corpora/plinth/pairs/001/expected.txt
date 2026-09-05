@@ -1,0 +1,5 @@
+[t=0.000] scenario watch_01 start step=1.000 duration=20.000
+[t=2.000] spawn uav_a pos=10.0000,10.0000 alt=1000.000
+[t=2.000] activate radar_x on uav_a
+[t=8.000] report radar_x range_max=50000.000 detections=0
+[t=20.000] scenario end status=ok

@@ -1,0 +1,15 @@
+define scenario beacon_test
+  set duration = 10s
+  set step = 1s
+end_scenario
+
+define signal nav_beacon
+  set frequency = 1200mhz
+  set bandwidth = 10mhz
+  set power = 8w
+  set modulation = "FSK"
+end_signal
+
+execute
+  at 1s trace "nav_beacon online"
+end_execute

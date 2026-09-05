@@ -1,0 +1,11 @@
+[t=0.000] scenario multi start step=1.000 duration=30.000
+[t=1.000] spawn uav_60 pos=20.0000,20.0000 alt=4000.000
+[t=2.000] activate radar_e on uav_60
+[t=2.000] activate eo_b on uav_60
+[t=2.000] activate ir_b on uav_60
+[t=2.000] activate esm_b on uav_60
+[t=15.000] report radar_e range_max=100000.000 detections=0
+[t=15.000] report eo_b range_max=12000.000 detections=0
+[t=15.000] report ir_b range_max=18000.000 detections=0
+[t=15.000] report esm_b range_max=60000.000 detections=0
+[t=30.000] scenario end status=ok

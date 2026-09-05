@@ -1,0 +1,18 @@
+[t=0.000] scenario grand_tour start step=1.000 duration=90.000
+[t=1.000] spawn uav_70 pos=36.0000,-121.0000 alt=2500.000
+[t=1.000] spawn uav_71 pos=36.0000,-121.0000 alt=3100.000
+[t=1.000] spawn station_2 pos=36.0500,-121.0500 alt=15.000
+[t=1.000] spawn buoy_2 pos=36.0200,-121.0200 alt=0.000
+[t=2.000] activate radar_f on uav_70
+[t=2.000] activate eo_c on uav_71
+[t=3.000] activate acoustic_b on buoy_2
+[t=15.000] report radar_f range_max=90000.000 detections=0
+[t=20.000] report eo_c range_max=20000.000 detections=0
+[t=25.000] report acoustic_b range_max=6000.000 detections=0
+[t=30.000] report radar_f range_max=90000.000 detections=0
+[t=40.000] deactivate eo_c
+[t=41.000] trace "eo_c deactivated for maintenance window"
+[t=45.000] report radar_f range_max=90000.000 detections=0
+[t=60.000] report radar_f range_max=90000.000 detections=0
+[t=90.000] halt
+[t=90.000] scenario end status=ok

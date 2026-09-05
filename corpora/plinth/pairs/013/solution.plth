@@ -1,0 +1,20 @@
+define scenario cross_ref
+  set duration = 14s
+  set step = 1s
+end_scenario
+
+define platform uav_g type air
+  position at 22.00deg 22.00deg
+  set altitude = 1600m
+  bind escort <- station_g
+end_platform
+
+define platform station_g type ground
+  position at 22.05deg 22.05deg
+  set altitude = 5m
+end_platform
+
+execute
+  at 1s spawn uav_g
+  at 1s spawn station_g
+end_execute

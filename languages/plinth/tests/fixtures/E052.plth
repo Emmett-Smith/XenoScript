@@ -1,0 +1,4 @@
+# E052: required attribute missing -- platform never sets 'position'.
+define platform uav_01 type air
+  set altitude = 1500m
+end_platform

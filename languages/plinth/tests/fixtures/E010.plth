@@ -1,0 +1,8 @@
+# E010: duplicate definition -- two platforms named uav_01.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+end_platform
+
+define platform uav_01 type ground
+  position at 2.00deg 2.00deg
+end_platform

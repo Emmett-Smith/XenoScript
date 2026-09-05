@@ -1,0 +1,23 @@
+# space_track.plth -- demonstrates: a space platform with large ranges.
+define scenario space_track
+  set duration = 120s
+  set step = 5s
+end_scenario
+
+define platform sat_1 type space
+  position at 0.00deg 0.00deg
+  set altitude = 20000m
+  set speed = 7500mps
+end_platform
+
+define sensor esm_c type esm
+  bind mount <- sat_1
+  set range_max = 500000m
+  set gain = 40w
+end_sensor
+
+execute
+  at 5s spawn sat_1
+  at 5s activate esm_c
+  at 60s report esm_c
+end_execute

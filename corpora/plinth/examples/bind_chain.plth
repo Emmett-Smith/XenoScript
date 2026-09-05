@@ -1,0 +1,30 @@
+# bind_chain.plth -- demonstrates: multiple binds across blocks (both
+# the required 'mount' reference and an arbitrary user-named reference).
+define scenario chain
+  set duration = 25s
+  set step = 1s
+end_scenario
+
+define platform uav_50 type ground
+  position at 33.00deg -117.00deg
+  set altitude = 0m
+end_platform
+
+define sensor esm_a type esm
+  bind mount <- uav_50
+  set range_max = 25000m
+end_sensor
+
+define platform uav_51 type air
+  position at 33.10deg -117.10deg
+  set altitude = 1800m
+  bind primary_sensor <- esm_a
+  bind escort <- uav_50
+end_platform
+
+execute
+  at 1s spawn uav_50
+  at 1s spawn uav_51
+  at 2s activate esm_a
+  at 5s report esm_a
+end_execute

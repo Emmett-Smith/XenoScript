@@ -1,0 +1,23 @@
+# coastal.plth -- demonstrates: single air platform + radar sensor,
+# bind to link the sensor to its platform, and a basic execute timeline.
+define scenario coastal_watch
+  set duration = 60s
+  set step = 0.5s
+end_scenario
+
+define platform uav_01 type air
+  position at 45.20deg -100.10deg
+  set altitude = 1500m
+  set speed = 40mps
+end_platform
+
+define sensor radar_a type radar
+  bind mount <- uav_01
+  set range_max = 80000m
+end_sensor
+
+execute
+  at 5s spawn uav_01
+  at 5s activate radar_a
+  at 10s report radar_a
+end_execute

@@ -1,0 +1,20 @@
+define scenario shore_watch
+  set duration = 18s
+  set step = 1s
+end_scenario
+
+define platform post_1 type ground
+  position at 41.00deg -70.00deg
+  set altitude = 20m
+end_platform
+
+define platform float_1 type surface
+  position at 41.05deg -70.05deg
+  set altitude = 0m
+  set speed = 1.5mps
+end_platform
+
+execute
+  at 1s spawn post_1
+  at 1s spawn float_1
+end_execute

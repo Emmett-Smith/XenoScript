@@ -1,0 +1,10 @@
+[t=0.000] scenario endurance_flight start step=5.000 duration=3600.000
+[t=10.000] spawn uav_30 pos=0.0000,0.0000 alt=5000.000
+[t=10.000] activate radar_d on uav_30
+[t=600.000] report radar_d range_max=90000.000 detections=0
+[t=1200.000] report radar_d range_max=90000.000 detections=0
+[t=1800.000] report radar_d range_max=90000.000 detections=0
+[t=2400.000] report radar_d range_max=90000.000 detections=0
+[t=3000.000] report radar_d range_max=90000.000 detections=0
+[t=3600.000] report radar_d range_max=90000.000 detections=0
+[t=3600.000] scenario end status=ok

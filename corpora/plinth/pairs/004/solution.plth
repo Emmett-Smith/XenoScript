@@ -1,0 +1,25 @@
+define scenario ferry_run
+  set duration = 25s
+  set step = 1s
+end_scenario
+
+define platform cargo_1 type air
+  position at 0.00deg 0.00deg
+  set altitude = 1000m
+  set speed = 50mps
+end_platform
+
+define route ferry_path
+  waypoint
+    position at 1.00deg 1.00deg
+    set altitude = 1000m
+  end_waypoint
+  waypoint
+    position at 2.00deg 2.00deg
+    set altitude = 1100m
+  end_waypoint
+end_route
+
+execute
+  at 1s spawn cargo_1 on route ferry_path
+end_execute

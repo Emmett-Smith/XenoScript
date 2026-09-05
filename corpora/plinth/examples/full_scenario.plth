@@ -1,0 +1,97 @@
+# full_scenario.plth -- demonstrates: everything combined. angle_mode,
+# multiple platform types, inherit, bind (both required 'mount' and an
+# arbitrary reference), a route, a signal block, and a rich execute
+# timeline mixing at / every-for.
+define scenario grand_tour
+  set duration = 90s
+  set step = 1s
+  set angle_mode = deg
+  set label = "full combined scenario"
+  set tolerance = 5
+end_scenario
+
+define platform uav_70 type air
+  position at 36.00deg -121.00deg
+  set altitude = 2500m
+  set speed = 55mps
+  set heading = 90deg
+  set pitch = 2deg
+  set roll = 0deg
+  set label = "lead"
+end_platform
+
+define platform uav_71 type air
+  inherit from uav_70
+  set altitude = 3100m
+  bind primary_sensor <- radar_f
+end_platform
+
+define platform station_2 type ground
+  position at 36.05deg -121.05deg
+  set altitude = 15m
+end_platform
+
+define platform buoy_2 type surface
+  position at 36.02deg -121.02deg
+  set altitude = 0m
+  set speed = 1mps
+end_platform
+
+define sensor radar_f type radar
+  bind mount <- uav_70
+  set range_max = 90000m
+  set aperture = 1.2m
+  set gain = 30w
+  set noise_floor = 2w
+  set scan_rate = 4hz
+  set field_of_view = 120
+  set priority = 1
+  set label = "primary search radar"
+end_sensor
+
+define sensor eo_c type eo
+  bind mount <- uav_71
+  set range_max = 20000m
+  set priority = 2
+end_sensor
+
+define sensor acoustic_b type acoustic
+  bind mount <- buoy_2
+  set range_max = 6000m
+end_sensor
+
+define route survey_leg
+  waypoint
+    position at 36.10deg -121.10deg
+    set altitude = 2500m
+  end_waypoint
+  waypoint
+    position at 36.20deg -121.20deg
+    set altitude = 2700m
+    set speed = 58mps
+  end_waypoint
+end_route
+
+define signal tower_beacon
+  set frequency = 900mhz
+  set bandwidth = 5mhz
+  set power = 10w
+  set modulation = "FM"
+  set label = "coastal tower beacon"
+end_signal
+
+execute
+  at 1s spawn uav_70
+  at 1s spawn uav_71
+  at 1s spawn station_2
+  at 1s spawn buoy_2 on route survey_leg
+  at 2s activate radar_f
+  at 2s activate eo_c
+  at 3s activate acoustic_b
+  every 15s for 60s report radar_f
+  at 20s report eo_c
+  at 25s report acoustic_b
+  at 40s deactivate eo_c
+  at 41s trace "eo_c deactivated for maintenance window"
+  at 90s halt
+end_execute

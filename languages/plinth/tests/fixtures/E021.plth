@@ -1,0 +1,5 @@
+# E021: bind target must be an identifier, not a quantity.
+define platform uav_01 type air
+  position at 1.00deg 1.00deg
+  bind primary_sensor <- 5m
+end_platform

@@ -1,0 +1,17 @@
+# radians.plth -- demonstrates: angle_mode rad enforced consistently
+# throughout the whole file (01_LANGUAGE.md Sec 5.3).
+define scenario rad_scenario
+  set duration = 15s
+  set step = 1s
+  set angle_mode = rad
+end_scenario
+
+define platform uav_40 type air
+  position at 0.7854rad -1.2217rad
+  set altitude = 2000m
+  set heading = 1.5708rad
+end_platform
+
+execute
+  at 1s spawn uav_40
+end_execute

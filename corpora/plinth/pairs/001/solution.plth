@@ -1,0 +1,20 @@
+define scenario watch_01
+  set duration = 20s
+  set step = 1s
+end_scenario
+
+define platform uav_a type air
+  position at 10.00deg 10.00deg
+  set altitude = 1000m
+end_platform
+
+define sensor radar_x type radar
+  bind mount <- uav_a
+  set range_max = 50000m
+end_sensor
+
+execute
+  at 2s spawn uav_a
+  at 2s activate radar_x
+  at 8s report radar_x
+end_execute

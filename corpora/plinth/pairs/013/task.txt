@@ -1,0 +1,5 @@
+Scenario cross_ref, 14 seconds, 1 second step. Air platform uav_g at
+22,22 degrees, 1600m altitude -- it should have a reference called
+escort pointing at a ground platform station_g (22.05,22.05 degrees,
+5m altitude), which is defined after uav_g in the file. Spawn both at
+1 second.
