@@ -1,0 +1,3 @@
+Write a COBOL program named COUNTDOWN that uses PERFORM UNTIL to display
+the numbers 5 down to 1, one per line, each preceded by "REMAINING: ",
+then displays the line "DONE COUNTING".

@@ -1,0 +1,3 @@
+Write a COBOL program named INVENTORY with a WORKING-STORAGE numeric
+field WS-STOCK-COUNT, PIC 9(4), set to 50. Subtract 12 from it, then
+display the line "STOCK: " immediately followed by the result.

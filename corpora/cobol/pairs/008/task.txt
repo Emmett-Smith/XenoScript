@@ -1,0 +1,3 @@
+Write a COBOL program named PARAGREET with a paragraph named SAY-HELLO
+that displays "HELLO FROM PARAGREET". In the main procedure, display
+"BEGIN", perform SAY-HELLO 3 times, then display "END".
