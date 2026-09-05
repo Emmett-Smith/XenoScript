@@ -416,8 +416,16 @@ hr, .rule {
   color: var(--ink);
 }
 
-.terminal-stderr {
+.terminal-stderr.fault {
+  /* real run failure: stderr is the error, render as alarming */
   color: var(--fault);
+}
+
+.terminal-stderr.ok {
+  /* run succeeded (ok: true); stderr is a compiler being pedantic
+     (e.g. GnuCOBOL's missing-newline warning), not a failure --
+     same treatment as other secondary/non-alarming text */
+  color: var(--dim);
 }
 
 /* ---------- Baseline chart ---------- */

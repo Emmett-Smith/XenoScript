@@ -36,7 +36,11 @@ export function TerminalPanel({ runOutput }: { runOutput: RunOutput | null }) {
       <h3>Output</h3>
       <div className={`terminal-body ${runOutput.ok ? "ok" : "fault"}`}>
         {hasStdout && <pre className="terminal-stdout">{runOutput.stdout}</pre>}
-        {hasStderr && <pre className="terminal-stderr">{runOutput.stderr}</pre>}
+        {hasStderr && (
+          <pre className={`terminal-stderr ${runOutput.ok ? "ok" : "fault"}`}>
+            {runOutput.stderr}
+          </pre>
+        )}
         {!hasStdout && !hasStderr && (
           <div className="terminal-empty">{reason || "(no stdout)"}</div>
         )}
