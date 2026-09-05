@@ -1,0 +1,22 @@
+# sweep_test.plth -- demonstrates: every ... for (examples-only feature,
+# 01_LANGUAGE.md Sec 8) -- a repeated report on a fixed window.
+define scenario sweep
+  set duration = 30s
+  set step = 1s
+end_scenario
+
+define platform uav_20 type air
+  position at 5.00deg 5.00deg
+  set altitude = 1000m
+end_platform
+
+define sensor radar_c type radar
+  bind mount <- uav_20
+  set range_max = 50000m
+end_sensor
+
+execute
+  at 1s spawn uav_20
+  at 1s activate radar_c
+  every 5s for 20s report radar_c
+end_execute

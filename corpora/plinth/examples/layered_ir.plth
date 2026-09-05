@@ -1,0 +1,37 @@
+# layered_ir.plth -- demonstrates: inherit + multiple sensor types on
+# related platforms.
+define scenario layered
+  set duration = 45s
+  set step = 1s
+end_scenario
+
+define platform uav_10 type air
+  position at 12.50deg -30.00deg
+  set altitude = 3000m
+  set speed = 60mps
+end_platform
+
+define platform uav_11 type air
+  inherit from uav_10
+  set altitude = 3500m
+end_platform
+
+define sensor ir_a type ir
+  bind mount <- uav_10
+  set range_max = 20000m
+  set aperture = 0.5m
+end_sensor
+
+define sensor eo_a type eo
+  bind mount <- uav_11
+  set range_max = 15000m
+end_sensor
+
+execute
+  at 1s spawn uav_10
+  at 1s spawn uav_11
+  at 2s activate ir_a
+  at 2s activate eo_a
+  at 20s report ir_a
+  at 20s report eo_a
+end_execute
