@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XenoScript — verified AI for languages no model has ever seen</title>
+<meta name="description" content="XenoScript is an AI coding assistant for undocumented languages like MUMPS and COBOL. It never shows you code it hasn't already compiled and run." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="crt-overlay" aria-hidden="true"></div>
+<div class="progress-rail" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+
+<nav class="nav">
+  <a href="#top" class="nav-brand"><span class="dot">&#9679;</span>XenoScript</a>
+  <div class="nav-links">
+    <a class="btn btn-ghost" href="GETTING_STARTED.html">Getting Started</a>
+    <a class="btn btn-primary" href="https://github.com/Emmett-Smith/XenoScript/releases/download/v0.0.1/xenoscript-mumps-assistant-0.0.1.vsix">Download Extension</a>
+  </div>
+</nav>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow reveal">AI coding assistant &middot; verified, not guessed</p>
+        <h1 class="reveal">It never shows you code it hasn't <span class="accent">already run.</span></h1>
+        <p class="lede reveal" style="--d:0.08s">XenoScript pairs a local model with a real compiler or interpreter for languages no AI has ever reliably seen &mdash; MUMPS, the decades-old language still running the VA's and Epic's electronic health records, and COBOL alongside it. Every suggestion is generated, executed for real, and repaired on failure before you ever see it.</p>
+        <div class="btn-row reveal" style="--d:0.16s">
+          <a class="btn btn-primary" href="https://github.com/Emmett-Smith/XenoScript/releases/download/v0.0.1/xenoscript-mumps-assistant-0.0.1.vsix">&#9660; Download Extension</a>
+          <a class="btn btn-ghost" href="GETTING_STARTED.html">Getting Started &rarr;</a>
+        </div>
+        <p class="hero-note reveal" style="--d:0.22s">Runs fully offline. No fine-tuning. Adding a language means adding a corpus folder, not writing new code.</p>
+      </div>
+
+      <div class="terminal reveal" style="--d:0.1s">
+        <div class="terminal-bar">
+          <div class="lights"><span></span><span></span><span></span></div>
+          corpus: mumps &middot; qwen2.5-coder:3b &middot; offline
+        </div>
+        <div class="terminal-body" id="termBody" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROBLEM / NUMBERS ============ -->
+  <section id="problem" class="problem">
+    <div class="wrap problem-grid">
+      <div>
+        <p class="eyebrow reveal">Why this exists</p>
+        <h2 class="reveal">No model was trained on your hospital's 40-year-old scripting language.</h2>
+        <p class="lede reveal" style="--d:0.08s">MUMPS is almost undocumented in public, and the developer pool that knows it is shrinking fast. General-purpose AI assistants hallucinate its syntax constantly &mdash; they've barely seen it. XenoScript doesn't fix that with a bigger model. It wraps whatever local model you already have in a loop that checks its own work against a real toolchain, every single time.</p>
+      </div>
+
+      <div class="chart-card reveal" style="--d:0.14s">
+        <p class="chart-title">Verified pass rate, measured live &mdash; qwen2.5-coder:3b</p>
+
+        <div class="bar-row"><span>Plinth &middot; A</span><div class="bar-track"><div class="bar-fill is-zero" data-w="0"></div></div><span>0%</span></div>
+        <div class="bar-row"><span>Plinth &middot; B</span><div class="bar-track"><div class="bar-fill" data-w="5"></div></div><span>5%</span></div>
+        <div class="bar-row"><span>Plinth &middot; C</span><div class="bar-track"><div class="bar-fill" data-w="20"></div></div><span>20%</span></div>
+        <div class="bar-row"><span>Plinth &middot; D</span><div class="bar-track"><div class="bar-fill" data-w="25"></div></div><span>25%</span></div>
+
+        <p class="chart-foot">Plinth is a synthetic language invented for this project &mdash; provably absent from any model's training data. Arm A (no help at all) sits near 0%, exactly as it should. D is the full retrieve&#8209;verify&#8209;repair loop. The gap between A and D is the entire pitch.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section id="how" class="how">
+    <div class="wrap">
+      <p class="eyebrow reveal">How it actually works</p>
+      <div class="loop-layout">
+        <div>
+          <div class="loop-steps" id="loopSteps">
+            <div class="loop-step" data-step="0">
+              <span class="num">01 &middot; Retrieve</span>
+              <h3>Pull real symbols and examples</h3>
+              <p>Grep the language's own corpus &mdash; docs, real examples, real symbol tables. Nothing here is invented; every citation traces back to a file on disk.</p>
+            </div>
+            <div class="loop-step" data-step="1">
+              <span class="num">02 &middot; Generate</span>
+              <h3>The model drafts a candidate</h3>
+              <p>The local model writes a first attempt, grounded in whatever retrieval actually found for this prompt.</p>
+            </div>
+            <div class="loop-step" data-step="2">
+              <span class="num">03 &middot; Verify</span>
+              <h3>Run it. For real.</h3>
+              <p>The candidate goes through a real compiler or interpreter &mdash; Reference Standard M, GnuCOBOL &mdash; not a guess about whether it would work.</p>
+            </div>
+            <div class="loop-step" data-step="3">
+              <span class="num">04 &middot; Repair</span>
+              <h3>Feed the real error back</h3>
+              <p>A failure's actual compiler output goes back to the model, up to four attempts, until it verifies.</p>
+            </div>
+            <div class="loop-step" data-step="4">
+              <span class="num">05 &middot; Cache</span>
+              <h3>Never solve it twice</h3>
+              <p>A behaviorally-checked solution is cached and only ever cited as an example once it's proven correct against real ground truth &mdash; not just "ran without crashing."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="loop-sticky">
+          <div class="loop-visual reveal" id="loopVisual">
+            <code id="loopVisualCode">&gt; grep_corpus("ELSE")&#10;4 hits &mdash; manual.md:88, pairs/004</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LANGUAGES ============ -->
+  <section id="languages">
+    <div class="wrap">
+      <p class="eyebrow reveal">Supported corpora</p>
+      <h2 class="reveal">Adding a language is a folder, not a fork.</h2>
+      <div class="lang-grid">
+        <div class="lang-card reveal">
+          <span class="tag">Lead demo</span>
+          <h3>MUMPS</h3>
+          <p>Still running much of the VA's, Epic's, and Meditech's electronic health record systems. Decades old, almost no public documentation, no mainstream assistant writes it reliably.</p>
+          <div class="toolchain">Verified against Reference Standard M</div>
+        </div>
+        <div class="lang-card reveal" style="--d:0.06s">
+          <span class="tag">Real-world proof</span>
+          <h3>COBOL</h3>
+          <p>Proves the architecture isn't MUMPS-specific. Here the model already has real training exposure &mdash; a genuinely different, and equally honest, result.</p>
+          <div class="toolchain">Verified against GnuCOBOL (cobc)</div>
+        </div>
+        <div class="lang-card reveal" style="--d:0.12s">
+          <span class="tag">Zero-memorization proof</span>
+          <h3>Plinth</h3>
+          <p>A synthetic language invented for this project. If the loop still works here, it can't be the model quietly remembering the answer.</p>
+          <div class="toolchain">Original architecture-proof corpus</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HONESTY ============ -->
+  <section id="honesty">
+    <div class="wrap">
+      <p class="eyebrow reveal">Built by finding real bugs, not hiding them</p>
+      <h2 class="reveal">Every claim on this page was re-tested live before it was written down.</h2>
+      <div class="honesty-grid">
+        <div class="story-card reveal">
+          <span class="status">Root-caused &amp; fixed</span>
+          <h3>The trailing newline that ate the output</h3>
+          <p>The real interpreter silently discarded the last piped-in line whenever generated source didn't end in a newline &mdash; exit 0, no error, no output. Found by bisecting the exact bytes going over the wire, not by guessing.</p>
+        </div>
+        <div class="story-card reveal" style="--d:0.06s">
+          <span class="status">Root-caused &amp; fixed</span>
+          <h3>The cache that poisoned itself</h3>
+          <p>A structurally-wrong-but-error-free generation could get cached and cited as a "real example" for the next similar prompt &mdash; a silent, self-reinforcing corruption loop. Fixed by only citing solutions checked against real ground truth.</p>
+        </div>
+        <div class="story-card reveal" style="--d:0.12s">
+          <span class="status">Root-caused &amp; fixed</span>
+          <h3>ELSE needs two spaces, not one</h3>
+          <p>A genuine interpreter grammar quirk the small model kept getting wrong even when told the exact fix. Now normalized mechanically, and the corrected source flows all the way back to what you actually see.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="cta" id="cta">
+    <div class="wrap">
+      <p class="eyebrow reveal" style="text-align:center">Try it</p>
+      <h2 class="reveal">Runs on your machine. Verifies against a real toolchain. Shows its work.</h2>
+      <div class="btn-row reveal" style="--d:0.08s">
+        <a class="btn btn-primary" href="https://github.com/Emmett-Smith/XenoScript/releases/download/v0.0.1/xenoscript-mumps-assistant-0.0.1.vsix">&#9660; Download Extension</a>
+        <a class="btn btn-ghost" href="GETTING_STARTED.html">Getting Started &rarr;</a>
+        <a class="btn btn-ghost" href="https://github.com/Emmett-Smith/XenoScript">View source on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>XenoScript &mdash; a hackathon proof of concept. Not a production or clinically-validated tool.</span>
+  <span><a href="https://github.com/Emmett-Smith/XenoScript">github.com/Emmett-Smith/XenoScript</a></span>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>

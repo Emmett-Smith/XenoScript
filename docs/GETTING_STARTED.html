@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Getting Started — XenoScript</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .doc { padding-top: clamp(120px, 16vw, 170px); padding-bottom: 100px; }
+  .doc .wrap { max-width: 760px; }
+  .doc h2 { font-size: 1.5rem; margin: 48px 0 14px; }
+  .doc h2:first-of-type { margin-top: 0; }
+  .doc p, .doc li { color: var(--paper-dim); font-size: 1rem; line-height: 1.65; }
+  .doc ol, .doc ul { padding-left: 22px; }
+  .doc li { margin-bottom: 10px; }
+  .doc li > strong { color: var(--paper); }
+  .doc pre {
+    background: var(--void-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--paper);
+    margin: 14px 0 20px;
+  }
+  .doc code { font-family: var(--mono); font-size: 0.92em; color: var(--paper); }
+  .doc blockquote {
+    margin: 14px 0 20px;
+    padding: 14px 18px;
+    border-left: 2px solid var(--pending);
+    background: var(--void-2);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 13.5px;
+  }
+  .doc-lede { font-size: 1.08rem; color: var(--paper-dim); margin-top: 18px; }
+  .callout {
+    margin-top: 40px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 20px 22px;
+    background: var(--void-2);
+    font-size: 0.92rem;
+    color: var(--paper-dim);
+  }
+  .callout strong { color: var(--paper); }
+</style>
+</head>
+<body>
+
+<div class="crt-overlay" aria-hidden="true"></div>
+<div class="progress-rail" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand"><span class="dot">&#9679;</span>XenoScript</a>
+  <div class="nav-links">
+    <a class="btn btn-ghost" href="index.html">&larr; Back</a>
+    <a class="btn btn-primary" href="https://github.com/Emmett-Smith/XenoScript/releases/download/v0.0.1/xenoscript-mumps-assistant-0.0.1.vsix">Download Extension</a>
+  </div>
+</nav>
+
+<main class="doc">
+  <div class="wrap">
+    <p class="eyebrow">Setup</p>
+    <h1 style="font-size: clamp(2rem, 4vw, 2.7rem);">Getting started with XenoScript</h1>
+    <p class="doc-lede">You just downloaded the extension. Before it does anything, three things need to be running on your machine: a local model (Ollama), the Python backend, and the frontend dev server. The extension itself is a thin sidebar that displays the frontend &mdash; it has no logic of its own. This takes about 10&ndash;15 minutes the first time, mostly waiting on installs.</p>
+
+    <h2>0. What you need</h2>
+    <ul>
+      <li>macOS (Apple Silicon or Intel) or Linux. Windows/WSL untested.</li>
+      <li><a href="https://ollama.com" target="_blank" rel="noopener">Ollama</a> &mdash; runs the local model, fully offline after the first pull.</li>
+      <li><a href="https://docs.astral.sh/uv/" target="_blank" rel="noopener">uv</a> &mdash; Python dependency manager.</li>
+      <li>Node.js 20+ and npm (for the frontend).</li>
+      <li>VS Code.</li>
+    </ul>
+
+    <h2>1. Clone the project</h2>
+    <p>The extension alone can't verify or run any code &mdash; it needs the real backend and toolchains from the GitHub repo.</p>
+    <pre>git clone https://github.com/Emmett-Smith/XenoScript.git
+cd XenoScript</pre>
+
+    <h2>2. Install and start Ollama</h2>
+    <pre>ollama pull qwen2.5-coder:3b     # the model config.yaml is set to use
+ollama serve                     # if it isn't already running as a background service</pre>
+
+    <h2>3. Start the backend</h2>
+    <pre>uv sync
+uv run python -m ashlar.api.server     # http://localhost:8000</pre>
+    <p>Leave this running in its own terminal.</p>
+
+    <h2>4. Start the frontend</h2>
+    <pre>cd frontend
+npm install
+npm run dev                            # http://localhost:5173</pre>
+    <p>Leave this running too. At this point <code>http://localhost:5173</code> already works directly in a browser, no VS Code needed.</p>
+
+    <h2>5. Install the extension</h2>
+    <p>Open the <code>.vsix</code> you downloaded, or from a terminal:</p>
+    <pre>code --install-extension xenoscript-mumps-assistant-0.0.1.vsix</pre>
+    <p>Reload VS Code. Click the XenoScript icon in the Activity Bar &mdash; the sidebar loads the running frontend automatically. If it's blank, check steps 3 and 4 are still running.</p>
+
+    <h2>6. Pick a corpus and try a prompt</h2>
+    <p>The corpus dropdown at the top defaults to <code>plinth</code> (fastest to try, no extra toolchain). To try the two demo languages:</p>
+    <ul>
+      <li><strong>COBOL</strong> &mdash; works immediately with <code>brew install gnucobol</code> (macOS) or <code>apt install gnucobol</code> (Linux). Try:
+        <blockquote>Write a COBOL program named GREETER that displays exactly one line of output: "HELLO, ASHLAR."</blockquote>
+      </li>
+      <li><strong>MUMPS</strong> &mdash; the lead demo, but its interpreter has to be built from source:
+        <pre>git clone https://github.com/Reference-Standard-M/rsm.git /tmp/rsm
+cd /tmp/rsm && make
+mkdir -p &lt;XenoScript repo&gt;/.toolchains/rsm/bin
+cp rsm &lt;XenoScript repo&gt;/.toolchains/rsm/bin/rsm</pre>
+        Then switch the dropdown to <code>mumps</code> and try:
+        <blockquote>Store the string GARCIA,MARIA^45^F in the uppercase global PATIENT under subscript 40, then write it back out.</blockquote>
+      </li>
+    </ul>
+    <p>Switching corpora in the dropdown is live &mdash; no backend restart needed.</p>
+
+    <h2>Troubleshooting</h2>
+    <ul>
+      <li><strong>Sidebar shows nothing / spinner forever</strong> &mdash; confirm <code>curl localhost:8000/corpora</code> and <code>curl localhost:5173</code> both respond. The extension is only a viewer for those two local servers.</li>
+      <li><strong>Model requests time out</strong> &mdash; <code>ollama list</code> should show <code>qwen2.5-coder:3b</code>; <code>ollama serve</code> must be running.</li>
+      <li><strong>MUMPS <code>make</code> failure</strong> &mdash; RSM's own build only supports Linux/macOS; Windows needs WSL.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Honest caveat:</strong> this is a hackathon proof of concept &mdash; a small local model plus a real verify-and-repair loop, not a production or clinically-validated tool.
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span>XenoScript &mdash; a hackathon proof of concept.</span>
+  <span><a href="https://github.com/Emmett-Smith/XenoScript">github.com/Emmett-Smith/XenoScript</a></span>
+</footer>
+
+<script>
+  const progressFill = document.getElementById("progressFill");
+  function updateProgress() {
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - doc.clientHeight;
+    const pct = max > 0 ? Math.min(100, (doc.scrollTop / max) * 100) : 0;
+    progressFill.style.width = pct + "%";
+    progressFill.classList.toggle("done", pct > 99);
+  }
+  document.addEventListener("scroll", () => requestAnimationFrame(updateProgress), { passive: true });
+  updateProgress();
+</script>
+</body>
+</html>
