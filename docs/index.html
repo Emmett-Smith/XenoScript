@@ -59,14 +59,15 @@
       </div>
 
       <div class="chart-card reveal" style="--d:0.14s">
-        <p class="chart-title">Verified pass rate, measured live &mdash; qwen2.5-coder:3b</p>
+        <p class="chart-title">Expected pass rate vs. repair attempts <span class="chart-tag">illustrative, not measured</span></p>
 
-        <div class="bar-row"><span>Plinth &middot; A</span><div class="bar-track"><div class="bar-fill is-zero" data-w="0"></div></div><span>0%</span></div>
-        <div class="bar-row"><span>Plinth &middot; B</span><div class="bar-track"><div class="bar-fill" data-w="5"></div></div><span>5%</span></div>
-        <div class="bar-row"><span>Plinth &middot; C</span><div class="bar-track"><div class="bar-fill" data-w="20"></div></div><span>20%</span></div>
-        <div class="bar-row"><span>Plinth &middot; D</span><div class="bar-track"><div class="bar-fill" data-w="25"></div></div><span>25%</span></div>
+        <div class="bar-row"><span>0 trials</span><div class="bar-track"><div class="bar-fill is-zero" data-w="0"></div></div><span>0%</span></div>
+        <div class="bar-row"><span>5 trials</span><div class="bar-track"><div class="bar-fill" data-w="23"></div></div><span>23%</span></div>
+        <div class="bar-row"><span>25 trials</span><div class="bar-track"><div class="bar-fill" data-w="78"></div></div><span>78%</span></div>
+        <div class="bar-row"><span>50 trials</span><div class="bar-track"><div class="bar-fill" data-w="97"></div></div><span>97%</span></div>
+        <p class="axis-label">iterations (trials) &rarr;</p>
 
-        <p class="chart-foot">Plinth is a synthetic language invented for this project &mdash; provably absent from any model's training data. Arm A (no help at all) sits near 0%, exactly as it should. D is the full retrieve&#8209;verify&#8209;repair loop. The gap between A and D is the entire pitch.</p>
+        <p class="chart-foot">Modeled curve, not a live measurement &mdash; XenoScript's own harness caps real repair attempts at 4 per task. The real, measured number: on Plinth &mdash; a synthetic language invented for this project, provably absent from any model's training data &mdash; the full retrieve&#8209;verify&#8209;repair loop (arm D, single run) scored 25% on qwen2.5-coder:3b, against 0% with no help at all (arm A). Full numbers in LOG.md.</p>
       </div>
     </div>
   </section>
