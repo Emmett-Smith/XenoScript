@@ -255,7 +255,7 @@ h1, h2, h3 {
   margin-bottom: 22px;
 }
 
-.hero h1 .accent { color: var(--pending); }
+.accent { color: var(--pending); }
 
 .hero p.lede {
   font-size: 1.14rem;
@@ -496,6 +496,53 @@ h1, h2, h3 {
 }
 
 .loop-visual code { display: block; white-space: pre-wrap; }
+
+/* ============================================================
+   EXTENSION (VS Code)
+   ============================================================ */
+
+.extension h2 {
+  font-size: clamp(1.9rem, 3.8vw, 2.8rem);
+  line-height: 1.12;
+  max-width: 26ch;
+}
+
+.extension .lede {
+  color: var(--paper-dim);
+  font-size: 1.08rem;
+  margin: 20px 0 40px;
+  max-width: 62ch;
+}
+
+.proof-frame {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--void-2);
+  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.75);
+}
+
+.proof-frame .proof-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #14171c;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--paper-dim);
+}
+
+.proof-frame .proof-bar .lights { display: flex; gap: 6px; margin-right: 8px; }
+.proof-frame .proof-bar .lights span { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+
+.proof-frame img {
+  display: block;
+  width: 100%;
+}
+
+.extension .btn-row { margin-top: 32px; }
 
 /* ============================================================
    LANGUAGES

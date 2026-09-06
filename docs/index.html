@@ -53,9 +53,9 @@
   <section id="problem" class="problem">
     <div class="wrap problem-grid">
       <div>
-        <p class="eyebrow reveal">Why this exists</p>
-        <h2 class="reveal">No model was trained on your hospital's 40-year-old scripting language.</h2>
-        <p class="lede reveal" style="--d:0.08s">MUMPS is almost undocumented in public, and the developer pool that knows it is shrinking fast. General-purpose AI assistants hallucinate its syntax constantly &mdash; they've barely seen it. XenoScript doesn't fix that with a bigger model. It wraps whatever local model you already have in a loop that checks its own work against a real toolchain, every single time.</p>
+        <p class="eyebrow reveal">The insight</p>
+        <h2 class="reveal">We didn't train a bigger model. We gave it a way to <span class="accent">check its own work.</span></h2>
+        <p class="lede reveal" style="--d:0.08s">Retrieve real examples. Generate a candidate. Verify it against a real compiler or interpreter. Repair on failure. Cache what's actually proven &mdash; not just what ran without crashing. XenoScript wraps whatever local model you already have in that loop, every single time, before it ever shows you a line.</p>
       </div>
 
       <div class="chart-card reveal" style="--d:0.14s">
@@ -68,6 +68,25 @@
         <p class="axis-label">iterations (trials) &rarr;</p>
 
         <p class="chart-foot">Modeled curve, not a live measurement &mdash; XenoScript's own harness caps real repair attempts at 4 per task. The real, measured number: on Plinth &mdash; a synthetic language invented for this project, provably absent from any model's training data &mdash; the full retrieve&#8209;verify&#8209;repair loop (arm D, single run) scored 25% on qwen2.5-coder:3b, against 0% with no help at all (arm A). Full numbers in LOG.md.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXTENSION (VS Code) ============ -->
+  <section id="extension" class="extension">
+    <div class="wrap">
+      <p class="eyebrow reveal">Where you actually use it</p>
+      <h2 class="reveal">A real VS Code extension. Not another browser tab.</h2>
+      <p class="lede reveal" style="--d:0.08s">XenoScript docks in VS Code's own sidebar, right next to Chat and Claude Code. Generate, verify, and repair without leaving your editor &mdash; then click <strong>Insert into editor</strong> to drop the verified result straight into your open file, at your cursor. This is the real, unedited window, captured live.</p>
+
+      <div class="proof-frame reveal" style="--d:0.14s">
+        <div class="proof-bar"><div class="lights"><span></span><span></span><span></span></div>Visual Studio Code &middot; real, captured live &middot; xenoscript-demo workspace</div>
+        <img src="assets/vscode-extension.jpg" alt="The XenoScript sidebar docked in VS Code, showing a verified MUMPS result next to the real editor and file explorer" />
+      </div>
+
+      <div class="btn-row reveal" style="--d:0.2s">
+        <a class="btn btn-primary" href="https://github.com/Emmett-Smith/XenoScript/releases/download/v0.0.1/xenoscript-mumps-assistant-0.0.1.vsix">&#9660; Download Extension</a>
+        <a class="btn btn-ghost" href="GETTING_STARTED.html">Getting Started &rarr;</a>
       </div>
     </div>
   </section>
