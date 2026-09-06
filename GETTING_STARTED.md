@@ -77,7 +77,8 @@ demo languages:
   `brew install gnucobol` (macOS) or `apt install gnucobol` (Linux). Try:
   > Write a COBOL program named GREETER that displays exactly one line of
   > output: "HELLO, ASHLAR."
-- **MUMPS** — the lead demo (MUMPS still runs much of the VA's and Epic's
+- **MUMPS** — one of the two real, publicly-undocumented legacy languages
+  used to prove this works (MUMPS still runs much of the VA's and Epic's
   EHR systems), but its interpreter has to be built from source, it isn't
   bundled in the repo:
   ```bash

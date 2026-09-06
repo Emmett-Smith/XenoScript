@@ -157,6 +157,7 @@ Record choices here so agents stop re-litigating them.
 | — | Five MCP tools, fixed | Generic primitives; coverage scales in corpus, not code |
 | — | No fine-tuning | Cannot demo a curve in 36h; cache + failure memory is the honest version |
 | — | Model name lives only in `config.yaml` | Bake-off pending; keeps us vendor-neutral |
+| 2026-09-06 | Pitch/README/site lead with "classified & offline languages," not MUMPS | Team's other project already owns the MUMPS-specific pitch; MUMPS/COBOL kept as real proof points, Plinth framed as the public stand-in for a classified DSL. No architecture change. |
 
 **Chosen model:** `qwen2.5-coder:3b` (3.1B, Q4_K_M, 32k ctx) — appeared on
 `localhost:11434/api/tags` partway through the session (was empty at start).

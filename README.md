@@ -1,24 +1,34 @@
 # XenoScript
 
-**An AI coding assistant for languages no model has ever seen.**
+**An AI coding assistant for classified, undocumented, and offline-only
+languages.**
 
-Give it a language's docs, example code, and a real toolchain to check
+Every branch, agency, and prime contractor has internal DSLs and mission
+languages that can't leave a secure room: no public documentation (because
+they can't be public), no training data for any model, and no cloud AI tool
+allowed anywhere near the environment. XenoScript is built for exactly that
+case. Give it a language's docs, example code, and a real toolchain to check
 against, and it becomes a verified-output coding agent for that language —
-running entirely offline, with no fine-tuning and no training data for the
-language required.
+running **entirely offline, air-gapped, with no fine-tuning and no training
+data for the language required.** Nothing it produces is ever shown to you
+before it has actually been compiled or run against the real toolchain.
 
-The lead demo is **MUMPS (M)**, the language still running most of the
-world's electronic health record systems (Epic, VistA, Meditech). It is
-decades old, has almost no public documentation, and no mainstream AI
-assistant can write it reliably. XenoScript can, because it never returns
-code it hasn't actually compiled and run first.
+We can't put a classified language on a public repo, so this project proves
+the same property two other ways instead: on **two real, publicly-known
+undocumented legacy languages** (MUMPS and COBOL, below), and on **a
+synthetic language we invented from scratch** (Plinth) specifically to
+prove zero memorization mathematically — the exact property that matters
+for a language no model could possibly have seen, classified or otherwise.
+None of the three are the point on their own; the architecture that works
+identically across all three is.
 
 ## The idea
 
-No model was trained on your internal DSL, your site's COBOL dialect, or the
-undocumented scripting language behind your EHR. XenoScript doesn't try to
-fix that by training a bigger model — it wraps whatever local model you
-already have in a loop that:
+No model was trained on your program's internal DSL, and none ever will be
+— it's classified, it's proprietary, or it just never left the building.
+XenoScript doesn't try to fix that by training a bigger model, sending code
+to a cloud API, or hoping a model "figures it out." It wraps whatever local
+model you already have in a loop that:
 
 1. **Retrieves** real symbols, examples, and doc snippets from the
    language's own corpus — never invented, always grep'd from real files.
@@ -55,11 +65,16 @@ corpora/<name>/
 
 ## Supported corpora
 
-| Corpus | Real toolchain | Status |
+Three proof points, not three products. Each demonstrates the same
+architecture handling a language the model can't have memorized — the two
+real ones because they're old and undocumented, the synthetic one because
+it didn't exist until this project invented it.
+
+| Corpus | Real toolchain | Proves |
 |---|---|---|
-| `mumps` | [Reference Standard M](https://github.com/Reference-Standard-M/rsm) | Primary demo — globals, `FOR`/`IF`, `$SELECT`, `$JUSTIFY`/`$TRANSLATE`/`$FIND`, more |
-| `cobol` | `cobc` (GnuCOBOL) | Working, smaller example set |
-| `plinth` | — | Synthetic language, original architecture-proof corpus |
+| `mumps` | [Reference Standard M](https://github.com/Reference-Standard-M/rsm) | A real, decades-old, near-undocumented language still in production (VA/Epic/Meditech) — globals, `FOR`/`IF`, `$SELECT`, `$JUSTIFY`/`$TRANSLATE`/`$FIND`, more |
+| `cobol` | `cobc` (GnuCOBOL) | The architecture isn't MUMPS-specific — a second, unrelated real legacy language and toolchain, smaller example set |
+| `plinth` | — | Zero memorization, provably: a language invented for this project, absent from any model's training data — the closest public stand-in for an actual classified DSL |
 
 ## Running it locally
 
@@ -93,25 +108,26 @@ data across runs: generate a routine, save it, run it for real in a
 terminal, then read the database back and see the change — sidestepping any
 question about whether the sidebar's own output display can be trusted.
 
-## Known limitations (documented honestly, not swept under the rug)
+## Bugs found, and fixed (documented honestly, not swept under the rug)
 
-- **MUMPS output capture through the live backend server is unreliable.**
-  The exact same generated code that prints correctly when run directly
-  against the real interpreter can come back with empty captured stdout
-  when driven through the long-running API server process. Root cause not
-  fully isolated (see `LOG.md`). Workaround in place: the demo proves
-  execution via the standalone terminal projects above, not the sidebar's
-  own output panel.
-- **The verified-solution cache can only catch runtime/syntax errors, not
-  semantic correctness.** A structurally wrong but syntactically valid
-  statement can pass verification and get cached as a "real example" for
-  future similar prompts. Mitigated with a stricter cache similarity floor
-  and a numeric-literal mismatch guard (`ashlar/harness/memory.py`), but the
-  underlying gap — no behavioral check for tasks with no observable output
-  — is real and unresolved.
-- **Compound, multi-step prompts** ("delete X and confirm it's gone") tend
-  to make the model invent non-existent syntax rather than compose two real
-  statements. Keep prompts to one clear action.
+Three real limitations were found during development, root-caused, and
+fixed — not hidden after the fact:
+
+- **MUMPS output capture through the live backend server was unreliable.**
+  Root cause: the real interpreter's stdin reader silently discarded the
+  final piped-in line whenever generated source didn't end in a trailing
+  newline — exit 0, no error, no output. Fixed at the single point both
+  code paths funnel through; verified 5/5 through the live server.
+- **The verified-solution cache could self-poison.** A structurally-wrong
+  but error-free generation could get cited as a "real example" for the
+  next similar prompt, reinforcing the same mistake. Fixed by only citing
+  solutions that were actually checked against real ground truth, not just
+  "ran without crashing."
+- **Compound, multi-step prompts** hit a genuine small-model limitation on
+  one specific pattern (a two-space grammar rule the model kept getting
+  wrong even when told the exact fix). Fixed by normalizing it
+  mechanically before the model's source ever reaches the interpreter, with
+  the correction flowing back through to what the user actually sees.
 
 Full build history, every real bug found and fixed, and exact live-tested
 prompts are in [`LOG.md`](LOG.md). The original architecture specs (written

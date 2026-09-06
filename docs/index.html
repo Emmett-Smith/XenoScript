@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>XenoScript — verified AI for languages no model has ever seen</title>
-<meta name="description" content="XenoScript is an AI coding assistant for undocumented languages like MUMPS and COBOL. Every suggestion is tested against a real toolchain and verified before it ever reaches you." />
+<title>XenoScript — offline AI for classified and undocumented languages</title>
+<meta name="description" content="XenoScript is an AI coding assistant for classified, proprietary, and undocumented languages that can never leave a secure, offline environment. Every suggestion is tested against a real toolchain and verified before it ever reaches you." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,14 +29,14 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow reveal">AI coding assistant &middot; verified, not guessed</p>
+        <p class="eyebrow reveal">Offline AI &middot; classified &amp; undocumented languages</p>
         <h1 class="reveal"><span class="accent">Validated</span> before you ever see it.</h1>
-        <p class="lede reveal" style="--d:0.08s">XenoScript pairs a local model with a real compiler or interpreter for languages no AI has ever reliably seen &mdash; MUMPS, the decades-old language still running the VA's and Epic's electronic health records, and COBOL alongside it. Every suggestion is generated, tested against that real toolchain, and repaired on failure &mdash; nothing reaches you until it's actually verified, never guessed.</p>
+        <p class="lede reveal" style="--d:0.08s">Every classified program has languages that can't leave the room &mdash; no public docs, no training data, no cloud AI allowed anywhere near them. XenoScript pairs a local model with a real compiler or interpreter, entirely air&#8209;gapped, for exactly that case. Proven here on MUMPS and COBOL, two real, publicly-undocumented legacy languages, and on Plinth, a language we invented from scratch to prove zero memorization. Nothing reaches you until it's actually verified, never guessed.</p>
         <div class="btn-row reveal" style="--d:0.16s">
           <a class="btn btn-primary" href="https://github.com/Emmett-Smith/XenoScript/releases/download/v0.0.1/xenoscript-mumps-assistant-0.0.1.vsix">&#9660; Download Extension</a>
           <a class="btn btn-ghost" href="GETTING_STARTED.html">Getting Started &rarr;</a>
         </div>
-        <p class="hero-note reveal" style="--d:0.22s">Runs fully offline. No fine-tuning. Adding a language means adding a corpus folder, not writing new code.</p>
+        <p class="hero-note reveal" style="--d:0.22s">Runs fully offline, air&#8209;gapped. No fine-tuning. Adding a language means adding a corpus folder, not writing new code.</p>
       </div>
 
       <div class="terminal reveal" style="--d:0.1s">
@@ -55,7 +55,7 @@
       <div>
         <p class="eyebrow reveal">The insight</p>
         <h2 class="reveal">We didn't train a bigger model. We gave it a way to <span class="accent">check its own work.</span></h2>
-        <p class="lede reveal" style="--d:0.08s">Retrieve real examples. Generate a candidate. Verify it against a real compiler or interpreter. Repair on failure. Cache what's actually proven &mdash; not just what ran without crashing. XenoScript wraps whatever local model you already have in that loop, every single time, before it ever shows you a line.</p>
+        <p class="lede reveal" style="--d:0.08s">Retrieve real examples. Generate a candidate. Verify it against a real compiler or interpreter. Repair on failure. Cache what's actually proven &mdash; not just what ran without crashing. XenoScript wraps whatever local model you already have in that loop, every single time, before it ever shows you a line &mdash; which is exactly why it doesn't need the model to already know the language. It needs a real toolchain, which a secure program already has on-site.</p>
       </div>
 
       <div class="chart-card reveal" style="--d:0.14s">
@@ -138,17 +138,18 @@
   <!-- ============ LANGUAGES ============ -->
   <section id="languages">
     <div class="wrap">
-      <p class="eyebrow reveal">Supported corpora</p>
-      <h2 class="reveal">Adding a language is a folder, not a fork.</h2>
+      <p class="eyebrow reveal">Three proof points, not three products</p>
+      <h2 class="reveal">We can't put a classified language on a public repo. So we proved it three other ways.</h2>
+      <p class="lede reveal" style="--d:0.06s; max-width:62ch;">Adding a language is a folder, not a fork &mdash; docs, examples, a toolchain adapter, never new code in the core. Each corpus below demonstrates the same architecture handling a language the model can't have memorized.</p>
       <div class="lang-grid">
         <div class="lang-card reveal">
-          <span class="tag">Lead demo</span>
+          <span class="tag">Real proof &middot; 1</span>
           <h3>MUMPS</h3>
           <p>Still running much of the VA's, Epic's, and Meditech's electronic health record systems. Decades old, almost no public documentation, no mainstream assistant writes it reliably.</p>
           <div class="toolchain">Verified against Reference Standard M</div>
         </div>
         <div class="lang-card reveal" style="--d:0.06s">
-          <span class="tag">Real-world proof</span>
+          <span class="tag">Real proof &middot; 2</span>
           <h3>COBOL</h3>
           <p>Proves the architecture isn't MUMPS-specific. Here the model already has real training exposure &mdash; a genuinely different, and equally honest, result.</p>
           <div class="toolchain">Verified against GnuCOBOL (cobc)</div>
@@ -156,7 +157,7 @@
         <div class="lang-card reveal" style="--d:0.12s">
           <span class="tag">Zero-memorization proof</span>
           <h3>Plinth</h3>
-          <p>A synthetic language invented for this project. If the loop still works here, it can't be the model quietly remembering the answer.</p>
+          <p>A synthetic language invented for this project &mdash; the closest public stand-in for an actual classified DSL. If the loop still works here, it can't be the model quietly remembering the answer.</p>
           <div class="toolchain">Original architecture-proof corpus</div>
         </div>
       </div>
@@ -192,7 +193,7 @@
   <section class="cta" id="cta">
     <div class="wrap">
       <p class="eyebrow reveal" style="text-align:center">Try it</p>
-      <h2 class="reveal">Runs on your machine. Verifies against a real toolchain. Shows its work.</h2>
+      <h2 class="reveal">Runs on your machine, air&#8209;gapped. Verifies against a real toolchain. Shows its work.</h2>
       <div class="btn-row reveal" style="--d:0.08s">
         <a class="btn btn-primary" href="https://github.com/Emmett-Smith/XenoScript/releases/download/v0.0.1/xenoscript-mumps-assistant-0.0.1.vsix">&#9660; Download Extension</a>
         <a class="btn btn-ghost" href="GETTING_STARTED.html">Getting Started &rarr;</a>
@@ -204,7 +205,7 @@
 </main>
 
 <footer>
-  <span>XenoScript &mdash; a hackathon proof of concept. Not a production or clinically-validated tool.</span>
+  <span>XenoScript &mdash; a hackathon proof of concept. Not a production or field-validated tool.</span>
   <span><a href="https://github.com/Emmett-Smith/XenoScript">github.com/Emmett-Smith/XenoScript</a></span>
 </footer>
 

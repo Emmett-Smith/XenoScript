@@ -17,18 +17,18 @@
 <div class="deck" id="deck">
 
   <!-- 1: COLD OPEN -->
-  <section class="slide slide-center" data-title="Cold open" data-notes="Beat: silence, then the wordmark. VO: 'No model was ever trained on the language running your hospital's medical records. This one doesn't need to have been.' Hold 3s before advancing.">
+  <section class="slide slide-center" data-title="Cold open" data-notes="Beat: silence, then the wordmark. VO: 'Every classified program has languages that can't leave the room. No public docs. No training data. No cloud AI allowed anywhere near them. This is built for exactly that case.' Hold 3s before advancing.">
     <p class="slide-kicker">Pitch</p>
     <div class="wordmark" style="justify-content:center; margin-bottom: 28px;"><span class="dot">&#9679;</span> XenoScript</div>
     <h1 class="big"><span class="accent">Validated</span> before you ever see it.</h1>
-    <p class="sub">An AI coding assistant for languages no model has ever seen.</p>
+    <p class="sub">Offline AI for classified, proprietary, and undocumented languages.</p>
   </section>
 
   <!-- 2: PROBLEM -->
-  <section class="slide" data-title="The problem" data-notes="VO: 'MUMPS is almost undocumented in public. It still runs the VA's electronic health records, and much of Epic and Meditech underneath. The developer pool that knows it is shrinking fast, and every general-purpose AI assistant hallucinates its syntax constantly.' Pause on 'hallucinates' — that's the hook.">
+  <section class="slide" data-title="The problem" data-notes="VO: 'Last summer, someone on this team wrote simulation code in a language with no public documentation, inside a classified environment, with no AI tool that could help — because none of them can see the language, and none of them are allowed in the room. That's not rare. It's every branch, every agency, every prime with an internal DSL.' Pause after 'allowed in the room' — that's the hook.">
     <p class="slide-kicker">Why this exists</p>
-    <h2 class="big">No model was trained on your hospital's 40-year-old scripting language.</h2>
-    <p class="sub">MUMPS is almost undocumented in public, and the developer pool that knows it is shrinking fast. General-purpose AI assistants hallucinate its syntax constantly &mdash; they've barely seen it.</p>
+    <h2 class="big">No model was trained on your program's internal language. None ever will be.</h2>
+    <p class="sub">It's classified, it's proprietary, or it just never left the building. No public docs to train on, no cloud AI allowed anywhere near it, and the developer pool that knows it by hand is shrinking every year.</p>
   </section>
 
   <!-- 3: INSIGHT -->
@@ -55,25 +55,25 @@
   <section class="slide" data-title="Live demo" data-notes="This is the real recorded demo (FINAL DEMO.mov), embedded directly, no cuts. Press play and let it run. VO before pressing play: 'This is the real thing, recorded live.' Then either stay quiet and let the video's own audio carry it, or narrate lightly over the beats you want to call out — the corpus switch, the verify step, Insert into editor.">
     <p class="slide-kicker">Live demo</p>
     <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem); margin-bottom:18px;">This is how it all works.</h2>
-    <p class="sub" style="margin-bottom:26px;">"Add Maria Garcia, who is 45 to the patients database" &mdash; recorded live in VS Code: generated, run against the real MUMPS interpreter, and verified. No cuts, no mockups.</p>
+    <p class="sub" style="margin-bottom:26px;">We can't film a classified language, so here's the same architecture on a real, publicly-undocumented one: "Add Maria Garcia, who is 45 to the patients database" &mdash; recorded live in VS Code, generated, run against the real MUMPS interpreter, and verified. No cuts, no mockups.</p>
     <div class="proof-frame video-frame">
       <div class="proof-bar"><div class="lights"><span></span><span></span><span></span></div>FINAL DEMO.mov &middot; real, unedited screen recording</div>
       <video controls preload="metadata" src="assets/final-demo.mp4"></video>
     </div>
   </section>
 
-  <!-- 7: LANGUAGES -->
-  <section class="slide" data-title="Supported corpora" data-notes="VO: 'Adding a language means adding a folder — docs, examples, a toolchain adapter — never new code in the core. Nothing in the engine is allowed to know which language it's talking to.' Point out the three cards briefly, don't read every word.">
-    <p class="slide-kicker">Supported corpora</p>
+  <!-- 6: LANGUAGES -->
+  <section class="slide" data-title="Supported corpora" data-notes="VO: 'Three proof points, not three products. Adding a language means adding a folder — docs, examples, a toolchain adapter — never new code in the core. Nothing in the engine is allowed to know which language it's talking to.' Point out the three cards briefly, don't read every word.">
+    <p class="slide-kicker">Three proof points, not three products</p>
     <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem); margin-bottom:36px;">Adding a language is a folder, not a fork.</h2>
     <div class="lang-row">
-      <div class="lang-card"><span class="tag">Lead demo</span><h3>MUMPS</h3><p>Still running much of the VA's, Epic's, and Meditech's EHR systems. Verified against Reference Standard M.</p></div>
-      <div class="lang-card"><span class="tag">Real-world proof</span><h3>COBOL</h3><p>Proves the architecture isn't MUMPS-specific. Verified against GnuCOBOL.</p></div>
-      <div class="lang-card"><span class="tag">Zero-memorization proof</span><h3>Plinth</h3><p>A synthetic language invented for this project &mdash; provably absent from training data.</p></div>
+      <div class="lang-card"><span class="tag">Real proof &middot; 1</span><h3>MUMPS</h3><p>Still running much of the VA's, Epic's, and Meditech's EHR systems. Verified against Reference Standard M.</p></div>
+      <div class="lang-card"><span class="tag">Real proof &middot; 2</span><h3>COBOL</h3><p>Proves the architecture isn't MUMPS-specific. Verified against GnuCOBOL.</p></div>
+      <div class="lang-card"><span class="tag">Zero-memorization proof</span><h3>Plinth</h3><p>A synthetic language invented for this project &mdash; the closest public stand-in for an actual classified DSL.</p></div>
     </div>
   </section>
 
-  <!-- 8: THE NUMBERS -->
+  <!-- 7: THE NUMBERS -->
   <section class="slide" data-title="The numbers" data-notes="VO: 'Plinth is a language we invented for this project. No model has ever seen it. With no help at all, the model gets essentially nothing right — zero percent. With the full loop — retrieve, verify, repair — that same model, same weights, jumps to twenty-five percent.' Let the two numbers sit on screen in silence for a beat before continuing — this is the credibility slide.">
     <p class="slide-kicker">The numbers</p>
     <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem);">Plinth is a language nobody's model has ever seen.</h2>
@@ -84,7 +84,7 @@
     <p class="sub" style="margin-top:30px;">Same model, same weights (qwen2.5-coder:3b), measured live, single run. The gap between the two numbers is the entire pitch.</p>
   </section>
 
-  <!-- 9: HONESTY -->
+  <!-- 8: HONESTY -->
   <section class="slide" data-title="Built by finding real bugs" data-notes="VO: 'We don't hide the bugs we found — we found them and fixed them, live, and wrote down exactly how.' Pick one story to tell in a sentence if time is short — the trailing-newline one is the best story (silent, hardest to find).">
     <p class="slide-kicker">Built by finding real bugs, not hiding them</p>
     <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem); margin-bottom:36px;">Every claim in this deck was re-tested live before it was written down.</h2>
@@ -95,21 +95,21 @@
     </div>
   </section>
 
-  <!-- 10: ARCHITECTURE -->
-  <section class="slide" data-title="Architecture" data-notes="VO: 'Three local processes: a model server, an MCP tool server over the corpus, and the harness loop that wires them together. Nothing under that harness is allowed to know which language it's talking to — that's a hard invariant, checked in review.'">
+  <!-- 9: ARCHITECTURE -->
+  <section class="slide" data-title="Architecture" data-notes="VO: 'Three local processes: a model server, an MCP tool server over the corpus, and the harness loop that wires them together. Nothing under that harness is allowed to know which language it's talking to — that's a hard invariant, checked in review. All three run on-box, with no network call required at any point.'">
     <p class="slide-kicker">Architecture, in one line</p>
     <h2 class="big">corpora/&lt;name&gt;/ &mdash; docs, examples, a toolchain. That's the whole surface.</h2>
-    <p class="sub">Three local processes: a model server (Ollama, fully offline), an MCP server exposing five generic search-and-verify tools, and a harness that wires them into generate &rarr; verify &rarr; repair. No fine-tuning, no cloud, no unverified code ever shown to the user.</p>
+    <p class="sub">Three local processes: a model server (Ollama, fully offline), an MCP server exposing five generic search-and-verify tools, and a harness that wires them into generate &rarr; verify &rarr; repair. No fine-tuning, no cloud, no network call required, no unverified code ever shown to the user.</p>
   </section>
 
-  <!-- 11: CTA -->
-  <section class="slide slide-center" data-title="Try it" data-notes="VO: 'It runs on your machine. It verifies against a real toolchain. And it shows its work.' Point at the URL, hold 2s, then advance to close.">
+  <!-- 10: CTA -->
+  <section class="slide slide-center" data-title="Try it" data-notes="VO: 'It runs on your machine, air&#8209;gapped. It verifies against a real toolchain. And it shows its work.' Point at the URL, hold 2s, then advance to close.">
     <p class="slide-kicker">Try it</p>
-    <h1 class="big">Runs on your machine.<br>Verifies against a real toolchain.</h1>
+    <h1 class="big">Runs on your machine, air&#8209;gapped.<br>Verifies against a real toolchain.</h1>
     <p class="sub" style="margin: 0 auto;">emmett-smith.github.io/XenoScript &mdash; download the extension, or read Getting Started.</p>
   </section>
 
-  <!-- 12: CLOSE -->
+  <!-- 11: CLOSE -->
   <section class="slide slide-center" data-title="Thank you" data-notes="VO: 'Thank you.' Hold on the wordmark for the fade-out.">
     <p class="slide-kicker">Thank you</p>
     <div class="wordmark" style="justify-content:center;"><span class="dot">&#9679;</span> XenoScript</div>

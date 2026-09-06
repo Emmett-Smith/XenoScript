@@ -1652,3 +1652,32 @@ shared :8000 server was never touched. `.venv/bin/python3 -m pytest
 ashlar/ -q` still reports 143 passed, unchanged.
 
 ---
+
+### Positioning pivot: classified/offline languages, not MUMPS-first (2026-09-06)
+
+The user's team has a separate project that already specializes in MUMPS
+specifically. Direction for *this* project's pitch, site, and README:
+reposition around **classified, proprietary, and offline-only languages**
+as the primary subject, with MUMPS and COBOL kept as **real,
+publicly-demonstrable proof points** (not the headline) and Plinth framed
+explicitly as "the closest public stand-in for an actual classified DSL"
+(zero-memorization is the exact property that matters for a language no
+model could have seen, classified or otherwise).
+
+Nothing about the actual architecture, corpora, or code changed — this is
+a messaging/positioning change only, applied to `README.md`, the website
+(`docs/index.html`), the pitch deck (`docs/deck/index.html`), and
+`PITCH_SCRIPT.md`. Also fixed a real staleness bug found while touching
+`README.md`: its "Known limitations" section still listed the three bugs
+from earlier tonight as open, even though the top of this file has
+documented them as root-caused and fixed since ~20:15 — reworded to match
+reality, per the same "documented honestly" standard the rest of the
+project holds itself to.
+
+This new framing was already latent in the project's own materials — the
+original `specs/06_DEMO.md` opening line ("wrote simulation code in a
+language with no public documentation, inside a classified environment...")
+was the intended hook all along, just never surfaced on the site or in
+`README.md` until now.
+
+---

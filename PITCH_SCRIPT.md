@@ -49,16 +49,16 @@ specific; don't oversell on top of it.
 
 | # | Slide | ~Sec | Voiceover |
 |---|---|---|---|
-| 1 | Cold open | 12s | "No model was ever trained on the language running your hospital's medical records. This one doesn't need to have been." *(hold on wordmark, 3s)* |
-| 2 | The problem | 15s | "MUMPS is almost undocumented in public. It still runs the VA's electronic health records, and much of Epic and Meditech underneath. The developer pool that knows it is shrinking fast, and every general-purpose AI assistant hallucinates its syntax constantly." |
+| 1 | Cold open | 12s | "Every classified program has languages that can't leave the room. No public docs. No training data. No cloud AI allowed anywhere near them. This is built for exactly that case." *(hold on wordmark, 3s)* |
+| 2 | The problem | 15s | "Last summer, someone on this team wrote simulation code in a language with no public documentation, inside a classified environment, with no AI tool that could help — because none of them can see the language, and none of them are allowed in the room. That's not rare. It's every branch, every agency, every prime with an internal DSL." *(pause after "allowed in the room")* |
 | 3 | The insight | 15s | "We didn't try to fix this with a bigger model. We wrapped whatever local model you already have in a loop that checks its own work against a real toolchain, every single time, before it ever shows you a line." |
 | 4 | How it works | 15s | "Retrieve. Generate. Verify. Repair. Cache." *(one beat per card, ~3s each)* |
-| 5 | **Live demo** | ~48s | *(no VO needed — this is the real `FINAL DEMO.mov` recording, embedded and playing with its own audio: "Add Maria Garcia, who is 45 to the patients database," generated, run against Reference Standard M, verified, live in VS Code.)* Say one line before pressing play — "This is the real thing, recorded live" — then go quiet and let it run. |
-| 6 | Languages | 12s | "Adding a language means adding a folder — docs, examples, a toolchain adapter — never new code in the core." |
-| 7 | The numbers | 18s | "Plinth is a language we invented for this project. No model has ever seen it. With no help at all, the model gets essentially nothing right: zero percent. With the full loop — retrieve, verify, repair — that same model, same weights, jumps to twenty-five percent." *(let the two numbers sit in silence for 2s before continuing)* |
+| 5 | **Live demo** | ~48s | *(no VO needed — this is the real `FINAL DEMO.mov` recording, embedded and playing with its own audio: "Add Maria Garcia, who is 45 to the patients database," generated, run against Reference Standard M, verified, live in VS Code.)* Say one line before pressing play — "We can't film a classified language, so here's the same architecture on a real, publicly-undocumented one" — then go quiet and let it run. |
+| 6 | Languages | 14s | "Three proof points, not three products. Adding a language means adding a folder — docs, examples, a toolchain adapter — never new code in the core." |
+| 7 | The numbers | 18s | "Plinth is a language we invented for this project. No model has ever seen it — the closest public stand-in for an actual classified DSL. With no help at all, the model gets essentially nothing right: zero percent. With the full loop — retrieve, verify, repair — that same model, same weights, jumps to twenty-five percent." *(let the two numbers sit in silence for 2s before continuing)* |
 | 8 | Built by finding real bugs | 15s | "We don't hide the bugs we found. We found them, fixed them, live, and wrote down exactly how." *(optionally add one sentence on the trailing-newline bug — it's the best story)* |
-| 9 | Architecture | 12s | "Three local processes: a model server, an MCP tool server over the corpus, and the harness loop that wires them together. Nothing under that harness is allowed to know which language it's talking to." |
-| 10 | Try it | 10s | "It runs on your machine. It verifies against a real toolchain. And it shows its work." |
+| 9 | Architecture | 14s | "Three local processes: a model server, an MCP tool server over the corpus, and the harness loop that wires them together. All three run on-box, no network call required at any point. Nothing under that harness is allowed to know which language it's talking to." |
+| 10 | Try it | 10s | "It runs on your machine, air-gapped. It verifies against a real toolchain. And it shows its work." |
 | 11 | Thank you | 6s | "Thank you." *(hold on wordmark for fade-out)* |
 
 **Total: ~178s (≈3:00)**, dominated by slide 5's ~48s real video — trim
