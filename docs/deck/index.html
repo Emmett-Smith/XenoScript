@@ -51,33 +51,14 @@
     </div>
   </section>
 
-  <!-- 5: LIVE DEMO MUMPS -->
-  <section class="slide" data-title="Live demo — MUMPS" data-notes="EDITING NOTE: cut to real screen-recorded footage here if you have it — this screenshot is a placeholder for a live take. VO while it plays: 'Same task, live, against the real MUMPS interpreter. It generates, runs it for real, and only shows verified once the real output matches.' Let the real UI do the talking; don't talk over the reveal.">
-    <p class="slide-kicker">Live demo &middot; MUMPS</p>
-    <div class="slide-split">
-      <div>
-        <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem);">Store a patient record. Run it for real.</h2>
-        <p class="sub">"Store the string GARCIA,MARIA^45^F in the uppercase global PATIENT under subscript 40, then write it back out." &mdash; generated, run against Reference Standard M, and verified against real output.</p>
-      </div>
-      <div class="proof-frame">
-        <div class="proof-bar"><div class="lights"><span></span><span></span><span></span></div>localhost:5173 &middot; real, captured live</div>
-        <img src="assets/mumps-verified.jpg" alt="XenoScript sidebar showing the MUMPS add-patient prompt, verified" />
-      </div>
-    </div>
-  </section>
-
-  <!-- 6: LIVE DEMO COBOL -->
-  <section class="slide" data-title="Live demo — COBOL" data-notes="EDITING NOTE: cut to a second real screen recording if available. VO: 'Swap the corpus, no restart, and the same architecture runs a completely different language the model already partly knows — COBOL — with the same real compiler in the loop.'">
-    <p class="slide-kicker">Live demo &middot; COBOL</p>
-    <div class="slide-split">
-      <div>
-        <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem);">Same architecture. A different language entirely.</h2>
-        <p class="sub">Corpus switched live, no backend restart. Real GnuCOBOL compiler output shown as-is &mdash; including a benign warning, styled dim, not red, because it isn't a failure.</p>
-      </div>
-      <div class="proof-frame">
-        <div class="proof-bar"><div class="lights"><span></span><span></span><span></span></div>localhost:5173 &middot; real, captured live</div>
-        <img src="assets/cobol-verified.jpg" alt="XenoScript sidebar showing the COBOL GREETER prompt, verified" />
-      </div>
+  <!-- 5: LIVE DEMO -->
+  <section class="slide" data-title="Live demo" data-notes="This is the real recorded demo (FINAL DEMO.mov), embedded directly, no cuts. Press play and let it run. VO before pressing play: 'This is the real thing, recorded live.' Then either stay quiet and let the video's own audio carry it, or narrate lightly over the beats you want to call out — the corpus switch, the verify step, Insert into editor.">
+    <p class="slide-kicker">Live demo</p>
+    <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem); margin-bottom:18px;">This is how it all works.</h2>
+    <p class="sub" style="margin-bottom:26px;">"Add Maria Garcia, who is 45 to the patients database" &mdash; recorded live in VS Code: generated, run against the real MUMPS interpreter, and verified. No cuts, no mockups.</p>
+    <div class="proof-frame video-frame">
+      <div class="proof-bar"><div class="lights"><span></span><span></span><span></span></div>FINAL DEMO.mov &middot; real, unedited screen recording</div>
+      <video controls preload="metadata" src="assets/final-demo.mp4"></video>
     </div>
   </section>
 

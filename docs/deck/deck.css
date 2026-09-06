@@ -120,6 +120,17 @@ html, body {
   width: 100%;
 }
 
+.proof-frame.video-frame {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.proof-frame video {
+  display: block;
+  width: 100%;
+  background: #000;
+}
+
 .pipeline-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
