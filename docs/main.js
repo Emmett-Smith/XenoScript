@@ -40,18 +40,19 @@ if (reduceMotion) {
 }
 
 // ---------- hero terminal typewriter ----------
-// Scripted against real project facts (E043 spacing gotcha, the actual
-// COBOL demo prompt) rather than a generic "AI writes code" mockup.
+// Scripted against real project facts (the actual MUMPS add-patient demo
+// pair, corpora/mumps/pairs/008) rather than a generic "AI writes code"
+// mockup — matches the "corpus: mumps" label in the terminal chrome above.
 const termBody = document.getElementById("termBody");
 
 const SCRIPT = [
-  { cls: "prompt-user", text: "> Write a COBOL program named GREETER that displays\n  exactly one line of output: \"HELLO, ASHLAR.\"" },
-  { cls: "tag-retrieve", text: "\n\n[retrieve] grep_corpus(\"DISPLAY\") -> 6 hits\n[retrieve] get_examples(cobol) -> pairs/003" },
+  { cls: "prompt-user", text: "> Store the string GARCIA,MARIA^45^F in the\n  uppercase global PATIENT under subscript 40,\n  then write it back out." },
+  { cls: "tag-retrieve", text: "\n\n[retrieve] grep_corpus(\"SET ^PATIENT\") -> 5 hits\n[retrieve] get_examples(mumps) -> pairs/008" },
   { cls: "", text: "\n\n[generate] iteration 1/4 ..." },
-  { cls: "tag-fault", text: "\n\n[verify]  cobc -x -free\n          FAIL — missing PROCEDURE DIVISION" },
-  { cls: "tag-repair", text: "\n\n[repair]  feeding real compiler error back to model" },
+  { cls: "tag-fault", text: "\n\n[verify]  rsm run candidate.m\n          FAIL — [Z12] Invalid expression, line 1" },
+  { cls: "tag-repair", text: "\n\n[repair]  feeding real interpreter error back to model" },
   { cls: "", text: "\n[generate] iteration 2/4 ..." },
-  { cls: "tag-verified", text: "\n\n[verify]  cobc -x -free && ./prog\n          VERIFIED ✓  stdout: \"HELLO, ASHLAR.\"" },
+  { cls: "tag-verified", text: "\n\n[verify]  rsm run candidate.m\n          VERIFIED ✓  stdout: \"GARCIA,MARIA^45^F\"" },
 ];
 
 async function typeScript() {
@@ -80,8 +81,8 @@ async function runTerminalLoop() {
   if (reduceMotion) {
     // Show the final, settled state without animating.
     termBody.innerHTML =
-      '<span class="prompt-user">&gt; Write a COBOL program named GREETER...</span>' +
-      '<span class="tag-verified">\n\nVERIFIED ✓  stdout: "HELLO, ASHLAR."</span>';
+      '<span class="prompt-user">&gt; Store the string GARCIA,MARIA^45^F...</span>' +
+      '<span class="tag-verified">\n\nVERIFIED ✓  stdout: "GARCIA,MARIA^45^F"</span>';
     return;
   }
   while (true) {
