@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XenoScript — Pitch Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="deck.css">
+</head>
+<body>
+
+<div class="crt-overlay" aria-hidden="true"></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1: COLD OPEN -->
+  <section class="slide slide-center" data-title="Cold open" data-notes="Beat: silence, then the wordmark. VO: 'No model was ever trained on the language running your hospital's medical records. This one doesn't need to have been.' Hold 3s before advancing.">
+    <p class="slide-kicker">Pitch</p>
+    <div class="wordmark" style="justify-content:center; margin-bottom: 28px;"><span class="dot">&#9679;</span> XenoScript</div>
+    <h1 class="big"><span class="accent">Validated</span> before you ever see it.</h1>
+    <p class="sub">An AI coding assistant for languages no model has ever seen.</p>
+  </section>
+
+  <!-- 2: PROBLEM -->
+  <section class="slide" data-title="The problem" data-notes="VO: 'MUMPS is almost undocumented in public. It still runs the VA's electronic health records, and much of Epic and Meditech underneath. The developer pool that knows it is shrinking fast, and every general-purpose AI assistant hallucinates its syntax constantly.' Pause on 'hallucinates' — that's the hook.">
+    <p class="slide-kicker">Why this exists</p>
+    <h2 class="big">No model was trained on your hospital's 40-year-old scripting language.</h2>
+    <p class="sub">MUMPS is almost undocumented in public, and the developer pool that knows it is shrinking fast. General-purpose AI assistants hallucinate its syntax constantly &mdash; they've barely seen it.</p>
+  </section>
+
+  <!-- 3: INSIGHT -->
+  <section class="slide" data-title="The insight" data-notes="VO: 'We didn't try to fix this with a bigger model. We wrapped whatever local model you already have in a loop that checks its own work against a real toolchain, every single time, before it ever shows you a line.' This is the thesis sentence of the whole pitch — say it slowly.">
+    <p class="slide-kicker">The insight</p>
+    <h2 class="big">We didn't train a bigger model. We gave it a way to <span class="accent">check its own work.</span></h2>
+    <p class="sub">Retrieve real examples. Generate a candidate. Verify it against a real compiler or interpreter. Repair on failure. Cache what's actually proven &mdash; not just what ran without crashing.</p>
+  </section>
+
+  <!-- 4: HOW IT WORKS -->
+  <section class="slide" data-title="How it works" data-notes="VO: walk the five steps left to right, one clause each, matching the on-screen order: 'Retrieve. Generate. Verify. Repair. Cache.' Don't over-explain — the labels carry it. ~3s per card.">
+    <p class="slide-kicker">How it works</p>
+    <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem); margin-bottom:36px;">Five steps. Every one of them real.</h2>
+    <div class="pipeline-row">
+      <div class="pipeline-step"><span class="num">01</span><h3>Retrieve</h3><p>Grep the language's own corpus. Nothing invented.</p></div>
+      <div class="pipeline-step"><span class="num">02</span><h3>Generate</h3><p>The local model drafts a candidate.</p></div>
+      <div class="pipeline-step"><span class="num">03</span><h3>Verify</h3><p>Run it for real, against a real toolchain.</p></div>
+      <div class="pipeline-step"><span class="num">04</span><h3>Repair</h3><p>Feed the real error back. Up to 4 tries.</p></div>
+      <div class="pipeline-step"><span class="num">05</span><h3>Cache</h3><p>Only proven solutions get reused as examples.</p></div>
+    </div>
+  </section>
+
+  <!-- 5: LIVE DEMO MUMPS -->
+  <section class="slide" data-title="Live demo — MUMPS" data-notes="EDITING NOTE: cut to real screen-recorded footage here if you have it — this screenshot is a placeholder for a live take. VO while it plays: 'Same task, live, against the real MUMPS interpreter. It generates, runs it for real, and only shows verified once the real output matches.' Let the real UI do the talking; don't talk over the reveal.">
+    <p class="slide-kicker">Live demo &middot; MUMPS</p>
+    <div class="slide-split">
+      <div>
+        <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem);">Store a patient record. Run it for real.</h2>
+        <p class="sub">"Store the string GARCIA,MARIA^45^F in the uppercase global PATIENT under subscript 40, then write it back out." &mdash; generated, run against Reference Standard M, and verified against real output.</p>
+      </div>
+      <div class="proof-frame">
+        <div class="proof-bar"><div class="lights"><span></span><span></span><span></span></div>localhost:5173 &middot; real, captured live</div>
+        <img src="assets/mumps-verified.jpg" alt="XenoScript sidebar showing the MUMPS add-patient prompt, verified" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 6: LIVE DEMO COBOL -->
+  <section class="slide" data-title="Live demo — COBOL" data-notes="EDITING NOTE: cut to a second real screen recording if available. VO: 'Swap the corpus, no restart, and the same architecture runs a completely different language the model already partly knows — COBOL — with the same real compiler in the loop.'">
+    <p class="slide-kicker">Live demo &middot; COBOL</p>
+    <div class="slide-split">
+      <div>
+        <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem);">Same architecture. A different language entirely.</h2>
+        <p class="sub">Corpus switched live, no backend restart. Real GnuCOBOL compiler output shown as-is &mdash; including a benign warning, styled dim, not red, because it isn't a failure.</p>
+      </div>
+      <div class="proof-frame">
+        <div class="proof-bar"><div class="lights"><span></span><span></span><span></span></div>localhost:5173 &middot; real, captured live</div>
+        <img src="assets/cobol-verified.jpg" alt="XenoScript sidebar showing the COBOL GREETER prompt, verified" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 7: LANGUAGES -->
+  <section class="slide" data-title="Supported corpora" data-notes="VO: 'Adding a language means adding a folder — docs, examples, a toolchain adapter — never new code in the core. Nothing in the engine is allowed to know which language it's talking to.' Point out the three cards briefly, don't read every word.">
+    <p class="slide-kicker">Supported corpora</p>
+    <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem); margin-bottom:36px;">Adding a language is a folder, not a fork.</h2>
+    <div class="lang-row">
+      <div class="lang-card"><span class="tag">Lead demo</span><h3>MUMPS</h3><p>Still running much of the VA's, Epic's, and Meditech's EHR systems. Verified against Reference Standard M.</p></div>
+      <div class="lang-card"><span class="tag">Real-world proof</span><h3>COBOL</h3><p>Proves the architecture isn't MUMPS-specific. Verified against GnuCOBOL.</p></div>
+      <div class="lang-card"><span class="tag">Zero-memorization proof</span><h3>Plinth</h3><p>A synthetic language invented for this project &mdash; provably absent from training data.</p></div>
+    </div>
+  </section>
+
+  <!-- 8: THE NUMBERS -->
+  <section class="slide" data-title="The numbers" data-notes="VO: 'Plinth is a language we invented for this project. No model has ever seen it. With no help at all, the model gets essentially nothing right — zero percent. With the full loop — retrieve, verify, repair — that same model, same weights, jumps to twenty-five percent.' Let the two numbers sit on screen in silence for a beat before continuing — this is the credibility slide.">
+    <p class="slide-kicker">The numbers</p>
+    <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem);">Plinth is a language nobody's model has ever seen.</h2>
+    <div class="big-stat-row" style="margin-top: 30px;">
+      <div class="big-stat"><span class="num fault">0%</span><span class="label">no help at all &middot; arm A</span></div>
+      <div class="big-stat"><span class="num verified">25%</span><span class="label">full retrieve&#8209;verify&#8209;repair loop &middot; arm D</span></div>
+    </div>
+    <p class="sub" style="margin-top:30px;">Same model, same weights (qwen2.5-coder:3b), measured live, single run. The gap between the two numbers is the entire pitch.</p>
+  </section>
+
+  <!-- 9: HONESTY -->
+  <section class="slide" data-title="Built by finding real bugs" data-notes="VO: 'We don't hide the bugs we found — we found them and fixed them, live, and wrote down exactly how.' Pick one story to tell in a sentence if time is short — the trailing-newline one is the best story (silent, hardest to find).">
+    <p class="slide-kicker">Built by finding real bugs, not hiding them</p>
+    <h2 class="big" style="font-size:clamp(1.8rem,3.2vw,2.6rem); margin-bottom:36px;">Every claim in this deck was re-tested live before it was written down.</h2>
+    <div class="story-row">
+      <div class="story-card"><span class="status">Root-caused &amp; fixed</span><h3>The trailing newline that ate the output</h3><p>The interpreter silently discarded the last piped line when source didn't end in a newline. Exit 0, no error, no output.</p></div>
+      <div class="story-card"><span class="status">Root-caused &amp; fixed</span><h3>The cache that poisoned itself</h3><p>A structurally-wrong-but-error-free generation could get cited as an example for the next prompt. Now only ground-truth-checked rows are ever cited.</p></div>
+      <div class="story-card"><span class="status">Root-caused &amp; fixed</span><h3>ELSE needs two spaces, not one</h3><p>A genuine interpreter grammar quirk. Now normalized mechanically, and the fix flows all the way back to what you see.</p></div>
+    </div>
+  </section>
+
+  <!-- 10: ARCHITECTURE -->
+  <section class="slide" data-title="Architecture" data-notes="VO: 'Three local processes: a model server, an MCP tool server over the corpus, and the harness loop that wires them together. Nothing under that harness is allowed to know which language it's talking to — that's a hard invariant, checked in review.'">
+    <p class="slide-kicker">Architecture, in one line</p>
+    <h2 class="big">corpora/&lt;name&gt;/ &mdash; docs, examples, a toolchain. That's the whole surface.</h2>
+    <p class="sub">Three local processes: a model server (Ollama, fully offline), an MCP server exposing five generic search-and-verify tools, and a harness that wires them into generate &rarr; verify &rarr; repair. No fine-tuning, no cloud, no unverified code ever shown to the user.</p>
+  </section>
+
+  <!-- 11: CTA -->
+  <section class="slide slide-center" data-title="Try it" data-notes="VO: 'It runs on your machine. It verifies against a real toolchain. And it shows its work.' Point at the URL, hold 2s, then advance to close.">
+    <p class="slide-kicker">Try it</p>
+    <h1 class="big">Runs on your machine.<br>Verifies against a real toolchain.</h1>
+    <p class="sub" style="margin: 0 auto;">emmett-smith.github.io/XenoScript &mdash; download the extension, or read Getting Started.</p>
+  </section>
+
+  <!-- 12: CLOSE -->
+  <section class="slide slide-center" data-title="Thank you" data-notes="VO: 'Thank you.' Hold on the wordmark for the fade-out.">
+    <p class="slide-kicker">Thank you</p>
+    <div class="wordmark" style="justify-content:center;"><span class="dot">&#9679;</span> XenoScript</div>
+    <p class="sub" style="margin: 18px auto 0;">A hackathon proof of concept. github.com/Emmett-Smith/XenoScript</p>
+  </section>
+
+</div>
+
+<div class="deck-progress" id="deckProgress"></div>
+<div class="deck-counter" id="deckCounter"></div>
+<div class="deck-hint">&larr; &rarr; advance &middot; N notes</div>
+
+<div class="notes-drawer" id="notesDrawer">
+  <span class="notes-label">Speaker notes &mdash; not visible in a recording of this window</span>
+  <p id="notesBody"></p>
+</div>
+
+<script src="deck.js"></script>
+</body>
+</html>
